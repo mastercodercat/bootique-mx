@@ -1,0 +1,63 @@
+body {
+  padding-top: 20vh;
+  padding-bottom: 40px;
+  background-color: #6296C3;
+  .form-signin {
+    max-width: 400px;
+    padding: 50px 75px;
+    margin: 0 auto;
+    background: white;
+    border-radius: 10px;
+    top: 20%;
+    position: relative;
+
+    .btn-primary{
+      background: #023463;
+      border: none;
+    }
+
+    .form-control:focus {
+      z-index: 2;
+    }
+
+    p {
+      margin: 20px 0;
+      color: #95989a;
+      font-size: 12px;
+      text-align: center;
+    }
+
+    hr {
+      width: 57px;
+      height: 1px;
+      border-top: 1px solid black;
+    }
+
+    a.help-link {
+      position: absolute;
+      bottom: -20px;
+      left: 0;
+      color: white;
+      font-size: 14px;
+      text-decoration: none;
+    }
+
+    a.mail-to {
+      color: #00b2d4;
+      text-decoration: underline;
+    }
+
+    .tooltip {
+      opacity: 1;
+      &.top .tooltip-arrow {
+        border-top-color: #f4f4f4;
+      }
+      .tooltip-inner {
+        background: #f4f4f4;
+        color: #5e5e5f;
+        max-width: 400px;
+      }
+    }
+  }
+}
+

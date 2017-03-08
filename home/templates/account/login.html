@@ -1,0 +1,67 @@
+{% extends "layout.html" %}
+{% load staticfiles %}
+{% load account socialaccount %}
+{% load compress %}
+
+{% block head_title %}Sign In - MX Tracking{% endblock %}
+
+{% block pagecss %}
+    {% compress css %}
+        <link rel="stylesheet" type="text/x-scss" href="{% static "scss/login.scss" %}" />
+    {% endcompress %}
+{% endblock %}
+
+{% block content %}
+
+    {% get_providers as socialaccount_providers %}
+    {% for provider in socialaccount_providers %}
+    <div class="container">
+        <form class="form-signin">
+            {% if request.GET.error %}
+            <div class="alert alert-danger" style="margin: 10px -50px;">
+              You are not permitted to login!<br>
+              Only BoutiqueAir employees are allowed to see site contents.
+            </div>
+            {% endif %}
+            <img src="{% static "img/gear.png" %}" alt="Contact Image" class="img-responsive center-block" />
+            <br><br>
+            <img src="{% static "img/boutique_air_logo.png" %}" alt="Contact Image" class="img-responsive center-block" />
+            <hr>
+            <p>Operations Portal</p>
+            <a class="btn btn-lg btn-primary btn-block"
+               href="{% provider_login_url provider.id process=process scope=scope auth_params=auth_params %}">Sign In</a>
+            <p>Sign in with your Boutique Air Google Account</p>
+            <a class="help-link"
+                href='javascript:void(0)'
+                data-toggle="tooltip"
+                data-trigger="focus"
+                data-placement="auto"
+                data-html="true"
+                title="
+                <p>Having challenges with logging in through your Google Account? Or don’t have a
+                    Google Account? Send an email to the Google Admin
+                    <a href='mailto:googleadmin@boutiqueair.com'
+                        target='_top'
+                        class='mail-to'>
+                        googleadmin@boutiqueair.com
+                    </a>
+                </p>
+                <p>
+                    Explain what is going on, include a URL link of this web page and
+                    any screenshots that may be helpful.
+                </p>" >
+                Help
+            </a>
+        </form>
+    </div>
+    {% endfor %}
+    {% include "socialaccount/snippets/login_extra.html" %}
+{% endblock %}
+
+{% block pagejs %}
+<script type="text/javascript">
+    $(document).ready(function(){
+        $('[data-toggle="tooltip"]').tooltip();
+    });
+</script>
+{% endblock %}

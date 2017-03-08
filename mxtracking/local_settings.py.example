@@ -1,0 +1,3 @@
+DEBUG = True
+DATABASES['default'] = dj_database_url.config(default='postgres://db_user_name:db_user_pass@localhost/db_name')
+DATABASES['default']['ENGINE'] = 'django.db.backends.postgresql_psycopg2'

@@ -1,0 +1,115 @@
+/* Only demo */
+@import "variables";
+@media (max-width: 1000px) {
+  .welcome-message {
+    display: none;
+  }
+}
+
+body {
+	&.mini-navbar {
+		.nav-header {
+			background-color: $nav-bg;
+			.mini-nav-logo {
+				width: 60px;
+			}
+		}
+	}
+
+	.dataTables_wrapper {
+		padding-bottom: 0;
+	}
+
+	.messages {
+		position: fixed;
+	    max-width: 500px;
+	    top: 15px;
+	    left: 50%;
+	    z-index: 9999999;
+	    min-width: 200px;
+	    text-align: center;
+	    transform: translate(-50%, 0%);
+	}
+}
+
+.ibox-title {
+	&.blue {
+		border-bottom: 4px solid $blue;
+	}
+	&.yellow {
+		border-bottom: 4px solid $yellow;
+	}
+	&.red {
+		border-bottom: 4px solid $red;
+	}
+	&.no-top-border {
+		border-top: none;
+	}
+}
+.ibox-tools.secondary {
+	position: absolute;
+    top: 15px;
+    right: 25px;
+}
+.bootbox.modal.bootbox-confirm {
+	.modal-content {
+		background-color: $bootbox-back-color;
+		color: $light-gray;
+		text-align: center;
+		font-size: 25px;
+		.modal-footer {
+			border-top: none;
+			button {
+				display: block;
+				margin: auto;
+				min-width: 230px;
+				margin-bottom: 15px;
+			}
+		}
+	}
+}
+
+.select2-container {
+	max-width: 100% !important;
+}
+
+.btn-black {
+  background-color: $black;
+  border-color: $black;
+  color: #FFFFFF;
+}
+
+.btn-black:hover, .btn-black:focus, .btn-black:active, .btn-black.active, .open .dropdown-toggle.btn-black, .btn-black:active:focus, .btn-black:active:hover, .btn-black.active:hover, .btn-black.active:focus {
+  background-color: darken($black, 3%);
+  border-color: darken($black, 3%);
+  color: #FFFFFF;
+}
+
+.btn-black:active, .btn-black.active, .open .dropdown-toggle.btn-black {
+  background-image: none;
+}
+
+.btn-black.disabled, .btn-black.disabled:hover, .btn-black.disabled:focus, .btn-black.disabled:active, .btn-black.disabled.active, .btn-black[disabled], .btn-black[disabled]:hover, .btn-black[disabled]:focus, .btn-black[disabled]:active, .btn-black.active[disabled], fieldset[disabled] .btn-black, fieldset[disabled] .btn-black:hover, fieldset[disabled] .btn-black:focus, fieldset[disabled] .btn-black:active, fieldset[disabled] .btn-black.active {
+  background-color: lighten($black, 4%);
+  border-color: lighten($black, 4%);
+}
+
+button.btn-default.dim:active {
+  box-shadow: inset 0 0 0 darken($black, 6%), 0 2px 0 0 darken($black, 6%), 0 5px 3px #999;
+}
+.btn-wide {
+	min-width: 200px;
+}
+.btn-dashboard {
+	max-width: 250px;
+	min-width: 250px;
+	padding: 20px;
+	border-radius: 20px;
+	margin: 15px;
+}
+
+.alert-error {
+  color: #a94442;
+  background-color: #f2dede;
+  border-color: #ebccd1;
+}

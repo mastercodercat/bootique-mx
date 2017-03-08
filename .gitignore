@@ -1,0 +1,13 @@
+*.DS_Store
+*.pyc
+__pycache__
+.idea
+.idea/*
+.venv
+runserver
+deploy
+files
+media/*
+static/*
+**/migrations/**
+mxtracking/local_settings.py
