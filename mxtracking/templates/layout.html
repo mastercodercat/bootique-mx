@@ -45,21 +45,21 @@
                 <ul class="nav metismenu" id="side-menu">
                     <li class="nav-header">
                         <div class="dropdown profile-element">
-                                <a data-toggle="dropdown" class="dropdown-toggle" href="#">
-                                <span class="clear"> <span class="block m-t-xs"> <strong class="font-bold">
-                                    {{request.user.first_name}} {{request.user.last_name}}
-                                </strong>
-                                 </span> <span class="text-muted text-xs block">User <b class="caret"></b></span> </span> </a>
-                                <ul class="dropdown-menu animated fadeInRight m-t-xs">
-                                    <li><a href="{% url 'account_logout' %}?next={{"/?busted=true"|urlencode }}">Logout</a></li>
-                                </ul>
+                            <a data-toggle="dropdown" class="dropdown-toggle" href="#">
+                            <span class="clear"> <span class="block m-t-xs"> <strong class="font-bold">
+                                {{request.user.first_name}} {{request.user.last_name}}
+                            </strong>
+                            </span> <span class="text-muted text-xs block">User <b class="caret"></b></span> </span> </a>
+                            <ul class="dropdown-menu animated fadeInRight m-t-xs">
+                                <li><a href="{% url 'account_logout' %}?next={{"/?busted=true"|urlencode }}">Logout</a></li>
+                            </ul>
                         </div>
                         <div class="logo-element">
                             <img class="mini-nav-logo" src="{% static "img/gear.png" %}" />
                         </div>
                     </li>
                     <li>
-                        <a href="/flightlog/"><i class="fa fa-globe"></i> <span class="nav-label">Aircraft</span></a>
+                        <a href="#"><i class="fa fa-globe"></i> <span class="nav-label">Aircraft</span></a>
                     </li>
                 </ul>
 
