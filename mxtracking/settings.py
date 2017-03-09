@@ -66,7 +66,8 @@ TEMPLATES = [
     },
 ]
 
-ALLOWED_DOMAIN = 'boutiqueair.com'
+# ALLOWED_DOMAIN = 'boutiqueair.com'
+ALLOWED_DOMAIN = 'gmail.com'
 
 SITE_ID = 1
 

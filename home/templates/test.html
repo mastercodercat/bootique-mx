@@ -1,17 +1,14 @@
 {% extends "layout.html" %}
 {% load staticfiles %}
-{% load compress %}
 
 {% block head_title %}Test{% endblock %}
 
 {% block page_title %}
-    Test
+    Home
 {% endblock %}
 
-{% block pagecss %}
-    {% compress css %}
-        <link rel="stylesheet" type="text/x-scss" href="{% static "scss/login.scss" %}" />
-    {% endcompress %}
+{% block breadcrumb %}
+    Home
 {% endblock %}
 
 {% block content %}

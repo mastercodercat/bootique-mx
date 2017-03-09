@@ -1,15 +1,8 @@
-{% extends "layout.html" %}
+{% extends "site_base.html" %}
 {% load staticfiles %}
 {% load account socialaccount %}
-{% load compress %}
 
 {% block head_title %}Sign In - MX Tracking{% endblock %}
-
-{% block pagecss %}
-    {% compress css %}
-        <link rel="stylesheet" type="text/x-scss" href="{% static "scss/login.scss" %}" />
-    {% endcompress %}
-{% endblock %}
 
 {% block content %}
 

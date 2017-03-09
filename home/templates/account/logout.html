@@ -1,15 +1,8 @@
-{% extends "layout.html" %}
-{% load compress %}
+{% extends "site_base.html" %}
 
 {% load i18n %}
 
 {% block head_title %}{% trans "Sign Out" %}{% endblock %}
-
-{% block pagecss %}
-    {% compress css %}
-        <link rel="stylesheet" type="text/x-scss" href="{% static "scss/login.scss" %}" />
-    {% endcompress %}
-{% endblock %}
 
 {% block content %}
 <h1>{% trans "Sign Out" %}</h1>

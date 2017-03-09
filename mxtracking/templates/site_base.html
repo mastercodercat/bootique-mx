@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+{% load compress %}
+{% block head %}
+    {% block pagetitle %}<title>{% block head_title %}{% endblock %} - Boutique Air Operations Portal System</title>{% endblock %}
+
+    <!--Global CSS-->
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" type="text/css" media="all"/>
+    <!-- page specific og tags -->
+    {% block og_tags %}{% endblock %}
+    <!--Global JS - head-->
+    <script   src="http://code.jquery.com/jquery-3.1.1.min.js"   integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="   crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    {% compress css %}
+        <link rel="stylesheet" type="text/x-scss" href="{% static "scss/style.scss" %}" />
+        <link rel="stylesheet" type="text/x-scss" href="{% static "scss/login.scss" %}" />
+    {% endcompress %}
+{% endblock %}
+
+{% block body %}
+    <!--[if lt IE 8]>
+    <p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
+    <![endif]-->
+
+    <!-- content -->
+    {% block content %}
+    {% endblock %}
+    {% block modal %}
+    {% endblock %}
+
+
+    <!--Global JS - body-->
+
+    <!--page specific js-->
+      {% block pagejs %}{% endblock %}
+      {% block modaljs %}{% endblock %}
+
+{% endblock %}
