@@ -58,8 +58,41 @@
                             <img class="mini-nav-logo" src="{% static "img/gear.png" %}" />
                         </div>
                     </li>
-                    <li>
-                        <a href="#"><i class="fa fa-globe"></i> <span class="nav-label">Aircraft</span></a>
+                    <li class="active">
+                        <a href="#">
+                            <i class="fa fa-globe"></i> <span class="nav-label">Aircraft</span> <span class="fa arrow"></span>
+                        </a>
+                        <ul class="nav nav-second-level collapse">
+                            <li><a href="{% url 'home:overview' %}">Overview</a></li>
+                            {% for aircraft_type in aircraft_data %}
+                                <li>
+                                    <a href="javascript:;">{{ aircraft_type.type }} <span class="fa arrow"></span></a>
+                                    <ul class="nav nav-third-level collapse">
+                                        {% for aircraft in aircraft_type.aircraft %}
+                                            <li><a href="{% url 'home:aircraft_details' aircraft=aircraft.reg %}">{{ aircraft.reg }}</a></li>
+                                        {% endfor %}
+                                    </ul>
+                                </li>
+                            {% endfor %}
+                            <!-- <li><a href="#">Overview</a></li>
+                            <li>
+                                <a href="#">PC-12 <span class="fa arrow"></span></a>
+                                <ul class="nav nav-third-level collapse">
+                                    <li><a href="#">Item 1</a></li>
+                                    <li><a href="#">Item 2</a></li>
+                                    <li><a href="#">Item 3</a></li>
+                                </ul>
+                            </li>
+                            <li>
+                                <a href="#">King Air 350 <span class="fa arrow"></span></a>
+                                <ul class="nav nav-third-level collapse">
+                                    <li><a href="#">Item 1</a></li>
+                                    <li><a href="#">Item 2</a></li>
+                                    <li><a href="#">Item 3</a></li>
+                                </ul>
+                            </li> -->
+
+                        </ul>
                     </li>
                 </ul>
 

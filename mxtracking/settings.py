@@ -61,6 +61,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'home.aircraft_context.aircraft_in_types',
             ],
         },
     },
@@ -162,7 +163,9 @@ COMPRESS_PRECOMPILERS = (
 COMPRESS_ENABLED = True
 COMPRESS_OFFLINE = True
 
+
 # Local settings
+
 locset = os.path.join(os.path.dirname(__file__), 'local_settings.py')
 if os.path.exists(locset):
     with open(locset) as f:

@@ -23,7 +23,7 @@ Initial project configuration:
 Load fixures:
 
 Run all the commands:
-`python manage.py aircrafts.json`
+`python manage.py aircraft.json`
 `python manage.py airframes.json`
 `python manage.py engines.json`
 `python manage.py propellers.json`
