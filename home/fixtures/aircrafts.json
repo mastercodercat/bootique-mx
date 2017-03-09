@@ -1,0 +1,66 @@
+[
+    {
+        "model": "home.aircrafttype",
+        "pk": 1,
+        "fields": {
+            "type": "PC-12"
+        }
+    },
+    {
+        "model": "home.aircrafttype",
+        "pk": 2,
+        "fields": {
+            "type": "King Air 350"
+        }
+    },
+    {
+        "model": "home.aircraft",
+        "pk": 1,
+        "fields": {
+            "type": 1,
+            "reg": "N455BC",
+            "serial": "527",
+            "model": "PC12/35"
+        }
+    },
+    {
+        "model": "home.aircraft",
+        "pk": 2,
+        "fields": {
+            "type": 1,
+            "reg": "N471SS",
+            "serial": "739",
+            "model": "PC12/47"
+        }
+    },
+    {
+        "model": "home.aircraft",
+        "pk": 3,
+        "fields": {
+            "type": 1,
+            "reg": "N472SS",
+            "serial": "817",
+            "model": "PC12/47"
+        }
+    },
+    {
+        "model": "home.aircraft",
+        "pk": 4,
+        "fields": {
+            "type": 2,
+            "reg": "N165TG",
+            "serial": "912",
+            "model": "KA350/10"
+        }
+    },
+    {
+        "model": "home.aircraft",
+        "pk": 5,
+        "fields": {
+            "type": 2,
+            "reg": "N253AS",
+            "serial": "947",
+            "model": "KA350/10"
+        }
+    }
+]

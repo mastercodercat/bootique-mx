@@ -1,0 +1,132 @@
+[
+    {
+        "model": "home.engine",
+        "pk": 1,
+        "fields": {
+            "aircraft": 1,
+            "date": "2014-02-16",
+            "engine_hours": 1203,
+            "engine_cycles": 2,
+            "last_hot_section_time": "2016-10-20 00:00:00+00",
+            "last_overhaul_time": "2016-05-10 00:00:00+00",
+            "tbo": 1500
+        }
+    },
+    {
+        "model": "home.engine",
+        "pk": 2,
+        "fields": {
+            "aircraft": 1,
+            "date": "2014-02-15",
+            "engine_hours": 1203,
+            "engine_cycles": 2,
+            "last_hot_section_time": "2016-10-25 00:00:00+00",
+            "last_overhaul_time": "2016-05-10 00:00:00+00",
+            "tbo": 1500
+        }
+    },
+    {
+        "model": "home.engine",
+        "pk": 3,
+        "fields": {
+            "aircraft": 2,
+            "date": "2015-03-10",
+            "engine_hours": 1402,
+            "engine_cycles": 2,
+            "last_hot_section_time": "2016-11-05 00:00:00+00",
+            "last_overhaul_time": "2016-05-11 00:00:00+00",
+            "tbo": 1450
+        }
+    },
+    {
+        "model": "home.engine",
+        "pk": 4,
+        "fields": {
+            "aircraft": 2,
+            "date": "2015-03-15",
+            "engine_hours": 1403,
+            "engine_cycles": 2,
+            "last_hot_section_time": "2016-11-10 00:00:00+00",
+            "last_overhaul_time": "2016-05-12 00:00:00+00",
+            "tbo": 1450
+        }
+    },
+    {
+        "model": "home.engine",
+        "pk": 5,
+        "fields": {
+            "aircraft": 3,
+            "date": "2016-01-20",
+            "engine_hours": 947,
+            "engine_cycles": 1,
+            "last_hot_section_time": "2016-12-10 00:00:00+00",
+            "last_overhaul_time": "2016-08-20 00:00:00+00",
+            "tbo": 2150
+        }
+    },
+    {
+        "model": "home.engine",
+        "pk": 6,
+        "fields": {
+            "aircraft": 3,
+            "date": "2016-01-25",
+            "engine_hours": 946,
+            "engine_cycles": 1,
+            "last_hot_section_time": "2016-12-15 00:00:00+00",
+            "last_overhaul_time": "2016-08-25 00:00:00+00",
+            "tbo": 2150
+        }
+    },
+    {
+        "model": "home.engine",
+        "pk": 7,
+        "fields": {
+            "aircraft": 4,
+            "date": "2014-08-15",
+            "engine_hours": 2520,
+            "engine_cycles": 5,
+            "last_hot_section_time": "2016-11-18 00:00:00+00",
+            "last_overhaul_time": "2016-07-02 00:00:00+00",
+            "tbo": 1800
+        }
+    },
+    {
+        "model": "home.engine",
+        "pk": 8,
+        "fields": {
+            "aircraft": 4,
+            "date": "2014-08-15",
+            "engine_hours": 2525,
+            "engine_cycles": 5,
+            "last_hot_section_time": "2016-11-18 00:00:00+00",
+            "last_overhaul_time": "2016-07-02 00:00:00+00",
+            "tbo": 1800
+        }
+    },
+    {
+        "model": "home.engine",
+        "pk": 9,
+        "fields": {
+            "aircraft": 5,
+            "date": "2013-05-01",
+            "engine_hours": 3810,
+            "engine_cycles": 7,
+            "last_hot_section_time": "2017-01-10 00:00:00+00",
+            "last_overhaul_time": "2016-10-05 00:00:00+00",
+            "tbo": 1550
+        }
+    },
+    {
+        "model": "home.engine",
+        "pk": 10,
+        "fields": {
+            "aircraft": 5,
+            "date": "2013-05-01",
+            "engine_hours": 3815,
+            "engine_cycles": 7,
+            "last_hot_section_time": "2017-01-12 00:00:00+00",
+            "last_overhaul_time": "2016-10-05 00:00:00+00",
+            "tbo": 1550
+        }
+    }
+]

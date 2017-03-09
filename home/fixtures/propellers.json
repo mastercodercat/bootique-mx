@@ -1,0 +1,72 @@
+[
+    {
+        "model": "home.propeller",
+        "pk": 1,
+        "fields": {
+            "last_inspection_time": "2016-10-20 00:00:00+00"
+        }
+    },
+    {
+        "model": "home.propeller",
+        "pk": 2,
+        "fields": {
+            "last_inspection_time": "2016-10-25 00:00:00+00"
+        }
+    },
+    {
+        "model": "home.propeller",
+        "pk": 3,
+        "fields": {
+            "last_inspection_time": "2016-11-05 00:00:00+00"
+        }
+    },
+    {
+        "model": "home.propeller",
+        "pk": 4,
+        "fields": {
+            "last_inspection_time": "2016-11-10 00:00:00+00"
+        }
+    },
+    {
+        "model": "home.propeller",
+        "pk": 5,
+        "fields": {
+            "last_inspection_time": "2016-12-10 00:00:00+00"
+        }
+    },
+    {
+        "model": "home.propeller",
+        "pk": 6,
+        "fields": {
+            "last_inspection_time": "2016-12-15 00:00:00+00"
+        }
+    },
+    {
+        "model": "home.propeller",
+        "pk": 7,
+        "fields": {
+            "last_inspection_time": "2016-11-18 00:00:00+00"
+        }
+    },
+    {
+        "model": "home.propeller",
+        "pk": 8,
+        "fields": {
+            "last_inspection_time": "2016-11-18 00:00:00+00"
+        }
+    },
+    {
+        "model": "home.propeller",
+        "pk": 9,
+        "fields": {
+            "last_inspection_time": "2017-01-10 00:00:00+00"
+        }
+    },
+    {
+        "model": "home.propeller",
+        "pk": 10,
+        "fields": {
+            "last_inspection_time": "2017-01-12 00:00:00+00"
+        }
+    }
+]

@@ -1,0 +1,62 @@
+[
+    {
+        "model": "home.airframe",
+        "pk": 1,
+        "fields": {
+            "aircraft": 1,
+            "total_hours": 8163,
+            "reported_hours": 8026,
+            "reported_landings": 8025,
+            "last_inspection_time": "2017-03-05 10:00:00+00",
+            "time_between_inspections": 720
+        }
+    },
+    {
+        "model": "home.airframe",
+        "pk": 2,
+        "fields": {
+            "aircraft": 2,
+            "total_hours": 6284,
+            "reported_hours": 6584,
+            "reported_landings": 6241,
+            "last_inspection_time": "2017-03-03 10:00:00+00",
+            "time_between_inspections": 840
+        }
+    },
+    {
+        "model": "home.airframe",
+        "pk": 3,
+        "fields": {
+            "aircraft": 3,
+            "total_hours": 7355,
+            "reported_hours": 7363,
+            "reported_landings": 7223,
+            "last_inspection_time": "2017-03-07 15:00:00+00",
+            "time_between_inspections": 960
+        }
+    },
+    {
+        "model": "home.airframe",
+        "pk": 4,
+        "fields": {
+            "aircraft": 4,
+            "total_hours": 9265,
+            "reported_hours": 9223,
+            "reported_landings": 9123,
+            "last_inspection_time": "2017-03-01 12:00:00+00",
+            "time_between_inspections": 600
+        }
+    },
+    {
+        "model": "home.airframe",
+        "pk": 5,
+        "fields": {
+            "aircraft": 5,
+            "total_hours": 2412,
+            "reported_hours": 2745,
+            "reported_landings": 2122,
+            "last_inspection_time": "2017-02-25 03:30:00+00",
+            "time_between_inspections": 1000
+        }
+    }
+]
