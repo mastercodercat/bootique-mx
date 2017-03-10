@@ -70,10 +70,14 @@
             <h3>Fleet</h3>
         </div>
         <div class="ibox-content">
-            <table class="datatable table table-stripped toggle-arrow-tiny" data-name="aircraft_table">
+            <table id="aircraft-table" class="datatable table table-stripped toggle-arrow-tiny"
+                data-name="aircraft_table"
+                data-default-sort-column="2"
+                data-selectable="true">
                 <thead>
                     <tr>
-                        <th><input type="checkbox" class="select-all"></th>
+                        <th data-sortable="false"><input type="checkbox" class="select-all"></th>
+                        <th data-sortable="false"></th>
                         <th>Aircraft</th>
                         <th>Reported Date</th>
                         <th data-hide="all">Reported Hours</th>
@@ -86,6 +90,12 @@
                     {% for aircraft in aircrafts %}
                         <tr>
                             <td></td>
+                            <td>
+                                <a href="javascript:;" class="details-control">
+                                    <i class="closed-icon fa fa-chevron-right"></i>
+                                    <i class="open-icon fa fa-chevron-down" style="display: none;"></i>
+                                </a>
+                            </td>
                             <td>{{ aircraft.reg }}</td>
                             <td>{{ aircraft.airframe.last_inspection_time | date:"d-M-Y" }}</td>
                             <td>{{ aircraft.airframe.reported_hours }}</td>
@@ -98,6 +108,37 @@
                     {% endfor %}
                 </tbody>
             </table>
+            {% for aircraft in aircrafts %}
+                <div id="aircraft-{{ aircraft.reg }}-detail" style="display: none;">
+                    <div class="m-t-md p-w-sm">
+                        {% include 'partial/aircraft_details.html' %}
+                    </div>
+                </div>
+            {% endfor %}
         </div>
     </div>
+{% endblock %}
+
+{% block pagejs %}
+    <script type="text/javascript">
+        $('#aircraft-table').on('click', '.details-control', function() {
+            var table = window.datatables && window.datatables.get('aircraft_table');
+            if (table) {
+                var $tr = $(this).closest('tr');
+                var row = table.row($tr);
+                var reg = row.data()[2];
+                if ( row.child.isShown() ) {
+                    row.child.hide();
+                    $(this).find('.closed-icon').css('display', 'inline-block');
+                    $(this).find('.open-icon').css('display', 'none');
+                }
+                else {
+                    var html = $('#aircraft-' + reg + '-detail').html()
+                    row.child(html).show();
+                    $(this).find('.closed-icon').css('display', 'none');
+                    $(this).find('.open-icon').css('display', 'inline-block');
+                }
+            }
+        });
+    </script>
 {% endblock %}

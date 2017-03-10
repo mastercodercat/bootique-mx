@@ -4,17 +4,28 @@ window.datatables = {
 
     /*
      * Automatic setup of datatables in the page
+     *
      * Parameters for datatables: 
      *  class: datatable
-     *  attributes: data-name, [data-ajax-url]
+     *  attributes: data-name, data-default-sort-column, [data-ajax-url], [data-selectable]
+     *
+     * Elements that will execute action predefined
+     *  .select-all - Select/unselect all rows
      */
     setup: function () {
         var $datatable = $('.datatable');
-        var name = $datatable.attr('data-name');
+        var name = $datatable.data('name');
+
+        var initSortColumn = $datatable.data('default-sort-column') ? parseInt($datatable.data('default-sort-column')) : 0;
 
         var options = {
             responsive: true,
-            columnDefs: [
+            lengthMenu: [10, 25, 50, 100],
+            aaSorting: [[initSortColumn, 'asc']],
+        };
+
+        if ($datatable.data('selectable')) {
+            options['columnDefs'] = [
                 {
                     "sortable": false,
                     render: function(data, type, full, meta) {
@@ -22,12 +33,11 @@ window.datatables = {
                     },
                     targets: 0,
                 }
-            ],
-            select: {
+            ];
+            options['select'] = {
                 style: 'multi'
-            },
-            lengthMenu: [10, 25, 50, 100],
-        };
+            };
+        }
 
         if ($datatable.data('ajax-url')) {
             var ajaxUrl = $datatable.data('ajax-url');
@@ -51,7 +61,7 @@ window.datatables = {
 
         // Check/uncheck all checkboxes in the table
         $('.select-all').on('click', function(){
-            var dtName = $(this).closest('.datatable').attr('data-name');
+            var dtName = $(this).closest('.datatable').data('name');
             var datatable = window.datatables.get(dtName);
             var rows = datatable.rows({ 'search': 'applied' }).nodes();
             $('input[type="checkbox"]', rows).prop('checked', this.checked);
