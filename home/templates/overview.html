@@ -4,13 +4,97 @@
 {% block head_title %}Overview{% endblock %}
 
 {% block page_title %}
-    Overview
+    Aircrafts Overview
 {% endblock %}
 
 {% block breadcrumb %}
-    Overview
+    <ol class="breadcrumb">
+        <li class="active">
+            <strong>Aircrafts Overview</strong>
+        </li>
+    </ol>
 {% endblock %}
 
 {% block content %}
-    <h1>Welcome!</h1>
+    <div class="ibox">
+        <div class="ibox-title">
+            <h3>Maintenance Information Center</h3>
+        </div>
+        <div class="ibox-content">
+            <div class="row">
+                <div class="col-md-5">
+                    <h4>Maintenance items</h4>
+                    <div class="row narrow">
+                        <div class="col-sm-4">
+                            <div class="widget red-bg p-h-md text-center">
+                                <h1 class="m-sm">30</h1>
+                                <small>Past due</small>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="widget orange-bg p-h-md text-center">
+                                <h1 class="m-sm">0</h1>
+                                <small>Within Thresholds</small>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="widget yellow-bg p-h-md text-center">
+                                <h1 class="m-sm">20</h1>
+                                <small>Past due</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-5">
+                    <h4>Non-Routine Maintenance</h4>
+                    <div class="row narrow">
+                        <div class="col-sm-4">
+                            <div class="widget navy-bg p-h-md text-center">
+                                <h1 class="m-sm">3</h1>
+                                <small>Discrepancies</small>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="widget navy-bg p-h-md text-center">
+                                <h1 class="m-sm">0</h1>
+                                <small>MELs</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="ibox">
+        <div class="ibox-title">
+            <h3>Fleet</h3>
+        </div>
+        <div class="ibox-content">
+            <table class="dataTable table table-stripped toggle-arrow-tiny">
+                <thead>
+                    <tr>
+                        <th data-toggle="true">Project</th>
+                        <th>Name</th>
+                        <th>Phone</th>
+                        <th data-hide="all">Company</th>
+                        <th data-hide="all">Completed</th>
+                        <th data-hide="all">Task</th>
+                        <th data-hide="all">Date</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Test</td><td>Test</td><td>Test</td><td>Test</td><td>Test</td><td>Test</td><td>Test</td><td>Test</td>
+                    </tr>
+                    <tr>
+                        <td>Test</td><td>Test</td><td>Test</td><td>Test</td><td>Test</td><td>Test</td><td>Test</td><td>Test</td>
+                    </tr>
+                    <tr>
+                        <td>Test</td><td>Test</td><td>Test</td><td>Test</td><td>Test</td><td>Test</td><td>Test</td><td>Test</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
 {% endblock %}

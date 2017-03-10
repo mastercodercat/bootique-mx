@@ -8,7 +8,14 @@
 {% endblock %}
 
 {% block breadcrumb %}
-    Aircraft Details
+    <ol class="breadcrumb">
+        <li>
+            <a href="{% url 'home:overview' %}">Overview</a>
+        </li>
+        <li class="active">
+            <span>{{ aircraft.reg }} Aircraft Details</span>
+        </li>
+    </ol>
 {% endblock %}
 
 {% block content %}
