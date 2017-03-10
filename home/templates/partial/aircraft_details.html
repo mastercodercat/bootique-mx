@@ -1,0 +1,146 @@
+<div class="ibox">
+    <div class="ibox-title">
+        <h3>Aircraft Details</h3>
+    </div>
+    <div class="ibox-content">
+        <table>
+            <tr>
+                <td>Reg #</td>
+                <td>{{ aircraft.reg }}</td>
+            </tr>
+            <tr>
+                <td>Serial #</td>
+                <td>{{ aircraft.reg }}</td>
+            </tr>
+            <tr>
+                <td>Model #</td>
+                <td>{{ aircraft.reg }}</td>
+            </tr>
+            <tr>
+                <td>MX Program:&nbsp;&nbsp;</td>
+                <td>Progressive Inspection</td>
+            </tr>
+        </table>
+        <div class="btn-group m-t-sm">
+            <button class="btn btn-white" type="button">MELs</button>
+            <button class="btn btn-white" type="button">Task List</button>
+            <button class="btn btn-white" type="button">Next Item Due</button>
+        </div>
+    </div>
+</div>
+<div class="ibox">
+    <div class="ibox-title">
+        <h3>Overview</h3>
+    </div>
+    <div class="ibox-content">
+        <table class="table table-stripped">
+            <thead>
+                <tr>
+                    <th>Reported Date</th>
+                    <th>Reported Hours</th>
+                    <th>Reported Landings</th>
+                    <th>Next Item Due</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>{{ aircraft.airframe.last_inspection_time | date:"d-M-Y" }}</td>
+                    <td>{{ aircraft.airframe.reported_hours }}</td>
+                    <td>{{ aircraft.airframe.reported_landings }}</td>
+                    <td>{{ aircraft.airframe.last_inspection_time | date:"d-M-Y" }}</td>
+                    <td>
+                        <span class="label label-warning">0 - 10 days</span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+<div class="ibox">
+    <div class="ibox-title">
+        <h3>Airframe</h3>
+    </div>
+    <div class="ibox-content">
+        <table class="table table-stripped">
+            <thead>
+                <tr>
+                    <th>Airframe Total Hours</th>
+                    <th>Reported Hours</th>
+                    <th>Landings</th>
+                    <th>Last Inspection Time</th>
+                    <th>Next Inspection Time</th>
+                    <th>Time Between Inspections</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>{{ aircraft.airframe.total_hours }}</td>
+                    <td>{{ aircraft.airframe.reported_hours }}</td>
+                    <td>{{ aircraft.airframe.reported_landings }}</td>
+                    <td>{{ aircraft.airframe.last_inspection_time | date:"d-M-Y" }}</td>
+                    <td>{{ aircraft.airframe.last_inspection_time | date:"d-M-Y" }}</td>
+                    <td>{{ aircraft.airframe.time_between_inspections }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+<div class="ibox">
+    <div class="ibox-title">
+        <h3>Engine</h3>
+    </div>
+    <div class="ibox-content">
+        <table class="table table-stripped">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Engine Hours</th>
+                    <th>Engine Cycles</th>
+                    <th>Hot Section Due Time</th>
+                    <th>Time of Last Hot Section</th>
+                    <th>Time of Last Overhaul</th>
+                    <th>Overhaul Due Time</th>
+                    <th>TBO</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for engine in aircraft.engine_set.all %}
+                    <tr>
+                        <td>{{ engine.date | date:"d-M-Y" }}</td>
+                        <td>{{ engine.engine_hours }}</td>
+                        <td>{{ engine.engine_cycles }}</td>
+                        <td>{{ engine.last_hot_section_time | date:"d-M-Y" }}</td>
+                        <td>{{ engine.last_hot_section_time | date:"d-M-Y" }}</td>
+                        <td>{{ engine.last_overhaul_time | date:"d-M-Y" }}</td>
+                        <td>{{ engine.last_overhaul_time | date:"d-M-Y" }}</td>
+                        <td>{{ engine.tbo }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+<div class="ibox">
+    <div class="ibox-title">
+        <h3>Propeller</h3>
+    </div>
+    <div class="ibox-content">
+        <table class="table table-stripped">
+            <thead>
+                <tr>
+                    <th>Time of Last Inspection</th>
+                    <th>Next Inspection Due Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for propeller in aircraft.propeller_set.all %}
+                    <tr>
+                        <td>{{ propeller.last_inspection_time | date:"d-M-Y" }}</td>
+                        <td>{{ propeller.last_inspection_time | date:"d-M-Y" }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>

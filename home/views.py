@@ -9,11 +9,17 @@ def index(request):
 
 @login_required
 def overview(request):
-    return render(request, 'overview.html')
+    aircrafts = Aircraft.objects.all().select_related('airframe')
+
+    context = {
+        'aircrafts': aircrafts,
+    }
+    return render(request, 'overview.html', context)
 
 @login_required
 def aircraft_details(request, reg=''):
     aircraft = get_object_or_404(Aircraft, reg=reg)
+
     context = {
         'aircraft': aircraft,
     }
