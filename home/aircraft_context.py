@@ -1,6 +1,9 @@
+from django.shortcuts import render, get_object_or_404
+
 from home.models import AircraftType, Aircraft
 
-def aircraft_in_types(context):
+
+def aircraft_in_types(context, reg = ''):
     aircraft_context_data = []
     aircraft_types = AircraftType.objects.all()
     for aircraft_type in aircraft_types:
@@ -12,6 +15,16 @@ def aircraft_in_types(context):
                 'aircraft': aircraft_in_type,
             })
 
-    return {
+    template_context = {
         'aircraft_data': aircraft_context_data,
     }
+
+    url_name = context.resolver_match.url_name
+
+    if url_name == 'aircraft_details':
+        reg = context.resolver_match.kwargs['reg']
+        aircraft = get_object_or_404(Aircraft.objects.select_related('type'), reg=reg)
+        template_context['current_aircraft_type'] = aircraft.type.type
+        template_context['current_aircraft_reg'] = reg
+
+    return template_context

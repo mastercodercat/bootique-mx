@@ -64,18 +64,22 @@
                             <img class="mini-nav-logo" src="{% static "img/gear.png" %}" />
                         </div>
                     </li>
-                    <li class="active">
+                    <li class="active" style="border: 0;">
                         <a href="#">
                             <i class="fa fa-globe"></i> <span class="nav-label">Aircraft</span> <span class="fa arrow"></span>
                         </a>
                         <ul class="nav nav-second-level collapse">
-                            <li><a href="{% url 'home:overview' %}">Overview</a></li>
+                            <li{% if '/' == request.path %} class="active" {% endif %}>
+                                <a href="{% url 'home:overview' %}">Overview</a>
+                            </li>
                             {% for aircraft_type in aircraft_data %}
-                                <li>
+                                <li class="{% if aircraft_type.type == current_aircraft_type %}active{% endif %}">
                                     <a href="javascript:;">{{ aircraft_type.type }} <span class="fa arrow"></span></a>
                                     <ul class="nav nav-third-level collapse">
                                         {% for aircraft in aircraft_type.aircraft %}
-                                            <li><a href="{% url 'home:aircraft_details' reg=aircraft.reg %}">{{ aircraft.reg }}</a></li>
+                                            <li class="{% if current_aircraft_reg == aircraft.reg %}active{% endif %}">
+                                                <a href="{% url 'home:aircraft_details' reg=aircraft.reg %}">{{ aircraft.reg }}</a>
+                                            </li>
                                         {% endfor %}
                                     </ul>
                                 </li>
