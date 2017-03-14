@@ -17,7 +17,7 @@ def overview(request):
         'aircrafts': aircrafts,
         'past_due_count': Airframe.past_due_count,
         'threshold_count': Airframe.threshold_count,
-        'not_due_count': Airframe.not_due_count,
+        'coming_due_count': Airframe.coming_due_count,
     }
     return render(request, 'overview.html', context)
 
@@ -28,4 +28,31 @@ def aircraft_details(request, reg=''):
     context = {
         'aircraft': aircraft,
     }
-    return render(request, 'aircraft_details.html', context)
+    return render(request, 'aircraft/details.html', context)
+
+@login_required
+def aircraft_task_list(request, reg=''):
+    aircraft = get_object_or_404(Aircraft.objects, reg=reg)
+
+    context = {
+        'aircraft': aircraft,
+    }
+    return render(request, 'aircraft/task_list.html', context)
+
+@login_required
+def aircraft_air_conditioning(request, reg=''):
+    aircraft = get_object_or_404(Aircraft.objects, reg=reg)
+
+    context = {
+        'aircraft': aircraft,
+    }
+    return render(request, 'aircraft/air_conditioning.html', context)
+
+@login_required
+def aircraft_mels(request, reg=''):
+    aircraft = get_object_or_404(Aircraft.objects, reg=reg)
+
+    context = {
+        'aircraft': aircraft,
+    }
+    return render(request, 'aircraft/mels.html', context)

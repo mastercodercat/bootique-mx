@@ -1,0 +1,33 @@
+{% extends "layout.html" %}
+{% load staticfiles %}
+
+{% block head_title %}Aircraft {{ aircraft.reg }} MELs{% endblock %}
+
+{% block page_title %}
+    Aircraft {{ aircraft.reg }} MELs
+{% endblock %}
+
+{% block breadcrumb %}
+    <ol class="breadcrumb">
+        <li>
+            <a href="{% url 'home:overview' %}">Overview</a>
+        </li>
+        <li>
+            <a href="{% url 'home:aircraft_details' reg=aircraft.reg %}">{{ aircraft.reg }}</a>
+        </li>
+        <li class="active">
+            <span>MELs</span>
+        </li>
+    </ol>
+{% endblock %}
+
+{% block content %}
+    <div class="ibox">
+        <div class="ibox-title">
+            <h3>MELs</h3>
+        </div>
+        <div class="ibox-content">
+            Content here
+        </div>
+    </div>
+{% endblock %}

@@ -95,7 +95,7 @@ class Airframe(models.Model):
         ).count()
 
     @classmethod
-    def not_due_count(cls):
+    def coming_due_count(cls):
         dt_now = datetime_now_utc()
         return Airframe.objects.filter(last_inspection_time__gte=dt_now-timedelta(days=75-10)).count()
 

@@ -23,8 +23,8 @@
             </tr>
         </table>
         <div class="btn-group m-t-sm">
-            <button class="btn btn-white" type="button">MELs</button>
-            <button class="btn btn-white" type="button">Task List</button>
+            <a class="btn btn-white" href="{% url 'home:aircraft_mels' reg=aircraft.reg %}">MELs</a>
+            <a class="btn btn-white" href="{% url 'home:aircraft_task_list' reg=aircraft.reg %}">Task List</a>
             <button class="btn btn-white" type="button">Next Item Due</button>
         </div>
     </div>

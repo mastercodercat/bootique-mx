@@ -21,10 +21,12 @@ def aircraft_in_types(context, reg = ''):
 
     url_name = context.resolver_match.url_name
 
-    if url_name == 'aircraft_details':
+    try:
         reg = context.resolver_match.kwargs['reg']
         aircraft = get_object_or_404(Aircraft.objects.select_related('type'), reg=reg)
         template_context['current_aircraft_type'] = aircraft.type.type
         template_context['current_aircraft_reg'] = reg
+    except:
+        pass
 
     return template_context
