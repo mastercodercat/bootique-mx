@@ -20,7 +20,8 @@
             "type": 1,
             "reg": "N455BC",
             "serial": "527",
-            "model": "PC12/35"
+            "model": "PC12/35",
+            "reported_date": "2016-09-20 00:00:00+00"
         }
     },
     {
@@ -30,7 +31,8 @@
             "type": 1,
             "reg": "N471SS",
             "serial": "739",
-            "model": "PC12/47"
+            "model": "PC12/47",
+            "reported_date": "2016-05-11 00:00:00+00"
         }
     },
     {
@@ -40,7 +42,8 @@
             "type": 1,
             "reg": "N472SS",
             "serial": "817",
-            "model": "PC12/47"
+            "model": "PC12/47",
+            "reported_date": "2016-10-16 00:00:00+00"
         }
     },
     {
@@ -50,7 +53,8 @@
             "type": 2,
             "reg": "N165TG",
             "serial": "912",
-            "model": "KA350/10"
+            "model": "KA350/10",
+            "reported_date": "2016-07-05 00:00:00+00"
         }
     },
     {
@@ -60,7 +64,8 @@
             "type": 2,
             "reg": "N253AS",
             "serial": "947",
-            "model": "KA350/10"
+            "model": "KA350/10",
+            "reported_date": "2016-08-25 00:00:00+00"
         }
     }
 ]

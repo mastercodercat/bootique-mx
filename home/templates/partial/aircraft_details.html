@@ -1,3 +1,4 @@
+{% load duestatus %}
 <div class="ibox">
     <div class="ibox-title">
         <h3>Aircraft Details</h3>
@@ -45,13 +46,11 @@
             </thead>
             <tbody>
                 <tr>
-                    <td>{{ aircraft.airframe.last_inspection_time | date:"d-M-Y" }}</td>
+                    <td>{{ aircraft.reported_date | date:"d-M-Y" }}</td>
                     <td>{{ aircraft.airframe.reported_hours }}</td>
                     <td>{{ aircraft.airframe.reported_landings }}</td>
-                    <td>{{ aircraft.airframe.last_inspection_time | date:"d-M-Y" }}</td>
-                    <td>
-                        <span class="label label-warning">0 - 10 days</span>
-                    </td>
+                    <td>{{ aircraft.airframe.next_inspection_time | date:"d-M-Y" }}</td>
+                    <td>{{ aircraft.airframe.next_inspection_time | duestatus }}</td>
                 </tr>
             </tbody>
         </table>
@@ -79,7 +78,7 @@
                     <td>{{ aircraft.airframe.reported_hours }}</td>
                     <td>{{ aircraft.airframe.reported_landings }}</td>
                     <td>{{ aircraft.airframe.last_inspection_time | date:"d-M-Y" }}</td>
-                    <td>{{ aircraft.airframe.last_inspection_time | date:"d-M-Y" }}</td>
+                    <td>{{ aircraft.airframe.next_inspection_time | date:"d-M-Y" }}</td>
                     <td>{{ aircraft.airframe.time_between_inspections }}</td>
                 </tr>
             </tbody>
@@ -113,7 +112,7 @@
                         <td>{{ engine.last_hot_section_time | date:"d-M-Y" }}</td>
                         <td>{{ engine.last_hot_section_time | date:"d-M-Y" }}</td>
                         <td>{{ engine.last_overhaul_time | date:"d-M-Y" }}</td>
-                        <td>{{ engine.last_overhaul_time | date:"d-M-Y" }}</td>
+                        <td>{{ engine.next_inspection_time | date:"d-M-Y" }}</td>
                         <td>{{ engine.tbo }}</td>
                     </tr>
                 {% endfor %}
@@ -137,7 +136,7 @@
                 {% for propeller in aircraft.propeller_set.all %}
                     <tr>
                         <td>{{ propeller.last_inspection_time | date:"d-M-Y" }}</td>
-                        <td>{{ propeller.last_inspection_time | date:"d-M-Y" }}</td>
+                        <td>{{ propeller.next_inspection_time | date:"d-M-Y" }}</td>
                     </tr>
                 {% endfor %}
             </tbody>

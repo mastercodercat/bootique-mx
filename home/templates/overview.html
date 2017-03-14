@@ -1,5 +1,6 @@
 {% extends "layout.html" %}
 {% load staticfiles %}
+{% load duestatus %}
 
 {% block head_title %}Overview{% endblock %}
 
@@ -27,20 +28,20 @@
                     <div class="row narrow">
                         <div class="col-sm-4">
                             <div class="widget red-bg p-h-md text-center">
-                                <h1 class="m-sm">30</h1>
+                                <h1 class="m-sm">{{ past_due_count }}</h1>
                                 <small>Past due</small>
                             </div>
                         </div>
                         <div class="col-sm-4">
                             <div class="widget orange-bg p-h-md text-center">
-                                <h1 class="m-sm">0</h1>
+                                <h1 class="m-sm">{{ threshold_count }}</h1>
                                 <small>Within Thresholds</small>
                             </div>
                         </div>
                         <div class="col-sm-4">
                             <div class="widget yellow-bg p-h-md text-center">
-                                <h1 class="m-sm">20</h1>
-                                <small>Past due</small>
+                                <h1 class="m-sm">{{ not_due_count }}</h1>
+                                <small>Not due</small>
                             </div>
                         </div>
                     </div>
@@ -97,13 +98,11 @@
                                 </a>
                             </td>
                             <td>{{ aircraft.reg }}</td>
-                            <td>{{ aircraft.airframe.last_inspection_time | date:"d-M-Y" }}</td>
+                            <td>{{ aircraft.reported_date | date:"d-M-Y" }}</td>
                             <td>{{ aircraft.airframe.reported_hours }}</td>
                             <td>{{ aircraft.airframe.reported_landings }}</td>
-                            <td>{{ aircraft.airframe.last_inspection_time | date:"d-M-Y" }}</td>
-                            <td>
-                                <span class="label label-warning">0 - 10 days</span>
-                            </td>
+                            <td>{{ aircraft.airframe.next_inspection_time | date:"d-M-Y" }}</td>
+                            <td>{{ aircraft.airframe.next_inspection_time | duestatus }}</td>
                         </tr>
                     {% endfor %}
                 </tbody>

@@ -1,9 +1,10 @@
 from __future__ import unicode_literals
 
 from django.db import models
-
-from django.db import models
 from django.contrib.auth.models import User
+from datetime import datetime, timedelta
+
+from home.helpers import datetime_now_utc
 
 
 class UserProfile(models.Model):
@@ -53,6 +54,7 @@ class Aircraft(models.Model):
     reg = models.CharField(max_length=20)
     serial = models.CharField(max_length=20)
     model = models.CharField(max_length=20)
+    reported_date = models.DateTimeField(blank=True)
 
     type = models.ForeignKey('AircraftType', null=True, blank=False)
 
@@ -75,6 +77,28 @@ class Airframe(models.Model):
     class Meta:
         db_table = 'airframe'
 
+    @property
+    def next_inspection_time(self):
+        return self.last_inspection_time + timedelta(days=75)
+
+    @classmethod
+    def past_due_count(cls):
+        dt_now = datetime_now_utc()
+        return Airframe.objects.filter(last_inspection_time__lte=dt_now-timedelta(days=75)).count()
+
+    @classmethod
+    def threshold_count(cls):
+        dt_now = datetime_now_utc()
+        return Airframe.objects.filter(
+            last_inspection_time__gte=dt_now-timedelta(days=75), 
+            last_inspection_time__lte=dt_now-timedelta(days=65)
+        ).count()
+
+    @classmethod
+    def not_due_count(cls):
+        dt_now = datetime_now_utc()
+        return Airframe.objects.filter(last_inspection_time__gte=dt_now-timedelta(days=75-10)).count()
+
 
 class Engine(models.Model):
     date = models.DateField(blank=True)
@@ -89,6 +113,10 @@ class Engine(models.Model):
     class Meta:
         db_table = 'engine'
 
+    @property
+    def next_inspection_time(self):
+        return self.last_hot_section_time + timedelta(days=90)
+
 
 class Propeller(models.Model):
     last_inspection_time = models.DateTimeField(blank=True)
@@ -97,3 +125,7 @@ class Propeller(models.Model):
 
     class Meta:
         db_table = 'propeller'
+
+    @property
+    def next_inspection_time(self):
+        return self.last_inspection_time + timedelta(days=90)
