@@ -32,21 +32,12 @@ def aircraft_details(request, reg=''):
 
 @login_required
 def aircraft_task_list(request, reg=''):
-    aircraft = get_object_or_404(Aircraft.objects, reg=reg)
+    aircraft = get_object_or_404(Aircraft.objects.select_related('inspection_program'), reg=reg)
 
     context = {
         'aircraft': aircraft,
     }
     return render(request, 'aircraft/task_list.html', context)
-
-@login_required
-def aircraft_air_conditioning(request, reg=''):
-    aircraft = get_object_or_404(Aircraft.objects, reg=reg)
-
-    context = {
-        'aircraft': aircraft,
-    }
-    return render(request, 'aircraft/air_conditioning.html', context)
 
 @login_required
 def aircraft_mels(request, reg=''):

@@ -1,0 +1,96 @@
+[
+    {
+        "model": "home.inspectionprogram",
+        "pk": 1,
+        "fields": {
+            "name": "Inspection Program No. 1"
+        }
+    },
+    {
+        "model": "home.inspectionprogram",
+        "pk": 2,
+        "fields": {
+            "name": "Inspection Program Advanced"
+        }
+    },
+    {
+        "model": "home.inspection",
+        "fields": {
+            "name": "Airframe State Check",
+            "target": 2,
+		    "interval": 300,
+		    "interval_unit": "hours",
+		    "inspection_program": 1
+        }
+    },
+    {
+        "model": "home.inspection",
+        "fields": {
+            "name": "Engine Blade Check",
+            "target": 3,
+		    "interval": 50,
+		    "interval_unit": "hours",
+		    "inspection_program": 1
+        }
+    },
+    {
+        "model": "home.inspection",
+        "fields": {
+            "name": "Engine Fuel Pipe Check",
+            "target": 3,
+		    "interval": 100,
+		    "interval_unit": "hours",
+		    "inspection_program": 1
+        }
+    },
+    {
+        "model": "home.inspection",
+        "fields": {
+            "name": "Propeller Surface Check",
+            "target": 4,
+		    "interval": 100,
+		    "interval_unit": "hours",
+		    "inspection_program": 1
+        }
+    },
+    {
+        "model": "home.inspection",
+        "fields": {
+            "name": "Propeller Axis Check",
+            "target": 4,
+		    "interval": 500,
+		    "interval_unit": "hours",
+		    "inspection_program": 1
+        }
+    },
+    {
+        "model": "home.inspection",
+        "fields": {
+            "name": "Airframe State & Surface Check",
+            "target": 2,
+		    "interval": 15,
+		    "interval_unit": "days",
+		    "inspection_program": 2
+        }
+    },
+    {
+        "model": "home.inspection",
+        "fields": {
+            "name": "Engine System Check",
+            "target": 3,
+		    "interval": 5,
+		    "interval_unit": "days",
+		    "inspection_program": 2
+        }
+    },
+    {
+        "model": "home.inspection",
+        "fields": {
+            "name": "Propeller Airflow Test",
+            "target": 4,
+		    "interval": 250,
+		    "interval_unit": "hours",
+		    "inspection_program": 2
+        }
+    }
+]
