@@ -15,3 +15,15 @@ utc = UTC()
 
 def datetime_now_utc():
 	return datetime.now(utc)
+
+def is_past_due(date):
+    delta = date - datetime_now_utc()
+    return delta.days < 0
+
+def is_within_threshold(date):
+    delta = date - datetime_now_utc()
+    return (delta.days >= 0 and delta.days <= 10)
+
+def is_coming_due(date):
+    delta = date - datetime_now_utc()
+    return (delta.days > 10)

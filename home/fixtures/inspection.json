@@ -15,6 +15,7 @@
     },
     {
         "model": "home.inspection",
+        "pk": 1,
         "fields": {
             "name": "Airframe State Check",
             "target": 2,
@@ -25,6 +26,7 @@
     },
     {
         "model": "home.inspection",
+        "pk": 2,
         "fields": {
             "name": "Engine Blade Check",
             "target": 3,
@@ -35,6 +37,7 @@
     },
     {
         "model": "home.inspection",
+        "pk": 3,
         "fields": {
             "name": "Engine Fuel Pipe Check",
             "target": 3,
@@ -45,6 +48,7 @@
     },
     {
         "model": "home.inspection",
+        "pk": 4,
         "fields": {
             "name": "Propeller Surface Check",
             "target": 4,
@@ -55,6 +59,7 @@
     },
     {
         "model": "home.inspection",
+        "pk": 5,
         "fields": {
             "name": "Propeller Axis Check",
             "target": 4,
@@ -65,6 +70,7 @@
     },
     {
         "model": "home.inspection",
+        "pk": 6,
         "fields": {
             "name": "Airframe State & Surface Check",
             "target": 2,
@@ -75,6 +81,7 @@
     },
     {
         "model": "home.inspection",
+        "pk": 7,
         "fields": {
             "name": "Engine System Check",
             "target": 3,
@@ -85,6 +92,7 @@
     },
     {
         "model": "home.inspection",
+        "pk": 8,
         "fields": {
             "name": "Propeller Airflow Test",
             "target": 4,

@@ -1,0 +1,42 @@
+[
+    {
+        "model": "home.aircraftinspectionrecord",
+        "pk": 1,
+        "fields": {
+            "aircraft": 1,
+            "inspection": 1,
+            "target": 2,
+            "inspection_date": "2017-03-05 00:00:00+00"
+        }
+    },
+    {
+        "model": "home.aircraftinspectionrecord",
+        "pk": 2,
+        "fields": {
+            "aircraft": 1,
+            "inspection": 2,
+            "target": 3,
+            "inspection_date": "2017-02-15 00:00:00+00"
+        }
+    },
+    {
+        "model": "home.aircraftinspectionrecord",
+        "pk": 3,
+        "fields": {
+            "aircraft": 1,
+            "inspection": 3,
+            "target": 3,
+            "inspection_date": "2017-03-10 00:00:00+00"
+        }
+    },
+    {
+        "model": "home.aircraftinspectionrecord",
+        "pk": 4,
+        "fields": {
+            "aircraft": 1,
+            "inspection": 5,
+            "target": 4,
+            "inspection_date": "2017-03-15 00:00:00+00"
+        }
+    }
+]

@@ -65,6 +65,34 @@ class Aircraft(models.Model):
     def __unicode__(self):
         return self.reg
 
+    @property
+    def inspections(self):
+        if self.inspection_program is None:
+            return []
+        else:
+            return self.inspection_program.inspection_set.all().prefetch_related('aircraftinspectionrecord_set')
+
+    @property
+    def next_inspection_due(self):
+        inspections = self.inspections
+        _next_inspection_due = None
+        _next_inspection_due_date = None
+        for inspection in inspections:
+            inspection_records = inspection.aircraftinspectionrecord_set.order_by('-inspection_date').all()
+            if not inspection_records:
+                _next_inspection_due = inspection
+                _next_inspection_due_date = datetime_now_utc()
+            else:
+                last_record = inspection_records[0]
+                next_due_date = last_record.inspection_date + (timedelta(days=inspection.interval) if inspection.interval_unit == 'days' else timedelta(hours=inspection.interval))
+                if _next_inspection_due_date is None or next_due_date < _next_inspection_due_date:
+                    _next_inspection_due_date = next_due_date
+                    _next_inspection_due = inspection
+
+        if _next_inspection_due is None:
+            return (inspections[0], datetime_now_utc()) if inspections else None
+        return (_next_inspection_due, _next_inspection_due_date)
+
 
 class Airframe(models.Model):
     total_hours = models.IntegerField(default=0)
@@ -84,24 +112,6 @@ class Airframe(models.Model):
     @property
     def next_inspection_time(self):
         return self.last_inspection_time + timedelta(days=75)
-
-    @classmethod
-    def past_due_count(cls):
-        dt_now = datetime_now_utc()
-        return Airframe.objects.filter(last_inspection_time__lte=dt_now-timedelta(days=75)).count()
-
-    @classmethod
-    def threshold_count(cls):
-        dt_now = datetime_now_utc()
-        return Airframe.objects.filter(
-            last_inspection_time__gte=dt_now-timedelta(days=75), 
-            last_inspection_time__lte=dt_now-timedelta(days=65)
-        ).count()
-
-    @classmethod
-    def coming_due_count(cls):
-        dt_now = datetime_now_utc()
-        return Airframe.objects.filter(last_inspection_time__gte=dt_now-timedelta(days=75-10)).count()
 
 
 class Engine(models.Model):

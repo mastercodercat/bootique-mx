@@ -19,7 +19,13 @@
             </tr>
             <tr>
                 <td>MX Program:&nbsp;&nbsp;</td>
-                <td>{{ aircraft.inspection_program.name }}</td>
+                <td>
+                    {% if aircraft.inspection_program %}
+                        {{ aircraft.inspection_program.name }}
+                    {% else %}
+                        Inspection Program Unassigned. <a href="{% url 'home:aircraft_assign' reg=aircraft.reg %}">Assign</a>
+                    {% endif %}
+                </td>
             </tr>
         </table>
         <div class="btn-group m-t-sm">

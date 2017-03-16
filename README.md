@@ -22,8 +22,14 @@ Initial project configuration:
 
 Load fixures:
 
-Run all the commands:
+Run all the commands in the following order:
+`python manage.py inspection.json`
 `python manage.py aircraft.json`
+`python manage.py aircraft_inspection_record.json`
 `python manage.py airframes.json`
 `python manage.py engines.json`
 `python manage.py propellers.json`
+
+Run test:
+
+`python manage.py test`
