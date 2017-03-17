@@ -7,8 +7,7 @@
             "total_hours": 8163,
             "reported_hours": 8026,
             "reported_landings": 8025,
-            "last_inspection_time": "2016-12-05 10:00:00+00",
-            "time_between_inspections": 720
+            "last_inspection_time": "2016-12-05 10:00:00+00"
         }
     },
     {
@@ -19,8 +18,7 @@
             "total_hours": 6284,
             "reported_hours": 6584,
             "reported_landings": 6241,
-            "last_inspection_time": "2016-12-30 10:00:00+00",
-            "time_between_inspections": 840
+            "last_inspection_time": "2016-12-30 10:00:00+00"
         }
     },
     {
@@ -31,8 +29,7 @@
             "total_hours": 7355,
             "reported_hours": 7363,
             "reported_landings": 7223,
-            "last_inspection_time": "2017-01-05 15:00:00+00",
-            "time_between_inspections": 960
+            "last_inspection_time": "2017-01-05 15:00:00+00"
         }
     },
     {
@@ -43,8 +40,7 @@
             "total_hours": 9265,
             "reported_hours": 9223,
             "reported_landings": 9123,
-            "last_inspection_time": "2017-02-20 12:00:00+00",
-            "time_between_inspections": 600
+            "last_inspection_time": "2017-02-20 12:00:00+00"
         }
     },
     {
@@ -55,8 +51,7 @@
             "total_hours": 2412,
             "reported_hours": 2745,
             "reported_landings": 2122,
-            "last_inspection_time": "2016-10-25 03:30:00+00",
-            "time_between_inspections": 1000
+            "last_inspection_time": "2016-10-25 03:30:00+00"
         }
     }
 ]

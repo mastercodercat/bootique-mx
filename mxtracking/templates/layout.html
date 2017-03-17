@@ -64,12 +64,12 @@
                             <img class="mini-nav-logo" src="{% static "img/gear.png" %}" />
                         </div>
                     </li>
-                    <li class="active" style="border: 0;">
+                    <li style="border: 0;"{% if 'home' == request.resolver_match.namespace %} class="active"{% endif %}>
                         <a href="#">
                             <i class="fa fa-globe"></i> <span class="nav-label">Aircraft</span> <span class="fa arrow"></span>
                         </a>
                         <ul class="nav nav-second-level collapse">
-                            <li{% if '/' == request.path %} class="active" {% endif %}>
+                            <li{% if 'overview' == request.resolver_match.url_name %} class="active" {% endif %}>
                                 <a href="{% url 'home:overview' %}">Overview</a>
                             </li>
                             {% for aircraft_type in aircraft_data %}
@@ -84,6 +84,16 @@
                                     </ul>
                                 </li>
                             {% endfor %}
+                        </ul>
+                    </li>
+                    <li style="border: 0;"{% if 'inspection' == request.resolver_match.namespace %} class="active"{% endif %}>
+                        <a href="#">
+                            <i class="fa fa-gears"></i> <span class="nav-label">Inspection Programs</span>
+                        </a>
+                        <ul class="nav nav-second-level collapse">
+                            <li{% if 'index' == request.resolver_match.url_name %} class="active" {% endif %}>
+                                <a href="{% url 'inspection:index' %}">Overview</a>
+                            </li>
                         </ul>
                     </li>
                 </ul>

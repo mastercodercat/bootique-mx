@@ -1,0 +1,57 @@
+{% extends "layout.html" %}
+{% load staticfiles %}
+
+{% block head_title %}{{ inspection_program.name }}{% endblock %}
+
+{% block page_title %}
+    {{ inspection_program.name }}
+{% endblock %}
+
+{% block breadcrumb %}
+    <ol class="breadcrumb">
+        <li>
+            <a href="{% url 'inspection:index' %}">Inspection Programs</a>
+        </li>
+        <li class="active">
+            <strong>{{ inspection_program.name }}</strong>
+        </li>
+    </ol>
+{% endblock %}
+
+{% block content %}
+    <div class="ibox">
+        <div class="ibox-title">
+            <h3>Inspections</h3>
+        </div>
+        <div class="ibox-content">
+            <div class="m-b">
+                <a href="{% url 'inspection:create_inspection' program_id=inspection_program.id %}" class="btn btn-w-m btn-primary">Create Inspection</a>
+            </div>
+            <table id="inspection-program-inspections-table" class="datatable table table-stripped toggle-arrow-tiny"
+                data-name="inspection_program_inspections_table"
+                data-default-sort-column="1"
+                data-selectable="true">
+                <thead>
+                    <tr>
+                        <th data-sortable="false"><input type="checkbox" class="select-all"></th>
+                        <th>Name</th>
+                        <th>Target</th>
+                        <th>Interval</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for inspection in inspection_program.inspection_set.all %}
+                        <tr>
+                            <td></td>
+                            <td>
+                                <a href="#">{{ inspection.name }}</a>
+                            </td>
+                            <td>{{ inspection.target_name }}</td>
+                            <td>{{ inspection.interval }} {{ inspection.interval_unit }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}

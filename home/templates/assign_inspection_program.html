@@ -1,5 +1,6 @@
 {% extends "layout.html" %}
 {% load staticfiles %}
+{% load addclass %}
 
 {% block head_title %}Assign Inspection Program{% endblock %}
 
@@ -31,7 +32,12 @@
                 <div class="col-md-4 col-sm-8 col-xs-12">
                     <form action="" method="POST">
                         {% csrf_token %}
-                        {{ form.inspection_program }}
+                        {% for field in form %}
+                            <div class="form-group">
+                                {{ field.errors }}
+                                {{ field.label_tag }} {{ field | addclass:'form-control' }}
+                            </div>
+                        {% endfor %}
                         <button class="btn btn-primary" type="submit">Assign</button>
                     </form>
                 </div>

@@ -1,20 +1,20 @@
 [
     {
-        "model": "home.inspectionprogram",
+        "model": "inspection.inspectionprogram",
         "pk": 1,
         "fields": {
             "name": "Inspection Program No. 1"
         }
     },
     {
-        "model": "home.inspectionprogram",
+        "model": "inspection.inspectionprogram",
         "pk": 2,
         "fields": {
             "name": "Inspection Program Advanced"
         }
     },
     {
-        "model": "home.inspection",
+        "model": "inspection.inspection",
         "pk": 1,
         "fields": {
             "name": "Airframe State Check",
@@ -25,7 +25,7 @@
         }
     },
     {
-        "model": "home.inspection",
+        "model": "inspection.inspection",
         "pk": 2,
         "fields": {
             "name": "Engine Blade Check",
@@ -36,7 +36,7 @@
         }
     },
     {
-        "model": "home.inspection",
+        "model": "inspection.inspection",
         "pk": 3,
         "fields": {
             "name": "Engine Fuel Pipe Check",
@@ -47,7 +47,7 @@
         }
     },
     {
-        "model": "home.inspection",
+        "model": "inspection.inspection",
         "pk": 4,
         "fields": {
             "name": "Propeller Surface Check",
@@ -58,7 +58,7 @@
         }
     },
     {
-        "model": "home.inspection",
+        "model": "inspection.inspection",
         "pk": 5,
         "fields": {
             "name": "Propeller Axis Check",
@@ -69,7 +69,7 @@
         }
     },
     {
-        "model": "home.inspection",
+        "model": "inspection.inspection",
         "pk": 6,
         "fields": {
             "name": "Airframe State & Surface Check",
@@ -80,7 +80,7 @@
         }
     },
     {
-        "model": "home.inspection",
+        "model": "inspection.inspection",
         "pk": 7,
         "fields": {
             "name": "Engine System Check",
@@ -91,7 +91,7 @@
         }
     },
     {
-        "model": "home.inspection",
+        "model": "inspection.inspection",
         "pk": 8,
         "fields": {
             "name": "Propeller Airflow Test",

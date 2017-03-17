@@ -9,7 +9,7 @@ To run the project:
 
 - Activate virtual environment
 - Go to project root directory
-- Run `python manage.py makemigrations` to create migrations
+- Run `python manage.py makemigrations inspection home` to create migrations
 - Run `python manage.py migrate` to migrate database
 - Run `python manage.py runserver` to run project
 
@@ -23,12 +23,12 @@ Initial project configuration:
 Load fixures:
 
 Run all the commands in the following order:
-`python manage.py inspection.json`
-`python manage.py aircraft.json`
-`python manage.py aircraft_inspection_record.json`
-`python manage.py airframes.json`
-`python manage.py engines.json`
-`python manage.py propellers.json`
+`python manage.py loaddata inspection.json`
+`python manage.py loaddata aircraft.json`
+`python manage.py loaddata aircraft_inspection_record.json`
+`python manage.py loaddata airframes.json`
+`python manage.py loaddata engines.json`
+`python manage.py loaddata propellers.json`
 
 Run test:
 

@@ -1,5 +1,6 @@
 from django import forms
-from home.models import InspectionProgram
+
+from inspection.models import InspectionProgram
 
 
 class AssignInspectionProgramForm(forms.Form):
@@ -12,7 +13,3 @@ class AssignInspectionProgramForm(forms.Form):
 
     class Meta:
         fields = ('inspection_program',)
-
-    def __init__(self, *args, **kwargs):
-        super(AssignInspectionProgramForm, self).__init__(*args, **kwargs)
-        self.fields['inspection_program'].widget.attrs['class'] = 'select2 m-b'

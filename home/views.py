@@ -8,10 +8,6 @@ from home.helpers import is_past_due, is_within_threshold
 
 
 @login_required
-def index(request):
-    return render(request, 'test.html')
-
-@login_required
 def overview(request):
     aircrafts = Aircraft.objects.all().select_related('airframe')
 
@@ -44,7 +40,7 @@ def aircraft_details(request, reg=''):
     context = {
         'aircraft': aircraft,
     }
-    return render(request, 'aircraft/details.html', context)
+    return render(request, 'details.html', context)
 
 @login_required
 def aircraft_task_list(request, reg=''):
@@ -53,7 +49,7 @@ def aircraft_task_list(request, reg=''):
     context = {
         'aircraft': aircraft,
     }
-    return render(request, 'aircraft/task_list.html', context)
+    return render(request, 'task_list.html', context)
 
 @login_required
 def aircraft_mels(request, reg=''):
@@ -62,7 +58,7 @@ def aircraft_mels(request, reg=''):
     context = {
         'aircraft': aircraft,
     }
-    return render(request, 'aircraft/mels.html', context)
+    return render(request, 'mels.html', context)
 
 # maybe temporary
 @login_required
@@ -80,4 +76,4 @@ def aircraft_assign_program(request, reg=''):
         'aircraft': aircraft,
         'form': form,
     }
-    return render(request, 'aircraft/assign_inspection_program.html', context)
+    return render(request, 'assign_inspection_program.html', context)

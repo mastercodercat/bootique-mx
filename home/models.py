@@ -5,6 +5,7 @@ from django.contrib.auth.models import User
 from datetime import datetime, timedelta
 
 from home.helpers import datetime_now_utc
+from inspection.models import *
 
 
 class UserProfile(models.Model):
@@ -56,8 +57,8 @@ class Aircraft(models.Model):
     model = models.CharField(max_length=20)
     reported_date = models.DateTimeField(blank=True)
 
-    type = models.ForeignKey('AircraftType', null=True, blank=False)
-    inspection_program = models.ForeignKey('InspectionProgram', null=True, blank=False)
+    type = models.ForeignKey(AircraftType, null=True, blank=False)
+    inspection_program = models.ForeignKey(InspectionProgram, null=True, blank=False)
 
     class Meta:
         db_table = 'aircraft'
@@ -100,7 +101,7 @@ class Airframe(models.Model):
     reported_landings = models.IntegerField(default=0)
     last_inspection_time = models.DateTimeField(null=True, blank=True)
 
-    aircraft = models.OneToOneField('Aircraft', null=True, blank=False)
+    aircraft = models.OneToOneField(Aircraft, null=True, blank=False)
 
     class Meta:
         db_table = 'airframe'
@@ -122,7 +123,7 @@ class Engine(models.Model):
     last_overhaul_time = models.DateTimeField(blank=True)
     tbo = models.IntegerField(default=0, null=True, blank=True)
 
-    aircraft = models.ForeignKey('Aircraft', null=True, blank=False)
+    aircraft = models.ForeignKey(Aircraft, null=True, blank=False)
 
     class Meta:
         db_table = 'engine'
@@ -135,7 +136,7 @@ class Engine(models.Model):
 class Propeller(models.Model):
     last_inspection_time = models.DateTimeField(blank=True)
 
-    aircraft = models.ForeignKey('Aircraft', null=True, blank=False)
+    aircraft = models.ForeignKey(Aircraft, null=True, blank=False)
 
     class Meta:
         db_table = 'propeller'
@@ -145,40 +146,9 @@ class Propeller(models.Model):
         return self.last_inspection_time + timedelta(days=90)
 
 
-class Inspection(models.Model):
-    name = models.CharField(max_length=100, blank=True)
-    INSPECTION_TARGET_CHOICES = (
-        (1, 'Aircraft'),
-        (2, 'Airframe'),
-        (3, 'Engine'),
-        (4, 'Propeller'),
-    )
-    target = models.IntegerField(default=1, choices=INSPECTION_TARGET_CHOICES)
-    interval = models.IntegerField(default=0)
-    interval_unit = models.CharField(max_length=10, default='hours')
-
-    inspection_program = models.ForeignKey('InspectionProgram', null=True, blank=False)
-
-    class Meta:
-        db_table = 'inspection'
-
-    def __unicode__(self):
-        return self.name
-
-
-class InspectionProgram(models.Model):
-    name = models.CharField(max_length=100, blank=True)
-
-    class Meta:
-        db_table = 'inspection_program'
-
-    def __unicode__(self):
-        return self.name
-
-
 class AircraftInspectionRecord(models.Model):
-    aircraft = models.ForeignKey('Aircraft', null=True, blank=False)
-    inspection = models.ForeignKey('Inspection', null=True, blank=False)
+    aircraft = models.ForeignKey(Aircraft, null=True, blank=False)
+    inspection = models.ForeignKey(Inspection, null=True, blank=False)
 
     target = models.CharField(max_length=1, choices=Inspection.INSPECTION_TARGET_CHOICES) # redundance field of inspection.target for performance
     inspection_date = models.DateTimeField(blank=True)

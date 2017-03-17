@@ -1,0 +1,52 @@
+{% extends "layout.html" %}
+{% load staticfiles %}
+
+{% block head_title %}Inspection Programs{% endblock %}
+
+{% block page_title %}
+    Inspection Programs
+{% endblock %}
+
+{% block breadcrumb %}
+    <ol class="breadcrumb">
+        <li class="active">
+            <strong>Inspection Programs</strong>
+        </li>
+    </ol>
+{% endblock %}
+
+{% block content %}
+    <div class="ibox">
+        <div class="ibox-title">
+            <h3>Inspection Programs List</h3>
+        </div>
+        <div class="ibox-content">
+            <div class="m-b">
+                <a href="{% url 'inspection:create_inspection_program' %}" class="btn btn-w-m btn-primary">Create Inspection Program</a>
+            </div>
+            <table id="inspection-program-table" class="datatable table table-stripped toggle-arrow-tiny"
+                data-name="inspection_program_table"
+                data-default-sort-column="1"
+                data-selectable="true">
+                <thead>
+                    <tr>
+                        <th data-sortable="false"><input type="checkbox" class="select-all"></th>
+                        <th>Name</th>
+                        <th>Inspection Count</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for inspection_program in inspection_programs %}
+                        <tr>
+                            <td></td>
+                            <td>
+                                <a href="{% url 'inspection:inspection_program_details' program_id=inspection_program.id %}">{{ inspection_program.name }}</a>
+                            </td>
+                            <td>{{ inspection_program.inspection_set.count }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}
