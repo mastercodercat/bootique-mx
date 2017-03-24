@@ -7,7 +7,14 @@ from routeplanning.forms import *
 
 @login_required
 def index(request):
-    return render(request, 'index_rp.html')
+    tails = Tail.objects.all()
+    lines = Line.objects.all()
+
+    context = {
+        'tails': tails,
+        'lines': lines,
+    }
+    return render(request, 'index_rp.html', context)
 
 @login_required
 def add_tail(request):

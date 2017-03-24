@@ -1,0 +1,63 @@
+.date-range-picker-group {
+    .component-wrapper {
+        display: inline-block;
+        max-width: 200px;
+        vertical-align: top;
+    }
+}
+
+.h-scroll-wrapper {
+    overflow-x: auto;
+    overflow-y: visible;
+}
+
+.gantt {
+    min-width: 600px;
+
+    .unit-control {
+        float: left;
+    }
+    .date-range-control {
+        float: right;
+    }
+    .btn-circle-xs {
+        width: 20px;
+        height: 20px;
+        padding: 0;
+        display: inline-block;
+        border-radius: 999px;
+        text-align: center;
+        font-size: 12px;
+        line-height: 20px;
+    }
+    .table-wrapper {
+        background: #fff;
+    }
+    .gantt-table {
+        .head td {
+            border-top: 0;
+            vertical-align: middle;
+        }
+        td {
+            text-align: center;
+        }
+        td.label-cell,
+        td.axis-cell {
+            text-align: left;
+            width: 1%;
+            white-space: nowrap;
+            padding: 5px 15px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        td.axis-cell.tail {
+            background: $nav-bg;
+            color: #fff;
+        }
+        td.axis-cell.line {
+            background: $dark-gray;
+            border-top-color: $dark-gray;
+            color: $label-badget-color;
+        }
+    }
+}

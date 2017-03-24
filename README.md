@@ -33,3 +33,8 @@ Run all the commands in the following order:
 Run test:
 
 `python manage.py test`
+
+Recompile SCSS:
+
+- Run `python manage.py compress` to build and compress SCSS files
+- Restart django
