@@ -15,6 +15,7 @@ Including another URLconf
 """
 from django.conf.urls import include, url
 from django.contrib import admin
+from django.views.generic.base import RedirectView
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
@@ -22,4 +23,5 @@ urlpatterns = [
     url(r'^aircraft/', include('home.urls', namespace='home')),
     url(r'^inspectionprogram/', include('inspection.urls', namespace='inspection')),
     url(r'^routeplanning/', include('routeplanning.urls', namespace='routeplanning')),
+    url(r'^$', RedirectView.as_view(url='aircraft/', permanent=False), name='index'),
 ]
