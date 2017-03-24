@@ -1,5 +1,7 @@
 from django.conf.urls import url
+
 from inspection import views
+
 
 urlpatterns = [
     url(r'^create/*$', views.create_inspection_program, name='create_inspection_program'),

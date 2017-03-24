@@ -67,10 +67,11 @@ def aircraft_assign_program(request, reg=''):
     form = AssignInspectionProgramForm(request.POST or {
         'inspection_program': aircraft.inspection_program
     })
-    if form.is_valid():
-        inspection_program = form.cleaned_data.get('inspection_program')
-        aircraft.inspection_program = inspection_program
-        aircraft.save()
+    if request.method == 'POST':
+        if form.is_valid():
+            inspection_program = form.cleaned_data.get('inspection_program')
+            aircraft.inspection_program = inspection_program
+            aircraft.save()
 
     context = {
         'aircraft': aircraft,

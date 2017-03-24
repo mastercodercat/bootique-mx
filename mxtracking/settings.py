@@ -30,6 +30,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'home',
     'inspection',
+    'routeplanning',
+    # Django Compressor
     'compressor',
     # Allauth
     'django.contrib.sites',

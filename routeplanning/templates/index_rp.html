@@ -1,0 +1,28 @@
+{% extends "layout.html" %}
+{% load staticfiles %}
+
+{% block head_title %}Route Planning Gantt{% endblock %}
+
+{% block page_title %}
+    Route Planning Gantt
+{% endblock %}
+
+{% block breadcrumb %}
+    <ol class="breadcrumb">
+        <li class="active">
+            <strong>Route Planning Gantt</strong>
+        </li>
+    </ol>
+{% endblock %}
+
+{% block content %}
+    <div class="ibox">
+        <div class="ibox-title">
+            <h3>Route Planning Gantt</h3>
+        </div>
+        <div class="ibox-content">
+            <a href="{% url 'routeplanning:add_tail' %}">Add Tail</a>
+            <a href="{% url 'routeplanning:add_line' %}">Add Line</a>
+        </div>
+    </div>
+{% endblock %}

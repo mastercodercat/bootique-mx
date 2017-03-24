@@ -10,7 +10,6 @@
 
 {% block breadcrumb %}
     <ol class="breadcrumb">
-        <ol class="breadcrumb">
         <li>
             <a href="{% url 'inspection:index' %}">Inspection Programs</a>
         </li>
@@ -20,7 +19,6 @@
         <li class="active">
             <strong>Create Inspection</strong>
         </li>
-    </ol>
     </ol>
 {% endblock %}
 
@@ -32,15 +30,20 @@
         <div class="ibox-content">
             <div class="row">
                 <div class="col-md-4 col-sm-8 col-xs-12">
-                    <form action="" method="POST">
+                    <form class="form-horizontal" action="" method="POST">
                         {% csrf_token %}
                         {% for field in form %}
                             <div class="form-group">
-                                {{ field.errors }}
-                                {{ field.label_tag }} {{ field | addclass:'form-control' }}
+                                <label class="col-sm-4" for="{{ field.name }}">{{ field.label }}</label>
+                                <div class="col-sm-8">
+                                    {{ field.errors }}
+                                    {{ field | addclass:'form-control' }}
+                                </div>
                             </div>
                         {% endfor %}
-                        <button class="btn btn-primary" type="submit">Create</button>
+                        <div class="text-right m-t-lg">
+                            <button class="btn btn-primary" type="submit">Create</button>
+                        </div>
                     </form>
                 </div>
             </div>

@@ -26,9 +26,10 @@ def inspection_program_details(request, program_id=None):
 @login_required
 def create_inspection_program(request):
     form = InspectionProgramForm(request.POST or None)
-    if form.is_valid():
-        form.save()
-        return redirect('inspection:index')
+    if request.method == 'POST':
+        if form.is_valid():
+            form.save()
+            return redirect('inspection:index')
 
     context = {
         'form': form,
@@ -40,11 +41,12 @@ def create_inspection(request, program_id=None):
     inspection_program = get_object_or_404(InspectionProgram, pk=program_id)
 
     form = InspectionForm(request.POST or None)
-    if form.is_valid():
-        inspection = form.save()
-        inspection.inspection_program = inspection_program
-        inspection.save()
-        return redirect('inspection:inspection_program_details', program_id=program_id)
+    if request.method == 'POST':
+        if form.is_valid():
+            inspection = form.save()
+            inspection.inspection_program = inspection_program
+            inspection.save()
+            return redirect('inspection:inspection_program_details', program_id=program_id)
 
     context = {
         'form': form,
