@@ -1,0 +1,27 @@
+[
+    {
+        "model": "routeplanning.line",
+        "pk": 1,
+        "fields": {
+            "name": "LAX-MCE"
+        }
+    },
+    {
+        "model": "routeplanning.linepart",
+        "pk": 1,
+        "fields": {
+            "line": 1,
+            "name": "LAX",
+            "number": 1
+        }
+    },
+    {
+        "model": "routeplanning.linepart",
+        "pk": 2,
+        "fields": {
+            "line": 1,
+            "name": "MCE",
+            "number": 2
+        }
+    }
+]
