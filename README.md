@@ -9,7 +9,7 @@ To run the project:
 
 - Activate virtual environment
 - Go to project root directory
-- Run `python manage.py makemigrations inspection home` to create migrations
+- Run `python manage.py makemigrations inspection home routeplanning` to create migrations
 - Run `python manage.py migrate` to migrate database
 - Run `python manage.py runserver` to run project
 
@@ -29,6 +29,9 @@ Run all the commands in the following order:
 `python manage.py loaddata airframes.json`
 `python manage.py loaddata engines.json`
 `python manage.py loaddata propellers.json`
+`python manage.py loaddata tails.json`
+`python manage.py loaddata lines.json`
+`python manage.py loaddata flights.json`
 
 Run test:
 

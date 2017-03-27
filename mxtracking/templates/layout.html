@@ -64,7 +64,7 @@
                             <img class="mini-nav-logo" src="{% static "img/gear.png" %}" />
                         </div>
                     </li>
-                    <li style="border: 0;"{% if 'home' == request.resolver_match.namespace %} class="active"{% endif %}>
+                    <li{% if 'home' == request.resolver_match.namespace %} class="active"{% endif %}>
                         <a href="#">
                             <i class="fa fa-globe"></i> <span class="nav-label">Aircraft</span> <span class="fa arrow"></span>
                         </a>
@@ -86,7 +86,7 @@
                             {% endfor %}
                         </ul>
                     </li>
-                    <li style="border: 0;"{% if 'inspection' == request.resolver_match.namespace %} class="active"{% endif %}>
+                    <li{% if 'inspection' == request.resolver_match.namespace %} class="active"{% endif %}>
                         <a href="#">
                             <i class="fa fa-gears"></i> <span class="nav-label">Inspection Programs</span> <span class="fa arrow"></span>
                         </a>
@@ -96,7 +96,7 @@
                             </li>
                         </ul>
                     </li>
-                    <li style="border: 0;"{% if 'routeplanning' == request.resolver_match.namespace %} class="active"{% endif %}>
+                    <li{% if 'routeplanning' == request.resolver_match.namespace %} class="active"{% endif %}>
                         <a href="{% url 'routeplanning:index' %}">
                             <i class="fa fa-binoculars"></i> <span class="nav-label">Route Planning Gantt</span>
                         </a>

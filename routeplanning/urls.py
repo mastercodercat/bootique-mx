@@ -8,5 +8,6 @@ urlpatterns = [
     url(r'^tail/(?P<tail_id>[0-9]+)/*$', views.edit_tail, name='edit_tail'),
     url(r'^line/add/*$', views.add_line, name='add_line'),
     url(r'^line/(?P<line_id>[0-9]+)/*$', views.edit_line, name='edit_line'),
+    url(r'^api/loaddata/*$', views.api_load_data, name='api_load_data'),
     url(r'^$', views.index, name='index'),
 ]

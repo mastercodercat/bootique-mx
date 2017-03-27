@@ -32,32 +32,68 @@
     }
     .table-wrapper {
         background: #fff;
+        display: inline-block;
     }
     .gantt-table {
-        .head td {
+        width: 100%;
+        max-width: none;
+        background-color: #fff;
+
+        tr.head td {
             border-top: 0;
             vertical-align: middle;
         }
+        tr.head.units td {
+            padding: 5px 0 !important;
+            min-width: 40px;
+        }
         td {
             text-align: center;
+            border: 1px solid $border-color;
+            padding: 8px 10px;
+            position: relative;
+            &.label-cell,
+            &.axis-cell {
+                text-align: left;
+                width: 1%;
+                white-space: nowrap;
+                padding: 5px 15px;
+                font-size: 14px;
+                font-weight: 600;
+            }
+            &.axis-cell.tail {
+                background: $nav-bg;
+                color: #fff;
+            }
+            &.axis-cell.line {
+                background: $dark-gray;
+                border-top-color: $dark-gray;
+                color: $label-badget-color;
+            }
         }
-        td.label-cell,
-        td.axis-cell {
-            text-align: left;
-            width: 1%;
-            white-space: nowrap;
-            padding: 5px 15px;
-            font-size: 14px;
-            font-weight: 600;
-        }
-        td.axis-cell.tail {
-            background: $nav-bg;
+        .bar {
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            background-color: $blue;
             color: #fff;
-        }
-        td.axis-cell.line {
-            background: $dark-gray;
-            border-top-color: $dark-gray;
-            color: $label-badget-color;
+            border-radius: 3px;
+            text-align: center;
+            &.pos-0-4,
+            &.pos-0-2 {
+                left: 0;
+            }
+            &.pos-1-4 {
+                left: 25%;
+            }
+            &.pos-2-4,
+            &.pos-1-2 {
+                left: 50%;
+            }
+            &.pos-3-4 {
+                left: 75%;
+            }
         }
     }
 }

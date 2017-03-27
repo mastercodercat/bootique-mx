@@ -53,102 +53,75 @@
                     </div>
                 </div>
             </div>
-            <div class="table-wrapper m-b-md"><!-- Tails table -->
-                <table id="tails-table" class="table gantt-table">
-                    <tbody>
-                        <tr class="head days">
-                            <td class="label-cell" rowspan="2">
-                                <a href="{% url 'routeplanning:add_tail' %}" class="btn btn-primary btn-circle-xs" type="button">
-                                    <i class="fa fa-plus"></i>
-                                </a>
-                                Tails
-                            </td>
-                            <td colspan="4">Sun 3/5/2017</td>
-                            <td colspan="4">Mon 4/5/2017</td>
-                            <td colspan="4">Tue 5/5/2017</td>
-                        </tr>
-                        <tr class="head units">
-                            <td>0</td>
-                            <td>6</td>
-                            <td>12</td>
-                            <td>18</td>
-                            <td>0</td>
-                            <td>6</td>
-                            <td>12</td>
-                            <td>18</td>
-                            <td>0</td>
-                            <td>6</td>
-                            <td>12</td>
-                            <td>18</td>
-                        </tr>
-                        {% for tail in tails %}
-                            <tr>
-                                <td class="axis-cell tail">{{ tail.number }}</td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                            </tr>
+            <!-- Tails table -->
+            <table id="flight-assignment-table" class="table gantt-table m-b-md">
+                <tbody>
+                    <tr class="head days">
+                        <td class="label-cell" rowspan="2">
+                            <a href="{% url 'routeplanning:add_tail' %}" class="btn btn-primary btn-circle-xs" type="button">
+                                <i class="fa fa-plus"></i>
+                            </a>
+                            Tails
+                        </td>
+                        {% for big_unit in big_units %}
+                            <td colspan="{{ big_unit_colspan }}">{{ big_unit }}</td>
                         {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-            <div class="table-wrapper m-b-md"><!-- Lines table -->
-                <table id="lines-table" class="table gantt-table">
-                    <tbody>
-                        <tr class="head days">
-                            <td class="label-cell" rowspan="2">
-                                <a href="{% url 'routeplanning:add_line' %}" class="btn btn-primary btn-circle-xs" type="button">
-                                    <i class="fa fa-plus"></i>
-                                </a>
-                                Lines
-                            </td>
-                            <td colspan="4">Sun 3/5/2017</td>
-                            <td colspan="4">Mon 4/5/2017</td>
-                            <td colspan="4">Tue 5/5/2017</td>
-                        </tr>
-                        <tr class="head units">
-                            <td>0</td>
-                            <td>6</td>
-                            <td>12</td>
-                            <td>18</td>
-                            <td>0</td>
-                            <td>6</td>
-                            <td>12</td>
-                            <td>18</td>
-                            <td>0</td>
-                            <td>6</td>
-                            <td>12</td>
-                            <td>18</td>
-                        </tr>
-                        {% for line in lines %}
-                            <tr>
-                                <td class="axis-cell line">{{ line.name }}</td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                            </tr>
+                    </tr>
+                    <tr class="head units">
+                        {% for small_unit in small_units %}
+                            <td>{{ small_unit }}</td>
                         {% endfor %}
-                    </tbody>
-                </table>
-            </div>
+                    </tr>
+                    {% for tail in tails %}
+                        <tr>
+                            <td class="axis-cell tail">{{ tail.number }}</td>
+                            {% for small_unit in small_units %}
+                                <td></td>
+                            {% endfor %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <!-- Lines table -->
+            <table id="flight-template-table" class="table gantt-table m-b-md">
+                <tbody>
+                    <tr class="head days">
+                        <td class="label-cell" rowspan="2">
+                            <a href="{% url 'routeplanning:add_line' %}" class="btn btn-primary btn-circle-xs" type="button">
+                                <i class="fa fa-plus"></i>
+                            </a>
+                            Lines
+                        </td>
+                        {% for big_unit in big_units %}
+                            <td colspan="{{ big_unit_colspan }}">{{ big_unit }}</td>
+                        {% endfor %}
+                    </tr>
+                    <tr class="head units">
+                        {% for small_unit in small_units %}
+                            <td>{{ small_unit }}</td>
+                        {% endfor %}
+                    </tr>
+                    {% for line in lines %}
+                        <tr>
+                            <td class="axis-cell line">{{ line.name }}</td>
+                            {% for small_unit in small_units %}
+                                <td></td>
+                            {% endfor %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
     </div>
+{% endblock %}
+
+{% block pagejs %}
+    <script src="{% static "js/gantt.js" %}"></script>
+    <script type="text/javascript">
+        var gantt = new RoutePlanningGantt(
+            $('#flight-assignment-table'),
+            $('#flight-template-table'),
+            "{% url 'routeplanning:api_load_data' %}"
+        );
+    </script>
 {% endblock %}
