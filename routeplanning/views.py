@@ -14,9 +14,9 @@ def index(request):
     tails = Tail.objects.all()
     lines = Line.objects.all()
 
-    days = 3
+    days = 1
     hours = 24
-    units_per_hour = 1
+    units_per_hour = 4
 
     start_time = datetime_now_utc() - timedelta(days=5)
     start_time.replace(hour=0, minute=0, second=0, microsecond=0)
@@ -44,6 +44,9 @@ def index(request):
         'days': days,
         'hours': hours,
         'big_unit_colspan': units_per_hour if units_per_hour > 1 else hours,
+        'start_time': (start_time.replace(tzinfo=None) - datetime(1970, 1, 1)).total_seconds(),
+        'days': days,
+        'units_per_hour': units_per_hour,
     }
     return render(request, 'index_rp.html', context)
 
@@ -182,6 +185,8 @@ def api_load_data(request):
                 'destination': flight.destination,
                 'departure_time': flight.departure_time,
                 'arrival_time': flight.arrival_time,
+                'weekly_availability': flight.weekly_availability,
+                'line_id': flight.line.id,
             }
             template_data.append(flight_data)
 

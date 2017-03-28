@@ -80,20 +80,21 @@
             color: #fff;
             border-radius: 3px;
             text-align: center;
-            &.pos-0-4,
-            &.pos-0-2 {
-                left: 0;
-            }
-            &.pos-1-4 {
-                left: 25%;
-            }
-            &.pos-2-4,
-            &.pos-1-2 {
-                left: 50%;
-            }
-            &.pos-3-4 {
-                left: 75%;
+            padding-top: 5px;
+            z-index: 1;
+            cursor: move;
+            &.assigned {
+                background-color: #999;
             }
         }
+        #bar-placeholder {
+            position: absolute;
+            top: 0;
+            background-color: rgba(200, 200, 200, 0.5);
+            border-radius: 3px;
+        }
+    }
+    .prototype {
+        display: none;
     }
 }

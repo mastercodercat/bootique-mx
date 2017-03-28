@@ -147,7 +147,6 @@
                 {% endblock %}
             </div>
         </div>
-        {% block pagejs %}{% endblock %}
     </div>
 
 
@@ -178,6 +177,8 @@
 
     <!-- Automatic initialization of datatables -->
     <script src="{% static "js/datatables.js" %}"></script>
+
+    {% block pagejs %}{% endblock %}
 
     <!-- <script>
     function makeCache() {

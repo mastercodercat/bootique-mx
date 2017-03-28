@@ -53,6 +53,10 @@
                     </div>
                 </div>
             </div>
+            <!-- Bar prototype -->
+            <div class="bar prototype">
+                <span class="number"></span>
+            </div>
             <!-- Tails table -->
             <table id="flight-assignment-table" class="table gantt-table m-b-md">
                 <tbody>
@@ -102,7 +106,7 @@
                         {% endfor %}
                     </tr>
                     {% for line in lines %}
-                        <tr>
+                        <tr data-line="{{ line.id }}">
                             <td class="axis-cell line">{{ line.name }}</td>
                             {% for small_unit in small_units %}
                                 <td></td>
@@ -118,10 +122,25 @@
 {% block pagejs %}
     <script src="{% static "js/gantt.js" %}"></script>
     <script type="text/javascript">
-        var gantt = new RoutePlanningGantt(
-            $('#flight-assignment-table'),
-            $('#flight-template-table'),
-            "{% url 'routeplanning:api_load_data' %}"
-        );
+        var startDate = new Date({{ start_time }} * 1000);
+        startDate.setHours(0);
+        startDate.setMinutes(0);
+        startDate.setSeconds(0);
+        startDate.setMilliseconds(0);
+        var endDate = new Date(startDate.getTime());
+        endDate.setDate(endDate.getDate() + {{ days }} - 1);
+        endDate.setHours(23);
+        endDate.setMinutes(59);
+        endDate.setSeconds(59);
+        endDate.setMilliseconds(0);
+        var unit = 3600 / {{ units_per_hour }};
+        var gantt = new RoutePlanningGantt({
+            flightAssignmentTable: $('#flight-assignment-table'),
+            flightTemplateTable: $('#flight-template-table'),
+            loadDataAPIUrl: "{% url 'routeplanning:api_load_data' %}",
+            startDate: startDate,
+            endDate: endDate,
+            unit: unit,
+        });
     </script>
 {% endblock %}

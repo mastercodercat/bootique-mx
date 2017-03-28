@@ -53,3 +53,14 @@ class Flight(models.Model):
             if self.is_available_on_weekday(weekday):
                 return True
         return False
+
+
+class FlightAssignment(models.Model):
+    flight_number = models.IntegerField(default=0, null=False, blank=False)
+    departure_datetime = models.DateTimeField(null=False, blank=False)
+
+    flight = models.ForeignKey(Flight, null=True, blank=False)
+    tail = models.ForeignKey(Tail, null=True, blank=False)
+
+    def __unicode__(self):
+        return str(flight_number) + ' Assignment'
