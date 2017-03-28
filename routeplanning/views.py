@@ -11,15 +11,36 @@ from home.helpers import datetime_now_utc
 
 @login_required
 def index(request):
+    mode = request.GET.get('mode') if request.GET.get('mode') else '1'
+    start_tmstmp = request.GET.get('start')
+    end_tmstmp = request.GET.get('end')
+
     tails = Tail.objects.all()
     lines = Line.objects.all()
 
-    days = 1
-    hours = 24
-    units_per_hour = 4
+    days_options = { '1': 1, '2': 1, '3': 1, '4': 1, '5': 3, '6': 7, }
+    hours_options = { '1': 3, '2': 6, '3': 12, '4': 24, '5': 24, '6': 24, }
+    units_per_hour_options = { '1': 4, '2': 2, '3': 1, '4': 1, '5': 1, '6': 1, }
 
-    start_time = datetime_now_utc() - timedelta(days=5)
-    start_time.replace(hour=0, minute=0, second=0, microsecond=0)
+    days = days_options[mode]
+    hours = hours_options[mode]
+    units_per_hour = units_per_hour_options[mode]
+
+    if start_tmstmp:
+        start_time = datetime.fromtimestamp(float(start_tmstmp))
+    else:
+        start_time = datetime_now_utc()
+        start_time.replace(hour=0, minute=0, second=0, microsecond=0)
+        start_tmstmp = int((start_time.replace(tzinfo=None) - datetime(1970, 1, 1)).total_seconds())
+
+    if start_tmstmp and end_tmstmp:
+        end_time = datetime.fromtimestamp(float(end_tmstmp))
+        diff_days = int((end_time - start_time).total_seconds() / 3600)
+        days = diff_days if days > diff_days else days
+        days = 1 if days < 1 else days
+
+    end_time = start_time + timedelta(days=days)
+    end_tmstmp = int((end_time.replace(tzinfo=None) - datetime(1970, 1, 1)).total_seconds())
 
     if units_per_hour > 1:
         big_units = list()
@@ -44,9 +65,13 @@ def index(request):
         'days': days,
         'hours': hours,
         'big_unit_colspan': units_per_hour if units_per_hour > 1 else hours,
-        'start_time': (start_time.replace(tzinfo=None) - datetime(1970, 1, 1)).total_seconds(),
         'days': days,
         'units_per_hour': units_per_hour,
+        'mode': mode,
+        'start_time': start_time,
+        'end_time': end_time,
+        'start_tmstmp': start_tmstmp,
+        'end_tmstmp': end_tmstmp,
     }
     return render(request, 'index_rp.html', context)
 

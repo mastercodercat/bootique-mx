@@ -16,40 +16,43 @@
 {% endblock %}
 
 {% block content %}
-    <!-- <div class="ibox">
-        <div class="ibox-title">
-            <h3>Route Planning Gantt</h3>
-        </div>
-        <div class="ibox-content">
-            <a href="{% url 'routeplanning:add_tail' %}">Add Tail</a>
-            <a href="{% url 'routeplanning:add_line' %}">Add Line</a>
-        </div>
-    </div> -->
     <div class="h-scroll-wrapper">
         <div class="gantt">
             <div class="clearfix m-b-md"><!-- Top controls -->
                 <div class="unit-control btn-group">
-                    <button class="btn btn-white" type="button">1 Hour</button>
-                    <button class="btn btn-white" type="button">3 Hours</button>
-                    <button class="btn btn-white" type="button">6 Hours</button>
-                    <button class="btn btn-white" type="button">12 Hours</button>
-                    <button class="btn btn-white" type="button">24 Hours</button>
-                    <button class="btn btn-white" type="button">3 Days</button>
-                    <button class="btn btn-white" type="button">7 Days</button>
+                    <a class="btn btn-white{% if mode == '1' %} active{% endif %}"
+                        href="{% url 'routeplanning:index' %}?mode=1&start={{ start_tmstmp }}">3 Hours</a>
+                    <a class="btn btn-white{% if mode == '2' %} active{% endif %}"
+                        href="{% url 'routeplanning:index' %}?mode=2&start={{ start_tmstmp }}">6 Hours</a>
+                    <a class="btn btn-white{% if mode == '3' %} active{% endif %}"
+                        href="{% url 'routeplanning:index' %}?mode=3&start={{ start_tmstmp }}">12 Hours</a>
+                    <a class="btn btn-white{% if mode == '4' %} active{% endif %}"
+                        href="{% url 'routeplanning:index' %}?mode=4&start={{ start_tmstmp }}">24 Hours</a>
+                    <a class="btn btn-white{% if mode == '5' %} active{% endif %}"
+                        href="{% url 'routeplanning:index' %}?mode=5&start={{ start_tmstmp }}">3 Days</a>
+                    <a class="btn btn-white{% if mode == '6' %} active{% endif %}"
+                        href="{% url 'routeplanning:index' %}?mode=6&start={{ start_tmstmp }}">7 Days</a>
                 </div>
                 <div class="date-range-control date-range-picker-group">
                     <div class="component-wrapper">
                         <div class="input-group date">
-                            <span class="input-group-addon"><i class="fa fa-calendar"></i></span><input type="text" class="form-control" value="03/05/2017">
+                            <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
+                            <input type="text" id="start_date" class="form-control" value="{{ start_time | date:'m/d/Y' }}">
                         </div>
                     </div>
                     <div class="component-wrapper">
                         <div class="input-group date">
-                            <span class="input-group-addon"><i class="fa fa-calendar"></i></span><input type="text" class="form-control" value="03/10/2017">
+                            <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
+                            <input type="text" id="end_date" class="form-control" value="{{ end_time | date:'m/d/Y' }}">
                         </div>
                     </div>
                     <div class="component-wrapper">
-                        <input type="button" class="btn btn-primary" value="Search" />
+                        <form id="date-form" action="{% url 'routeplanning:index' %}" method="GET">
+                            <input type="hidden" name="mode" value="{{ mode }}" />
+                            <input type="hidden" id="start_tmstmp" name="start" />
+                            <input type="hidden" id="end_tmstmp" name="end" />
+                            <input type="submit" class="btn btn-primary" value="Search" />
+                        </form>
                     </div>
                 </div>
             </div>
@@ -122,7 +125,25 @@
 {% block pagejs %}
     <script src="{% static "js/gantt.js" %}"></script>
     <script type="text/javascript">
-        var startDate = new Date({{ start_time }} * 1000);
+        /* Date pickers init */
+        $('.input-group.date').datepicker({
+            todayBtn: "linked",
+            keyboardNavigation: false,
+            forceParse: false,
+            calendarWeeks: true,
+            autoclose: true,
+        });
+
+        /* Date form */
+        $('#date-form').on('submit', function() {
+            var startDate = new Date($('#start_date').val());
+            $('#start_tmstmp').val(parseInt(startDate.getTime() / 1000));
+            var endDate = new Date($('#end_date').val());
+            $('#end_tmstmp').val(parseInt(endDate.getTime() / 1000));
+        });
+
+        /* Gantt table init */
+        var startDate = new Date({{ start_tmstmp }} * 1000);
         startDate.setHours(0);
         startDate.setMinutes(0);
         startDate.setSeconds(0);
