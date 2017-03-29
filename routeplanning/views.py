@@ -33,7 +33,7 @@ def index(request):
     else:
         start_time = datetime_now_utc()
         start_time.replace(hour=0, minute=0, second=0, microsecond=0)
-        start_tmstmp = int((start_time - datetime(1970, 1, 1)).total_seconds())
+        start_tmstmp = int((start_time - datetime(1970, 1, 1, tzinfo=utc)).total_seconds())
 
     if start_tmstmp and end_tmstmp:
         end_time = datetime.fromtimestamp(float(end_tmstmp))
@@ -42,7 +42,7 @@ def index(request):
         days = 1 if days < 1 else days
 
     end_time = start_time + timedelta(days=days)
-    end_tmstmp = int((end_time - datetime(1970, 1, 1)).total_seconds())
+    end_tmstmp = int((end_time - datetime(1970, 1, 1, tzinfo=utc)).total_seconds())
 
     if units_per_hour > 1:
         big_units = list()
