@@ -1,3 +1,8 @@
 from django.contrib import admin
+from routeplanning.models import *
 
-# Register your models here.
+admin.site.register(Tail)
+admin.site.register(Line)
+admin.site.register(LinePart)
+admin.site.register(Flight)
+admin.site.register(Assignment)

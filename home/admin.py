@@ -1,3 +1,8 @@
 from django.contrib import admin
+from home.models import *
 
-# Register your models here.
+admin.site.register(AircraftType)
+admin.site.register(Aircraft)
+admin.site.register(Airframe)
+admin.site.register(Engine)
+admin.site.register(Propeller)

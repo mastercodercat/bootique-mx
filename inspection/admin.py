@@ -1,3 +1,5 @@
 from django.contrib import admin
+from inspection.models import *
 
-# Register your models here.
+admin.site.register(Inspection)
+admin.site.register(InspectionProgram)
