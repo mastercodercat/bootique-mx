@@ -80,7 +80,7 @@
                         {% endfor %}
                     </tr>
                     {% for tail in tails %}
-                        <tr>
+                        <tr data-tail-number="{{ tail.number }}">
                             <td class="axis-cell tail">{{ tail.number }}</td>
                             {% for small_unit in small_units %}
                                 <td></td>
@@ -159,9 +159,11 @@
             flightAssignmentTable: $('#flight-assignment-table'),
             flightTemplateTable: $('#flight-template-table'),
             loadDataAPIUrl: "{% url 'routeplanning:api_load_data' %}",
+            assignFlightAPIUrl: "{% url 'routeplanning:api_assign_flight' %}",
             startDate: startDate,
             endDate: endDate,
             unit: unit,
+            csrfToken: "{{ csrf_token }}",
         });
     </script>
 {% endblock %}

@@ -1,12 +1,14 @@
 from datetime import timedelta, datetime
 import json
+import dateutil.parser
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, JsonResponse
+from django.middleware import csrf
 
 from routeplanning.models import *
 from routeplanning.forms import *
-from home.helpers import datetime_now_utc
+from home.helpers import datetime_now_utc, utc
 
 
 @login_required
@@ -31,7 +33,7 @@ def index(request):
     else:
         start_time = datetime_now_utc()
         start_time.replace(hour=0, minute=0, second=0, microsecond=0)
-        start_tmstmp = int((start_time.replace(tzinfo=None) - datetime(1970, 1, 1)).total_seconds())
+        start_tmstmp = int((start_time - datetime(1970, 1, 1)).total_seconds())
 
     if start_tmstmp and end_tmstmp:
         end_time = datetime.fromtimestamp(float(end_tmstmp))
@@ -40,7 +42,7 @@ def index(request):
         days = 1 if days < 1 else days
 
     end_time = start_time + timedelta(days=days)
-    end_tmstmp = int((end_time.replace(tzinfo=None) - datetime(1970, 1, 1)).total_seconds())
+    end_tmstmp = int((end_time - datetime(1970, 1, 1)).total_seconds())
 
     if units_per_hour > 1:
         big_units = list()
@@ -72,6 +74,7 @@ def index(request):
         'end_time': end_time,
         'start_tmstmp': start_tmstmp,
         'end_tmstmp': end_tmstmp,
+        'csrf_token': csrf.get_token(request),
     }
     return render(request, 'index_rp.html', context)
 
@@ -195,10 +198,10 @@ def edit_line(request, line_id=None):
 
 @login_required
 def api_load_data(request):
-    start_date = datetime.fromtimestamp(int(request.GET.get('startdate')))
-    end_date = datetime.fromtimestamp(int(request.GET.get('enddate')))
-    start_week_day = start_date.weekday()
-    end_week_day = end_date.weekday()
+    start_time = datetime.fromtimestamp(int(request.GET.get('startdate')), tz=utc)
+    end_time = datetime.fromtimestamp(int(request.GET.get('enddate')), tz=utc)
+    start_week_day = start_time.weekday()
+    end_week_day = end_time.weekday()
 
     template_data = []
     flights = Flight.objects.all().select_related('line')
@@ -215,8 +218,59 @@ def api_load_data(request):
             }
             template_data.append(flight_data)
 
+    assignments_data = []
+    assignments = Assignment.objects.select_related('flight', 'tail').all()
+    for assignment in assignments:
+        if assignment.start_time >= start_time and assignment.end_time <= end_time:
+            assignment_data = {
+                'flight_number': assignment.flight_number,
+                'start_time': assignment.start_time,
+                'end_time': assignment.end_time,
+                'status': assignment.status,
+                'tail': assignment.tail.number,
+            }
+            assignments_data.append(assignment_data)
+
     data = {
-        'assignments': [],
+        'assignments': assignments_data,
         'templates': template_data,
     }
     return JsonResponse(data, safe=False)
+
+@login_required
+def api_assign_flight(request):
+    result = {
+        'success': False,
+    }
+
+    try:
+        flight_number = request.POST.get('flight_number')
+        tail_number = request.POST.get('tail')
+        departure_time = dateutil.parser.parse(request.POST.get('departure_time'))
+    except:
+        result['error'] = 'Invalid parameters'
+        return JsonResponse(result, safe=False, status=400)
+
+    try:
+        tail = Tail.objects.get(number=tail_number)
+        if Assignment.is_duplicated(tail, departure_time):
+            result['error'] = 'Duplicated assignment'
+            return JsonResponse(result, safe=False)
+
+        flight = Flight.objects.get(number=flight_number)
+
+        assignment = Assignment(
+            flight_number=flight.number,
+            start_time=departure_time,
+            end_time=departure_time + timedelta(seconds=flight.length),
+            status=1,
+            flight=flight,
+            tail=tail
+        )
+        assignment.save()
+    except Exception as e:
+        result['error'] = str(e)
+        return JsonResponse(result, safe=False, status=500)
+
+    result['success'] = True
+    return JsonResponse(result, safe=False)

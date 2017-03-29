@@ -4,12 +4,12 @@
  * Route planning gantt class
  *
  * options:
- *  loadDataAPIUrl, startDate, endDate, flightAssignmentTable, flightTemplateTable, unit(in seconds)
+ *  loadDataAPIUrl, assignFlightAPIUrl, startDate, endDate, flightAssignmentTable, flightTemplateTable, unit(in seconds), csrfToken
  */
 function RoutePlanningGantt(options) {
     this.mode = 1;
     this.templates = {};
-    this.assignments = {};
+    this.assignments = [];
 
     this.options = options;
 
@@ -55,15 +55,20 @@ function replaceTimeInDate(date, timeString) {
     return _date;
 }
 
-function placeBar($tr, tdIndex, length) {
+function placeBar($tr, tdIndex, length, flightNumber) {
     // length := bar-width / td-width
-    var $bar = $('.bar.prototype').clone().removeClass('prototype');
+    var $bar = null;
     var $td = $tr.children('td').eq(tdIndex);
-    $bar
-        .css('width', $td.css('width').replace('px', '') * length)
-        .attr('data-td-index', tdIndex);
+    if ($td.length > 0) {
+        $bar = $('.bar.prototype').clone().removeClass('prototype');
+        $bar
+            .css('width', $td.css('width').replace('px', '') * length)
+            .attr('data-td-index', tdIndex)
+            .attr('data-number', flightNumber)
+            .find('.number').html(flightNumber);
 
-    $td.append($bar);
+        $td.append($bar);
+    }
     return $bar;
 }
 
@@ -104,11 +109,21 @@ RoutePlanningGantt.prototype.bindEventHandlers = function() {
 
     $body.on('drop', assignmentTableTrSelector, function(event) {
         event.preventDefault();
-        var tdIndex = $bar.data('td-index');
         var $tr = $(event.target).closest('tr');
-        var $td = $tr.children('td').eq(tdIndex);
-        $td.append($bar.clone().attr('draggable', false));
-        $bar.addClass('assigned').attr('draggable', false);
+        var flightNumber = $bar.data('number');
+        var tailNumber = $tr.data('tail-number');
+        var tdIndex = $bar.data('td-index');
+        var departureTime = new Date($bar.data('departure-time'));
+
+        self.assignFlight(flightNumber, tailNumber, departureTime)
+            .then(function(response) {
+                if (response.success) {
+                    var $td = $tr.children('td').eq(tdIndex);
+                    $td.append($bar.clone().attr('draggable', false));
+                    $bar.addClass('assigned').attr('draggable', false);
+                }
+            });
+
         $barPlaceholder.remove();
         $barPlaceholder = null;
     });
@@ -140,7 +155,7 @@ RoutePlanningGantt.prototype.loadData = function() {
         });
 
         data.assignments.forEach(function(assignment) {
-            self.assignments[assignment.number] = assignment;
+            self.assignments.push(assignment);
         });
 
         self.refreshTemplateTable();
@@ -165,10 +180,13 @@ RoutePlanningGantt.prototype.refreshTemplateTable = function() {
                 var departureTime = replaceTimeInDate(date, template.departure_time);
                 tdIndex = getTdIndex(self, departureTime);
                 tdPos = getTdPosition(self, departureTime);
-                $bar = placeBar($tr, tdIndex, length);
-                $bar.find('.number').html(template.number);
-                $bar.css('left', tdPos * 100 + '%');
-                $bar.attr('draggable', true);
+                $bar = placeBar($tr, tdIndex, length, template.number);
+                if ($bar) {
+                    $bar
+                        .attr('data-departure-time', departureTime.toISOString())
+                        .css('left', tdPos * 100 + '%')
+                        .attr('draggable', true);
+                }
             }
 
             date.setDate(date.getDate() + 1);
@@ -177,5 +195,41 @@ RoutePlanningGantt.prototype.refreshTemplateTable = function() {
 }
 
 RoutePlanningGantt.prototype.refreshAssignmentTable = function() {
-    //
+    var self = this;
+
+    var asgnCount = self.assignments.length;
+    for (var i = 0; i < asgnCount; i++) {
+        var assignment = self.assignments[i];
+        var $tr = self.options.flightAssignmentTable.find('tr[data-tail-number="' + assignment.tail + '"]');
+        var startTime = new Date(assignment.start_time);
+        var endTime = new Date(assignment.end_time);
+        var tdIndex = parseInt((startTime - self.options.startDate) / 1000 / self.options.unit);
+        var length = (endTime - startTime) / 1000 / self.options.unit;
+        var tdPos = getTdPosition(self, startTime);
+        var $bar = placeBar($tr, tdIndex, length, assignment.flight_number);
+        if ($bar) {
+            $bar
+                .css('left', tdPos * 100 + '%');
+        }
+    }
+}
+
+RoutePlanningGantt.prototype.assignFlight = function(flightNumber, tailNumber, departureTime) {
+    var self = this;
+
+    if (!self.options.assignFlightAPIUrl) {
+        console.error('Assign flight api URL not configured');
+        return;
+    }
+
+    return $.ajax({
+        method: 'POST',
+        url: self.options.assignFlightAPIUrl,
+        data: {
+            csrfmiddlewaretoken: self.options.csrfToken,
+            flight_number: flightNumber,
+            tail: tailNumber,
+            departure_time: departureTime.toISOString(),
+        },
+    });
 }

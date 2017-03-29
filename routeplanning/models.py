@@ -54,13 +54,41 @@ class Flight(models.Model):
                 return True
         return False
 
+    @property
+    def length(self):
+        arv_sec = self.arrival_time.hour * 3600 + self.arrival_time.minute * 60 + self.arrival_time.second
+        dpt_sec = self.departure_time.hour * 3600 + self.departure_time.minute * 60 + self.departure_time.second
+        return (arv_sec - dpt_sec) % 86400
 
-class FlightAssignment(models.Model):
+
+class Assignment(models.Model):
+    STATUS_CHOICES = (
+        (1, 'Flight'),
+        (2, 'Maintenance'),
+    )
+
     flight_number = models.IntegerField(default=0, null=False, blank=False)
-    departure_datetime = models.DateTimeField(null=False, blank=False)
+    start_time = models.DateTimeField(null=False, blank=False)
+    end_time = models.DateTimeField(null=False, blank=False)
+    status = models.IntegerField(default=1, choices=STATUS_CHOICES)
 
     flight = models.ForeignKey(Flight, null=True, blank=False)
     tail = models.ForeignKey(Tail, null=True, blank=False)
 
     def __unicode__(self):
-        return str(flight_number) + ' Assignment'
+        if self.status == 1:
+            return 'Flight ' + str(self.flight_number) + ' Assignment'
+        elif self.status == 2:
+            return 'Maintenance'
+        else:
+            return 'Other'
+
+    @classmethod
+    def is_duplicated(cls, tail, start_time):
+        dup_count = cls.objects.filter(
+            tail=tail,
+            start_time__lte=start_time,
+            end_time__gte=start_time
+        ).count()
+
+        return dup_count > 0
