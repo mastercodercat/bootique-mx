@@ -51,12 +51,11 @@ function getTdPosition(self, date) {
 }
 
 function replaceTimeInDate(date, timeString) {
-    var _date = new Date(date.getTime());
-    var times = timeString.split(':');
-    _date.setHours(times[0]);
-    _date.setMinutes(times[1]);
-    _date.setSeconds(times[2]);
-    return _date;
+    var _dateString = date.getUTCFullYear() + '-' + format2Digits(date.getUTCMonth() + 1) + '-' + format2Digits(date.getUTCDate());
+    _dateString += 'T';
+    _dateString += timeString;
+    _dateString += 'Z';
+    return new Date(_dateString);
 }
 
 function placeBar($tr, tdIndex, length, flightNumber) {
@@ -83,17 +82,11 @@ RoutePlanningGantt.prototype.bindEventHandlers = function() {
     var $body = $('body');
     var assignmentTableId = self.options.flightAssignmentTable.attr('id');
     var assignmentTableTrSelector = '#' + assignmentTableId + ' tr:not(.head)';
-    var $prevDraggedTr;
-    var $bar, $barPlaceholder;
+    var $prevDraggedTr, $prevDraggedTd;
+    var $bar;
 
     $body.on('dragstart', '.gantt-table tr:not(.head) > td > .bar', function(event) {
         $bar = $(event.target);
-        $barPlaceholder = $(document.createElement('div'));
-        $barPlaceholder.attr('id', 'bar-placeholder');
-        $barPlaceholder
-            .css('width', $bar.css('width'))
-            .css('height', $bar.css('height'))
-            .css('left', $bar.css('left'));
     });
 
     $body.on('dragenter', assignmentTableTrSelector, function(event) {
@@ -105,8 +98,12 @@ RoutePlanningGantt.prototype.bindEventHandlers = function() {
         var tdIndex = $bar.data('td-index');
         var $tr = $(event.target).closest('tr');
         if (!$prevDraggedTr || $prevDraggedTr[0] !== $tr[0]) {
-            var $td = $tr.children('td').eq(tdIndex);
-            $barPlaceholder.appendTo($td);
+            var $td = $tr.children('td').eq(tdIndex + 1);
+            if ($prevDraggedTd) {
+                $prevDraggedTd.removeClass('dragging-over');
+            }
+            $td.addClass('dragging-over');
+            $prevDraggedTd = $td;
             $prevDraggedTr = $tr;
         }
     });
@@ -122,22 +119,37 @@ RoutePlanningGantt.prototype.bindEventHandlers = function() {
         self.assignFlight(flightNumber, tailNumber, departureTime)
             .then(function(response) {
                 if (response.success) {
-                    var $td = $tr.children('td').eq(tdIndex);
+                    var $td = $tr.children('td').eq(tdIndex + 1);
                     $td.append($bar.clone().attr('draggable', false));
                     $bar.addClass('assigned').attr('draggable', false);
                 }
             });
 
-        $barPlaceholder.remove();
-        $barPlaceholder = null;
+        if ($prevDraggedTd) {
+            $prevDraggedTd.removeClass('dragging-over');
+            $prevDraggedTd = null;
+        }
     });
 
     $body.on('dragend', function(event) {
         event.preventDefault();
-        if ($barPlaceholder) {
-            $barPlaceholder.remove();
+        if ($prevDraggedTd) {
+            $prevDraggedTd.removeClass('dragging-over');
+            $prevDraggedTd = null;
         }
     });
+}
+
+RoutePlanningGantt.prototype.checkIfAssigned = function(flightNumber, departureTime) {
+    var assignmentCount = this.assignments.length;
+    for (var i = 0; i < assignmentCount; i++) {
+        if (this.assignments[i].flight_number == flightNumber) {
+            if (new Date(this.assignments[i].start_time).getTime() == departureTime.getTime()) {
+                return true;
+            }
+        }
+    }
+    return false;
 }
 
 RoutePlanningGantt.prototype.loadData = function() {
@@ -182,14 +194,21 @@ RoutePlanningGantt.prototype.refreshTemplateTable = function() {
             var weekday = (date.getDay() - 1) % 7;
             if (template.weekly_availability.substring(weekday, weekday + 1) == 'X') {
                 var departureTime = replaceTimeInDate(date, template.departure_time);
+                if (departureTime < date) {
+                    departureTime.setDate(departureTime.getDate() + 1);
+                }
                 tdIndex = getTdIndex(self, departureTime);
                 tdPos = getTdPosition(self, departureTime);
                 $bar = placeBar($tr, tdIndex, length, template.number);
                 if ($bar) {
                     $bar
                         .attr('data-departure-time', departureTime.toISOString())
-                        .css('left', tdPos * 100 + '%')
-                        .attr('draggable', true);
+                        .css('left', tdPos * 100 + '%');
+                    if (self.checkIfAssigned(template.number, departureTime)) {
+                        $bar.addClass('assigned');
+                    } else {
+                        $bar.attr('draggable', true);
+                    }
                 }
             }
 

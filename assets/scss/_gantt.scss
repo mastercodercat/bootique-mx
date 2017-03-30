@@ -70,6 +70,9 @@
                 border-top-color: $dark-gray;
                 color: $label-badget-color;
             }
+            &.dragging-over {
+                background: #f0f0f1;
+            }
         }
         .bar {
             position: absolute;
