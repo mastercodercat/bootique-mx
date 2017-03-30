@@ -27,6 +27,10 @@ function RoutePlanningGantt(options) {
 
 /* helper functions */
 
+function format2Digits(number) {
+    return (number < 10 ? '0' : '') + number;
+}
+
 function timeDiffInSeconds(time1, time2) {
     var date1 = new Date("2010-01-01T" + time1);
     var date2 = new Date("2010-01-01T" + time2);
@@ -35,7 +39,7 @@ function timeDiffInSeconds(time1, time2) {
 
 function getTdIndex(self, date) {
     var diffFromStart = (date - self.options.startDate) / 1000;
-    return Math.floor(diffFromStart / self.options.unit) + 1;
+    return Math.floor(diffFromStart / self.options.unit);
 }
 
 function getTdPosition(self, date) {
@@ -58,7 +62,7 @@ function replaceTimeInDate(date, timeString) {
 function placeBar($tr, tdIndex, length, flightNumber) {
     // length := bar-width / td-width
     var $bar = null;
-    var $td = $tr.children('td').eq(tdIndex);
+    var $td = $tr.children('td').eq(tdIndex + 1);   // Index should be increased by 1 because first td is line/tail name cell
     if ($td.length > 0) {
         $bar = $('.bar.prototype').clone().removeClass('prototype');
         $bar

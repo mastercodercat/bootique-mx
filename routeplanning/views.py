@@ -8,7 +8,7 @@ from django.middleware import csrf
 
 from routeplanning.models import *
 from routeplanning.forms import *
-from home.helpers import datetime_now_utc, utc
+from home.helpers import datetime_now_utc, utc, totimestamp
 
 
 @login_required
@@ -29,20 +29,20 @@ def index(request):
     units_per_hour = units_per_hour_options[mode]
 
     if start_tmstmp:
-        start_time = datetime.fromtimestamp(float(start_tmstmp))
+        start_time = datetime.fromtimestamp(float(start_tmstmp), tz=utc)
     else:
         start_time = datetime_now_utc()
         start_time.replace(hour=0, minute=0, second=0, microsecond=0)
-        start_tmstmp = int((start_time - datetime(1970, 1, 1, tzinfo=utc)).total_seconds())
+        start_tmstmp = totimestamp(start_time)
 
     if start_tmstmp and end_tmstmp:
-        end_time = datetime.fromtimestamp(float(end_tmstmp))
+        end_time = datetime.fromtimestamp(float(end_tmstmp), tz=utc)
         diff_days = int((end_time - start_time).total_seconds() / 3600)
         days = diff_days if days > diff_days else days
         days = 1 if days < 1 else days
 
     end_time = start_time + timedelta(days=days)
-    end_tmstmp = int((end_time - datetime(1970, 1, 1, tzinfo=utc)).total_seconds())
+    end_tmstmp = totimestamp(end_time)
 
     if units_per_hour > 1:
         big_units = list()
@@ -55,7 +55,7 @@ def index(request):
         big_units = list()
         small_units = list()
         for d in range(0, days):
-            big_units.append(start_time + timedelta(days=d))
+            big_units.append(totimestamp(start_time + timedelta(days=d)))
             for h in range(0, hours):
                 small_units.append(h)
 
@@ -70,8 +70,6 @@ def index(request):
         'days': days,
         'units_per_hour': units_per_hour,
         'mode': mode,
-        'start_time': start_time,
-        'end_time': end_time,
         'start_tmstmp': start_tmstmp,
         'end_tmstmp': end_tmstmp,
         'csrf_token': csrf.get_token(request),

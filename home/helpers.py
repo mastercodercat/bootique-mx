@@ -27,3 +27,6 @@ def is_within_threshold(date):
 def is_coming_due(date):
     delta = date - datetime_now_utc()
     return (delta.days > 10)
+
+def totimestamp(date):
+    return int((date - datetime(1970, 1, 1, tzinfo=utc)).total_seconds())

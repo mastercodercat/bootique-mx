@@ -37,13 +37,13 @@
                     <div class="component-wrapper">
                         <div class="input-group date">
                             <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
-                            <input type="text" id="start_date" class="form-control" value="{{ start_time | date:'m/d/Y' }}">
+                            <input type="text" id="start_date" class="form-control">
                         </div>
                     </div>
                     <div class="component-wrapper">
                         <div class="input-group date">
                             <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
-                            <input type="text" id="end_date" class="form-control" value="{{ end_time | date:'m/d/Y' }}">
+                            <input type="text" id="end_date" class="form-control">
                         </div>
                     </div>
                     <div class="component-wrapper">
@@ -71,7 +71,13 @@
                             Tails
                         </td>
                         {% for big_unit in big_units %}
-                            <td colspan="{{ big_unit_colspan }}">{{ big_unit }}</td>
+                            <td colspan="{{ big_unit_colspan }}" {% if units_per_hour == 1 %}data-timestamp="{{ big_unit }}"{% endif %}>
+                                {% if units_per_hour > 1 %}
+                                    {{ big_unit }}
+                                {% else %}
+                                    &nbsp;
+                                {% endif %}
+                            </td>
                         {% endfor %}
                     </tr>
                     <tr class="head units">
@@ -100,7 +106,11 @@
                             Lines
                         </td>
                         {% for big_unit in big_units %}
-                            <td colspan="{{ big_unit_colspan }}">{{ big_unit }}</td>
+                            <td colspan="{{ big_unit_colspan }}" {% if units_per_hour > 1 %}data-timestamp="{{ big_unit }}"{% endif %}>
+                                {% if units_per_hour == 1 %}
+                                    {{ big_unit }}
+                                {% endif %}
+                            </td>
                         {% endfor %}
                     </tr>
                     <tr class="head units">
@@ -125,7 +135,28 @@
 {% block pagejs %}
     <script src="{% static "js/gantt.js" %}"></script>
     <script type="text/javascript">
+        var startDate = new Date({{ start_tmstmp }} * 1000);
+        {% if end_tmstmp %}
+            var endDate = new Date({{ end_tmstmp }} * 1000);
+        {% else %}
+            var endDate = new Date(startDate.getTime());
+            endDate.setDate(endDate.getDate() + {{ days }} - 1);
+            endDate.setHours(23);
+            endDate.setMinutes(59);
+            endDate.setSeconds(59);
+            endDate.setMilliseconds(0);
+        {% endif %}
+
+        /* Replace timestamps with dates in the table header */
+        $('td[data-timestamp]').each(function() {
+            var $td = $(this);
+            var date = new Date($td.data('timestamp') * 1000);
+            $td.html(format2Digits(date.getMonth() + 1) + '/' + format2Digits(date.getDate()) + '/' + date.getFullYear());
+        });
+
         /* Date pickers init */
+        $('#start_date').val(format2Digits(startDate.getMonth() + 1) + '/' + format2Digits(startDate.getDate()) + '/' + startDate.getFullYear());
+        $('#end_date').val(format2Digits(endDate.getMonth() + 1) + '/' + format2Digits(endDate.getDate()) + '/' + endDate.getFullYear());
         $('.input-group.date').datepicker({
             todayBtn: "linked",
             keyboardNavigation: false,
@@ -143,17 +174,12 @@
         });
 
         /* Gantt table init */
-        var startDate = new Date({{ start_tmstmp }} * 1000);
+        
         startDate.setHours(0);
         startDate.setMinutes(0);
         startDate.setSeconds(0);
         startDate.setMilliseconds(0);
-        var endDate = new Date(startDate.getTime());
-        endDate.setDate(endDate.getDate() + {{ days }} - 1);
-        endDate.setHours(23);
-        endDate.setMinutes(59);
-        endDate.setSeconds(59);
-        endDate.setMilliseconds(0);
+
         var unit = 3600 / {{ units_per_hour }};
         var gantt = new RoutePlanningGantt({
             flightAssignmentTable: $('#flight-assignment-table'),
