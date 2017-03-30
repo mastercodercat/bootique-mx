@@ -106,9 +106,11 @@
                             Lines
                         </td>
                         {% for big_unit in big_units %}
-                            <td colspan="{{ big_unit_colspan }}" {% if units_per_hour > 1 %}data-timestamp="{{ big_unit }}"{% endif %}>
-                                {% if units_per_hour == 1 %}
+                            <td colspan="{{ big_unit_colspan }}" {% if units_per_hour == 1 %}data-timestamp="{{ big_unit }}"{% endif %}>
+                                {% if units_per_hour > 1 %}
                                     {{ big_unit }}
+                                {% else %}
+                                    &nbsp;
                                 {% endif %}
                             </td>
                         {% endfor %}
