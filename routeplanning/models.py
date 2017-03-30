@@ -31,8 +31,8 @@ class Flight(models.Model):
     number = models.IntegerField(default=0, null=False, blank=False)
     origin = models.CharField(max_length=10, blank=False)
     destination = models.CharField(max_length=10, blank=False)
-    departure_time = models.TimeField(auto_now=True, null=False, blank=False)
-    arrival_time = models.TimeField(auto_now=True, null=False, blank=False)
+    departure_time = models.TimeField(null=False, blank=False)
+    arrival_time = models.TimeField(null=False, blank=False)
     weekly_availability = models.CharField(default='XXXXXXX', max_length=7, blank=False)
 
     line = models.ForeignKey(Line, null=True, blank=False)

@@ -96,6 +96,7 @@ def add_tail(request):
     else:
         context = {
             'form': form,
+            'title': 'Add Tail',
         }
         return render(request, 'tail.html', context)
 
@@ -117,6 +118,7 @@ def edit_tail(request, tail_id=None):
     else:
         context = {
             'form': form,
+            'title': 'Edit Tail ' + tail.number,
         }
         return render(request, 'tail.html', context)
 
@@ -148,6 +150,7 @@ def add_line(request):
     else:
         context = {
             'form': form,
+            'title': 'Add Line',
         }
         return render(request, 'line.html', context)
 
@@ -191,8 +194,31 @@ def edit_line(request, line_id=None):
     else:
         context = {
             'form': form,
+            'title': 'Edit Line ' + line.name,
         }
         return render(request, 'line.html', context)
+
+@login_required
+def flights(request):
+    flights = Flight.objects.all()
+
+    context = {
+        'flights': flights,
+    }
+    return render(request, 'flights.html', context)
+
+@login_required
+def add_flight(request):
+    form = FlightForm(request.POST or None)
+    if request.method == 'POST':
+        if form.is_valid():
+            form.save()
+            form = FlightForm()
+
+    context = {
+        'form': form,
+    }
+    return render(request, 'flight.html', context)
 
 @login_required
 def api_load_data(request):

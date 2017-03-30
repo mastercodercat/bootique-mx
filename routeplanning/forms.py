@@ -26,3 +26,8 @@ class LineForm(forms.Form):
 
     class Meta:
         fields = ('name',)
+
+class FlightForm(ModelForm):
+    class Meta:
+        model = Flight
+        fields = '__all__'

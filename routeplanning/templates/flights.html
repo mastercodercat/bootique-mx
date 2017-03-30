@@ -1,0 +1,67 @@
+{% extends "layout.html" %}
+{% load staticfiles %}
+{% load addclass %}
+
+{% block head_title %}Flights{% endblock %}
+
+{% block page_title %}
+    Flights
+{% endblock %}
+
+{% block breadcrumb %}
+    <ol class="breadcrumb">
+        <li>
+            <a href="{% url 'routeplanning:index' %}">
+                Route Planning Gantt
+            </a>
+        </li>
+        <li class="active">
+            <strong>Flights</strong>
+        </li>
+    </ol>
+{% endblock %}
+
+{% block content %}
+    <div class="ibox">
+        <div class="ibox-title">
+            <h3>Flights</h3>
+        </div>
+        <div class="ibox-content">
+            <div class="m-b">
+                <a href="{% url 'routeplanning:add_flight' %}" class="btn btn-w-m btn-primary">Create Flight</a>
+            </div>
+            <table id="flights-table" class="datatable table table-stripped toggle-arrow-tiny"
+                data-name="flights_table"
+                data-default-sort-column="1"
+                data-selectable="true">
+                <thead>
+                    <tr>
+                        <th data-sortable="false"><input type="checkbox" class="select-all"></th>
+                        <th>Number</th>
+                        <th>Origin</th>
+                        <th>Destination</th>
+                        <th>Departure Time</th>
+                        <th>Arrival Time</th>
+                        <th>Weekly Availability</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for flight in flights %}
+                        <tr>
+                            <td></td>
+                            <td>{{ flight.number }}</td>
+                            <td>{{ flight.origin }}</td>
+                            <td>{{ flight.destination }}</td>
+                            <td>{{ flight.departure_time }}</td>
+                            <td>{{ flight.arrival_time }}</td>
+                            <td>{{ flight.weekly_availability }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}
+
+{% block pagejs %}
+{% endblock %}

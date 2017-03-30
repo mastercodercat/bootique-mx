@@ -2,22 +2,21 @@
 {% load staticfiles %}
 {% load addclass %}
 
-{% block head_title %}Create Inspection{% endblock %}
+{% block head_title %}Add Flight{% endblock %}
 
 {% block page_title %}
-    Create Inspection
+    Add Flight
 {% endblock %}
 
 {% block breadcrumb %}
     <ol class="breadcrumb">
         <li>
-            <a href="{% url 'inspection:index' %}">Inspection Programs</a>
-        </li>
-        <li>
-            <a href="{% url 'inspection:inspection_program_details' program_id=inspection_program.id %}">{{ inspection_program.name }}</a>
+            <a href="{% url 'routeplanning:index' %}">
+                Route Planning Gantt
+            </a>
         </li>
         <li class="active">
-            <strong>Create Inspection</strong>
+            <strong>Add Flight</strong>
         </li>
     </ol>
 {% endblock %}
@@ -25,7 +24,7 @@
 {% block content %}
     <div class="ibox">
         <div class="ibox-title">
-            <h3>Create New Inspection</h3>
+            <h3>Add Flight</h3>
         </div>
         <div class="ibox-content">
             <div class="row">

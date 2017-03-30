@@ -73,6 +73,12 @@
             &.dragging-over {
                 background: #f0f0f1;
             }
+            a:not(.btn) {
+                color: inherit;
+                &:hover {
+                    opacity: 0.85;
+                }
+            }
         }
         .bar {
             position: absolute;

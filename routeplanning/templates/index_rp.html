@@ -87,7 +87,9 @@
                     </tr>
                     {% for tail in tails %}
                         <tr data-tail-number="{{ tail.number }}">
-                            <td class="axis-cell tail">{{ tail.number }}</td>
+                            <td class="axis-cell tail">
+                                <a href="{% url 'routeplanning:edit_tail' tail_id=tail.id %}">{{ tail.number }}</a>
+                            </td>
                             {% for small_unit in small_units %}
                                 <td></td>
                             {% endfor %}
@@ -122,7 +124,9 @@
                     </tr>
                     {% for line in lines %}
                         <tr data-line="{{ line.id }}">
-                            <td class="axis-cell line">{{ line.name }}</td>
+                            <td class="axis-cell line">
+                                <a href="{% url 'routeplanning:edit_line' line_id=line.id %}">{{ line.name }}</a>
+                            </td>
                             {% for small_unit in small_units %}
                                 <td></td>
                             {% endfor %}
