@@ -4,7 +4,8 @@
  * Route planning gantt class
  *
  * options:
- *  loadDataAPIUrl, assignFlightAPIUrl, startDate, endDate, flightAssignmentTable, flightTemplateTable, unit(in seconds), csrfToken
+ *  loadDataAPIUrl, assignFlightAPIUrl, assignStatusAPIUrl, startDate, endDate,
+ *  flightAssignmentTable, flightTemplateTable, unit(in seconds), csrfToken
  */
 function RoutePlanningGantt(options) {
     this.mode = 1;
@@ -58,8 +59,11 @@ function replaceTimeInDate(date, timeString) {
     return new Date(_dateString);
 }
 
-function placeBar($tr, tdIndex, length, flight) {
-    // length := bar-width / td-width
+function placeBar($tr, tdIndex, length, object) {
+    /*
+     * length := bar-width / td-width
+     * object can be flight (from template table) or assignment (from assignment table)
+     */
     var $bar = null;
     var date;
     var $td = $tr.children('td').eq(tdIndex + 1);   // Index should be increased by 1 because first td is line/tail name cell
@@ -67,20 +71,36 @@ function placeBar($tr, tdIndex, length, flight) {
     if ($td.length > 0) {
         $bar = $('.bar.prototype').clone().removeClass('prototype');
         $bar
-            .css('width', $td.css('width').replace('px', '') * length)
-            .attr('data-td-index', tdIndex)
-            .attr('data-number', flight.number);
+            .css('width', $td.css('width').replace('px', '') * length);
 
-        $bar.find('.number').html(flight.number);
-        $bar.find('.org').html(flight.origin);
-        $bar.find('.dest').html(flight.destination);
-        date = replaceTimeInDate(new Date(), flight.departure_time);
-        $bar.find('.departure').html(formatTo2Digits(date.getHours()) + ':' + formatTo2Digits(date.getMinutes()) + ':' + formatTo2Digits(date.getSeconds()));
-        date = replaceTimeInDate(new Date(), flight.arrival_time);
-        $bar.find('.arrival').html(formatTo2Digits(date.getHours()) + ':' + formatTo2Digits(date.getMinutes()) + ':' + formatTo2Digits(date.getSeconds()));
+        if (object.number > 0) {
+            $bar
+                .attr('data-td-index', tdIndex)
+                .attr('data-number', object.number);
+            $bar.find('.number').html(object.number);
+            $bar.find('.org').html(object.origin);
+            $bar.find('.dest').html(object.destination);
+            date = replaceTimeInDate(new Date(), object.departure_time);
+            $bar.find('.departure').html(formatTo2Digits(date.getHours()) + ':' + formatTo2Digits(date.getMinutes()) + ':' + formatTo2Digits(date.getSeconds()));
+            date = replaceTimeInDate(new Date(), object.arrival_time);
+            $bar.find('.arrival').html(formatTo2Digits(date.getHours()) + ':' + formatTo2Digits(date.getMinutes()) + ':' + formatTo2Digits(date.getSeconds()));
+        } else {
+            var status = object.status;
+            if (status == 2) {
+                $bar.addClass('maintenance').html('Maintenance');
+            }
+        }
 
         $td.append($bar);
     }
+    return $bar;
+}
+
+function placeStatusBar($bar, $td) {
+    $bar
+        .css('width', $td.css('width').replace('px', ''));
+    $td.append($bar);
+
     return $bar;
 }
 
@@ -94,9 +114,12 @@ RoutePlanningGantt.prototype.bindEventHandlers = function() {
     var $prevDraggedTr, $prevDraggedTd;
     var $bar;
 
-    $body.on('dragstart', '.gantt-table tr:not(.head) > td > .bar', function(event) {
+    $body.on('dragstart', '.gantt-table tr:not(.head) > td > .bar, .status-bars > .bar', function(event) {
         $bar = $(event.target);
     });
+    // $body.on('dragstart', '.status-bars > .bar', function(event) {
+    //     $bar = $(event.target);
+    // });
 
     $body.on('dragenter', assignmentTableTrSelector, function(event) {
         event.preventDefault();
@@ -104,35 +127,68 @@ RoutePlanningGantt.prototype.bindEventHandlers = function() {
 
     $body.on('dragover', assignmentTableTrSelector, function(event) {
         event.preventDefault();
-        var tdIndex = $bar.data('td-index');
-        var $tr = $(event.target).closest('tr');
-        if (!$prevDraggedTr || $prevDraggedTr[0] !== $tr[0]) {
-            var $td = $tr.children('td').eq(tdIndex + 1);
-            if ($prevDraggedTd) {
-                $prevDraggedTd.removeClass('dragging-over');
+        if ($bar.data('status') > 0) {
+            var $td = $(event.target);
+            if ($td.prop('tagName').toLowerCase() != 'td') {
+                $td = $td.closest('td');
             }
-            $td.addClass('dragging-over');
-            $prevDraggedTd = $td;
-            $prevDraggedTr = $tr;
+            if (!$prevDraggedTd || $prevDraggedTd[0] !== $td[0]) {
+                if ($prevDraggedTd) {
+                    $prevDraggedTd.removeClass('dragging-over');
+                }
+                $td.addClass('dragging-over');
+                $prevDraggedTd = $td;
+            }
+        } else {
+            var tdIndex = $bar.data('td-index');
+            var $tr = $(event.target).closest('tr');
+            if (!$prevDraggedTr || $prevDraggedTr[0] !== $tr[0]) {
+                var $td = $tr.children('td').eq(tdIndex + 1);
+                if ($prevDraggedTd) {
+                    $prevDraggedTd.removeClass('dragging-over');
+                }
+                $td.addClass('dragging-over');
+                $prevDraggedTd = $td;
+                $prevDraggedTr = $tr;
+            }
         }
     });
 
     $body.on('drop', assignmentTableTrSelector, function(event) {
         event.preventDefault();
         var $tr = $(event.target).closest('tr');
-        var flightNumber = $bar.data('number');
         var tailNumber = $tr.data('tail-number');
-        var tdIndex = $bar.data('td-index');
-        var departureTime = new Date($bar.data('departure-time'));
 
-        self.assignFlight(flightNumber, tailNumber, departureTime)
-            .then(function(response) {
-                if (response.success) {
-                    var $td = $tr.children('td').eq(tdIndex + 1);
-                    $td.append($bar.clone().attr('draggable', false));
-                    $bar.addClass('assigned').attr('draggable', false);
-                }
-            });
+        if ($bar.data('status') > 0) {
+            var $td = $(event.target);
+            if ($td.prop('tagName').toLowerCase() != 'td') {
+                return;
+            }
+            var tdIndex = $td.index();
+            var startTime = new Date(self.options.startDate);
+            startTime.setSeconds(startTime.getSeconds() + self.options.unit * (tdIndex - 1));
+            var endTime = new Date(startTime.getTime() + 3600000);
+            self.assignStatus(tailNumber, $bar.data('status'), startTime, endTime)
+                .then(function(response) {
+                    if (response.success) {
+                        var $newBar = $bar.clone();
+                        placeStatusBar($newBar, $td);
+                    }
+                });
+        } else {
+            var flightNumber = $bar.data('number');
+            var tdIndex = $bar.data('td-index');
+            var departureTime = new Date($bar.data('departure-time'));
+
+            self.assignFlight(flightNumber, tailNumber, departureTime)
+                .then(function(response) {
+                    if (response.success) {
+                        var $td = $tr.children('td').eq(tdIndex + 1);
+                        $td.append($bar.clone().attr('draggable', false));
+                        $bar.addClass('assigned').attr('draggable', false);
+                    }
+                });
+        }
 
         if ($prevDraggedTd) {
             $prevDraggedTd.removeClass('dragging-over');
@@ -262,6 +318,27 @@ RoutePlanningGantt.prototype.assignFlight = function(flightNumber, tailNumber, d
             flight_number: flightNumber,
             tail: tailNumber,
             departure_time: departureTime.toISOString(),
+        },
+    });
+}
+
+RoutePlanningGantt.prototype.assignStatus = function(tailNumber, status, startTime, endTime) {
+    var self = this;
+
+    if (!self.options.assignStatusAPIUrl) {
+        console.error('Assign status api URL not configured');
+        return;
+    }
+
+    return $.ajax({
+        method: 'POST',
+        url: self.options.assignStatusAPIUrl,
+        data: {
+            csrfmiddlewaretoken: self.options.csrfToken,
+            tail: tailNumber,
+            status: status,
+            start_time: startTime.toISOString(),
+            end_time: endTime.toISOString(),
         },
     });
 }

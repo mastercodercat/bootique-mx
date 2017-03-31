@@ -16,71 +16,76 @@
 {% endblock %}
 
 {% block content %}
-    <div class="h-scroll-wrapper">
-        <div class="gantt">
-            <div class="clearfix m-b-md"><!-- Top controls -->
-                <div class="unit-control btn-group">
-                    <a class="btn btn-white{% if mode == '1' %} active{% endif %}"
-                        href="{% url 'routeplanning:index' %}?mode=1&start={{ start_tmstmp }}">3 Hours</a>
-                    <a class="btn btn-white{% if mode == '2' %} active{% endif %}"
-                        href="{% url 'routeplanning:index' %}?mode=2&start={{ start_tmstmp }}">6 Hours</a>
-                    <a class="btn btn-white{% if mode == '3' %} active{% endif %}"
-                        href="{% url 'routeplanning:index' %}?mode=3&start={{ start_tmstmp }}">12 Hours</a>
-                    <a class="btn btn-white{% if mode == '4' %} active{% endif %}"
-                        href="{% url 'routeplanning:index' %}?mode=4&start={{ start_tmstmp }}">24 Hours</a>
-                    <a class="btn btn-white{% if mode == '5' %} active{% endif %}"
-                        href="{% url 'routeplanning:index' %}?mode=5&start={{ start_tmstmp }}">3 Days</a>
-                    <a class="btn btn-white{% if mode == '6' %} active{% endif %}"
-                        href="{% url 'routeplanning:index' %}?mode=6&start={{ start_tmstmp }}">7 Days</a>
+    <div class="gantt">
+        <div class="clearfix m-b-md"><!-- Top controls -->
+            <div class="unit-control btn-group">
+                <a class="btn btn-white{% if mode == '1' %} active{% endif %}"
+                    href="{% url 'routeplanning:index' %}?mode=1&start={{ start_tmstmp }}">3 Hours</a>
+                <a class="btn btn-white{% if mode == '2' %} active{% endif %}"
+                    href="{% url 'routeplanning:index' %}?mode=2&start={{ start_tmstmp }}">6 Hours</a>
+                <a class="btn btn-white{% if mode == '3' %} active{% endif %}"
+                    href="{% url 'routeplanning:index' %}?mode=3&start={{ start_tmstmp }}">12 Hours</a>
+                <a class="btn btn-white{% if mode == '4' %} active{% endif %}"
+                    href="{% url 'routeplanning:index' %}?mode=4&start={{ start_tmstmp }}">24 Hours</a>
+                <a class="btn btn-white{% if mode == '5' %} active{% endif %}"
+                    href="{% url 'routeplanning:index' %}?mode=5&start={{ start_tmstmp }}">3 Days</a>
+                <a class="btn btn-white{% if mode == '6' %} active{% endif %}"
+                    href="{% url 'routeplanning:index' %}?mode=6&start={{ start_tmstmp }}">7 Days</a>
+            </div>
+            <div class="page-control">
+                <a href="{% url 'routeplanning:index' %}?mode={{ mode }}&start={{ start_tmstmp|add:"-86400" }}" class="btn btn-white">
+                    <i class="fa fa-chevron-left"></i>
+                </a>
+                <a href="{% url 'routeplanning:index' %}?mode={{ mode }}&start={{ start_tmstmp|add:86400 }}" class="btn btn-white">
+                    <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+            <div class="date-range-control date-range-picker-group">
+                <div class="component-wrapper">
+                    <div class="input-group date">
+                        <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
+                        <input type="text" id="start_date" class="form-control">
+                    </div>
                 </div>
-                <div class="page-control">
-                    <a href="{% url 'routeplanning:index' %}?mode={{ mode }}&start={{ start_tmstmp|add:"-86400" }}" class="btn btn-white">
-                        <i class="fa fa-chevron-left"></i>
-                    </a>
-                    <a href="{% url 'routeplanning:index' %}?mode={{ mode }}&start={{ start_tmstmp|add:86400 }}" class="btn btn-white">
-                        <i class="fa fa-chevron-right"></i>
-                    </a>
+                <div class="component-wrapper">
+                    <div class="input-group date">
+                        <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
+                        <input type="text" id="end_date" class="form-control">
+                    </div>
                 </div>
-                <div class="date-range-control date-range-picker-group">
-                    <div class="component-wrapper">
-                        <div class="input-group date">
-                            <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
-                            <input type="text" id="start_date" class="form-control">
-                        </div>
-                    </div>
-                    <div class="component-wrapper">
-                        <div class="input-group date">
-                            <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
-                            <input type="text" id="end_date" class="form-control">
-                        </div>
-                    </div>
-                    <div class="component-wrapper">
-                        <form id="date-form" action="{% url 'routeplanning:index' %}" method="GET">
-                            <input type="hidden" name="mode" value="{{ mode }}" />
-                            <input type="hidden" id="start_tmstmp" name="start" />
-                            <input type="hidden" id="end_tmstmp" name="end" />
-                            <input type="submit" class="btn btn-primary" value="Search" />
-                        </form>
-                    </div>
+                <div class="component-wrapper">
+                    <form id="date-form" action="{% url 'routeplanning:index' %}" method="GET">
+                        <input type="hidden" name="mode" value="{{ mode }}" />
+                        <input type="hidden" id="start_tmstmp" name="start" />
+                        <input type="hidden" id="end_tmstmp" name="end" />
+                        <input type="submit" class="btn btn-primary" value="Search" />
+                    </form>
                 </div>
             </div>
-            <!-- Bar prototype -->
-            <div class="bar prototype">
-                <table class="flight-info">
-                    <tr>
-                        <td class="org"></td>
-                        <td class="number"></td>
-                        <td class="dest"></td>
-                    </tr>
-                </table>
-                <div class="bar-popover">
-                    <div class="field">Flight <span class="number"></span></div>
-                    <div class="field">Origin: <span class="org"></span></div>
-                    <div class="field">Destination: <span class="dest"></span></div>
-                    <div class="field">Sched. Depature Time: <span class="departure"></span></div>
-                    <div class="field">Sched. Arrival Time: <span class="arrival"></span></div>
-                </div>
+        </div>
+        <!-- Status bar sources -->
+        <div class="status-bars clearfix m-b-md">
+            <div class="clearfix">Drag and drop: </div>
+            <div class="bar maintenance" draggable="true" data-status="2">Maintenance</div>
+        </div>
+        <!-- Bar prototype -->
+        <div class="bar prototype">
+            <table class="flight-info">
+                <tr>
+                    <td class="org"></td>
+                    <td class="number"></td>
+                    <td class="dest"></td>
+                </tr>
+            </table>
+            <div class="bar-popover">
+                <div class="field">Flight <span class="number"></span></div>
+                <div class="field">Origin: <span class="org"></span></div>
+                <div class="field">Destination: <span class="dest"></span></div>
+                <div class="field">Sched. Depature Time: <span class="departure"></span></div>
+                <div class="field">Sched. Arrival Time: <span class="arrival"></span></div>
             </div>
+        </div>
+        <div class="h-scroll-wrapper">
             <!-- Tails table -->
             <table id="flight-assignment-table" class="table gantt-table m-b-none">
                 <tbody>
@@ -115,7 +120,7 @@
                 </tbody>
             </table>
             <!-- Lines table -->
-            <table id="flight-template-table" class="table gantt-table m-b-md">
+            <table id="flight-template-table" class="table gantt-table m-b-none">
                 <tbody>
                     <tr class="head days">
                         <td class="label-cell" rowspan="2">
@@ -205,6 +210,7 @@
             flightTemplateTable: $('#flight-template-table'),
             loadDataAPIUrl: "{% url 'routeplanning:api_load_data' %}",
             assignFlightAPIUrl: "{% url 'routeplanning:api_assign_flight' %}",
+            assignStatusAPIUrl: "{% url 'routeplanning:api_assign_status' %}",
             startDate: startDate,
             endDate: endDate,
             unit: unit,

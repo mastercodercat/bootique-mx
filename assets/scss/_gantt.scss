@@ -29,6 +29,98 @@ $popover-text-color: #333;
     .date-range-control {
         float: right;
     }
+    .bar {
+        position: absolute;
+        left: 0;
+        top: 0;
+        height: 100%;
+        background-color: $blue;
+        color: #fff;
+        border-radius: 3px;
+        text-align: center;
+        padding-top: 5px;
+        z-index: 1;
+        cursor: move;
+        &.assigned {
+            background-color: #999;
+        }
+        table.flight-info {
+            position: absolute;
+            top: 4px;
+            left: 50%;
+            transform: translateX(-50%);
+            min-width: 70px;
+            width: 97%;
+            td {
+                padding: 0;
+                border: 0;
+                vertical-align: middle;
+            }
+            .org,
+            .dest {
+                font-weight: 600;
+                font-size: 1.15em;
+            }
+            .org {
+                text-align: left;
+            }
+            .dest {
+                text-align: right;
+            }
+            .number {
+                font-size: 0.85em;
+                padding: 0 3px;
+                text-align: center;
+                width: 100%;
+            }
+        }
+        .bar-popover {
+            position: absolute;
+            display: none;
+            padding: 6px 12px;
+            left: 10px;
+            bottom: 100%;
+            margin-bottom: 10px;
+            border-radius: 3px;
+            background-color: $popover-bg-color;
+            color: $popover-text-color;
+            text-align: left;
+            font-size: 0.9em;
+            font-weight: 600;
+            &:before {
+                content: '';
+                position: absolute;
+                left: 10px;
+                top: 100%;
+                border-width: 7px 6px 0;
+                border-style: solid;
+                border-color: $popover-bg-color transparent;
+            }
+            .field {
+                white-space: nowrap;
+            }
+        }
+        &:hover .bar-popover {
+            display: block;
+        }
+        &.maintenance {
+            background-color: $yellow;
+            width: 150px;
+        }
+    }
+    .status-bars {
+        .bar {
+            float: left;
+            display: block;
+            height: 30px;
+            line-height: 30px;
+            position: relative;
+            padding-top: 0;
+            &:not(:last-child) {
+                margin-right: 15px;
+            }
+        }
+    }
     .btn-circle-xs {
         width: 20px;
         height: 20px;
@@ -88,81 +180,6 @@ $popover-text-color: #333;
                 &:hover {
                     opacity: 0.85;
                 }
-            }
-        }
-        .bar {
-            position: absolute;
-            left: 0;
-            top: 0;
-            height: 100%;
-            background-color: $blue;
-            color: #fff;
-            border-radius: 3px;
-            text-align: center;
-            padding-top: 5px;
-            z-index: 1;
-            cursor: move;
-            &.assigned {
-                background-color: #999;
-            }
-            table.flight-info {
-                position: absolute;
-                top: 4px;
-                left: 50%;
-                transform: translateX(-50%);
-                min-width: 70px;
-                width: 97%;
-                td {
-                    padding: 0;
-                    border: 0;
-                    vertical-align: middle;
-                }
-                .org,
-                .dest {
-                    font-weight: 600;
-                    font-size: 1.15em;
-                }
-                .org {
-                    text-align: left;
-                }
-                .dest {
-                    text-align: right;
-                }
-                .number {
-                    font-size: 0.85em;
-                    padding: 0 3px;
-                    text-align: center;
-                    width: 100%;
-                }
-            }
-            .bar-popover {
-                position: absolute;
-                display: none;
-                padding: 6px 12px;
-                left: 10px;
-                bottom: 100%;
-                margin-bottom: 10px;
-                border-radius: 3px;
-                background-color: $popover-bg-color;
-                color: $popover-text-color;
-                text-align: left;
-                font-size: 0.9em;
-                font-weight: 600;
-                &:before {
-                    content: '';
-                    position: absolute;
-                    left: 10px;
-                    top: 100%;
-                    border-width: 7px 6px 0;
-                    border-style: solid;
-                    border-color: $popover-bg-color transparent;
-                }
-                .field {
-                    white-space: nowrap;
-                }
-            }
-            &:hover .bar-popover {
-                display: block;
             }
         }
         #bar-placeholder {

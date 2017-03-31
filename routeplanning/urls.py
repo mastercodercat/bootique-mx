@@ -12,7 +12,8 @@ urlpatterns = [
     url(r'^flights/add/*$', views.add_flight, name='add_flight'),
 
     url(r'^api/loaddata/*$', views.api_load_data, name='api_load_data'),
-    url(r'^api/assignflight/*$', views.api_assign_flight, name='api_assign_flight'),
+    url(r'^api/tail/assignflight/*$', views.api_assign_flight, name='api_assign_flight'),
+    url(r'^api/tail/assignstatus/*$', views.api_assign_status, name='api_assign_status'),
 
     url(r'^$', views.index, name='index'),
 ]

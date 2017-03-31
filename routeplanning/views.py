@@ -266,6 +266,10 @@ def api_assign_flight(request):
         'success': False,
     }
 
+    if request.method != 'POST':
+        result['error'] = 'Only POST method is allowed'
+        return JsonResponse(result, safe=False)
+
     try:
         flight_number = request.POST.get('flight_number')
         tail_number = request.POST.get('tail')
@@ -288,6 +292,47 @@ def api_assign_flight(request):
             end_time=departure_time + timedelta(seconds=flight.length),
             status=1,
             flight=flight,
+            tail=tail
+        )
+        assignment.save()
+    except Exception as e:
+        result['error'] = str(e)
+        return JsonResponse(result, safe=False, status=500)
+
+    result['success'] = True
+    return JsonResponse(result, safe=False)
+
+@login_required
+def api_assign_status(request):
+    result = {
+        'success': False,
+    }
+
+    if request.method != 'POST':
+        result['error'] = 'Only POST method is allowed'
+        return JsonResponse(result, safe=False)
+
+    try:
+        tail_number = request.POST.get('tail')
+        start_time = dateutil.parser.parse(request.POST.get('start_time'))
+        end_time = dateutil.parser.parse(request.POST.get('end_time'))
+        status = request.POST.get('status')
+    except:
+        result['error'] = 'Invalid parameters'
+        return JsonResponse(result, safe=False, status=400)
+
+    try:
+        tail = Tail.objects.get(number=tail_number)
+        if Assignment.is_duplicated(tail, start_time):
+            result['error'] = 'Duplicated assignment'
+            return JsonResponse(result, safe=False)
+
+        assignment = Assignment(
+            flight_number=0,
+            start_time=start_time,
+            end_time=end_time,
+            status=2,
+            flight=None,
             tail=tail
         )
         assignment.save()
