@@ -4,12 +4,12 @@ from datetime import tzinfo, timedelta, datetime
 ZERO = timedelta(0)
 
 class UTC(tzinfo):
-  def utcoffset(self, dt):
-    return ZERO
-  def tzname(self, dt):
-    return "UTC"
-  def dst(self, dt):
-    return ZERO
+    def utcoffset(self, dt):
+        return ZERO
+    def tzname(self, dt):
+        return "UTC"
+    def dst(self, dt):
+        return ZERO
 
 utc = UTC()
 
@@ -30,3 +30,6 @@ def is_coming_due(date):
 
 def totimestamp(date):
     return int((date - datetime(1970, 1, 1, tzinfo=utc)).total_seconds())
+
+def format_to_2_digits(num):
+    return str(num) if num >= 10 else '0' + str(num)

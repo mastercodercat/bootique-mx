@@ -33,6 +33,14 @@
                     <a class="btn btn-white{% if mode == '6' %} active{% endif %}"
                         href="{% url 'routeplanning:index' %}?mode=6&start={{ start_tmstmp }}">7 Days</a>
                 </div>
+                <div class="page-control">
+                    <a href="{% url 'routeplanning:index' %}?mode={{ mode }}&start={{ start_tmstmp|add:"-86400" }}" class="btn btn-white">
+                        <i class="fa fa-chevron-left"></i>
+                    </a>
+                    <a href="{% url 'routeplanning:index' %}?mode={{ mode }}&start={{ start_tmstmp|add:86400 }}" class="btn btn-white">
+                        <i class="fa fa-chevron-right"></i>
+                    </a>
+                </div>
                 <div class="date-range-control date-range-picker-group">
                     <div class="component-wrapper">
                         <div class="input-group date">
@@ -61,7 +69,7 @@
                 <span class="number"></span>
             </div>
             <!-- Tails table -->
-            <table id="flight-assignment-table" class="table gantt-table m-b-md">
+            <table id="flight-assignment-table" class="table gantt-table m-b-none">
                 <tbody>
                     <tr class="head days">
                         <td class="label-cell" rowspan="2">
@@ -71,12 +79,8 @@
                             Tails
                         </td>
                         {% for big_unit in big_units %}
-                            <td colspan="{{ big_unit_colspan }}" {% if units_per_hour == 1 %}data-timestamp="{{ big_unit }}"{% endif %}>
-                                {% if units_per_hour > 1 %}
-                                    {{ big_unit }}
-                                {% else %}
-                                    &nbsp;
-                                {% endif %}
+                            <td colspan="{{ big_unit_colspan }}" data-timestamp="{{ big_unit }}">
+                                &nbsp;
                             </td>
                         {% endfor %}
                     </tr>
@@ -108,12 +112,8 @@
                             Lines
                         </td>
                         {% for big_unit in big_units %}
-                            <td colspan="{{ big_unit_colspan }}" {% if units_per_hour == 1 %}data-timestamp="{{ big_unit }}"{% endif %}>
-                                {% if units_per_hour > 1 %}
-                                    {{ big_unit }}
-                                {% else %}
-                                    &nbsp;
-                                {% endif %}
+                            <td colspan="{{ big_unit_colspan }}" data-timestamp="{{ big_unit }}">
+                                &nbsp;
                             </td>
                         {% endfor %}
                     </tr>

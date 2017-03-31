@@ -8,7 +8,7 @@ from django.middleware import csrf
 
 from routeplanning.models import *
 from routeplanning.forms import *
-from home.helpers import datetime_now_utc, utc, totimestamp
+from home.helpers import *
 
 
 @login_required
@@ -44,20 +44,13 @@ def index(request):
     end_time = start_time + timedelta(days=days)
     end_tmstmp = totimestamp(end_time)
 
-    if units_per_hour > 1:
-        big_units = list()
-        small_units = list()
-        for d in range(0, hours):
-            big_units.append(str(d))
-            for h in range(0, units_per_hour):
-                small_units.append(str(d) + ':' + str(60 / units_per_hour * h))
-    else:
-        big_units = list()
-        small_units = list()
-        for d in range(0, days):
-            big_units.append(totimestamp(start_time + timedelta(days=d)))
-            for h in range(0, hours):
-                small_units.append(h)
+    big_units = list()
+    small_units = list()
+    for d in range(0, days):
+        big_units.append(totimestamp(start_time + timedelta(days=d)))
+        for h in range(0, hours):
+            for u in range(0, units_per_hour):
+                small_units.append(str(format_to_2_digits(h)) + ':' + str(format_to_2_digits(60 / units_per_hour * u)))
 
     context = {
         'tails': tails,
@@ -66,7 +59,7 @@ def index(request):
         'small_units': small_units,
         'days': days,
         'hours': hours,
-        'big_unit_colspan': units_per_hour if units_per_hour > 1 else hours,
+        'big_unit_colspan': units_per_hour * hours if units_per_hour > 1 else hours,
         'days': days,
         'units_per_hour': units_per_hour,
         'mode': mode,
