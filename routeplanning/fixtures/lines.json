@@ -3,25 +3,84 @@
         "model": "routeplanning.line",
         "pk": 1,
         "fields": {
-            "name": "LAX-MCE"
+            "name": "MSP/TVF"
         }
     },
     {
-        "model": "routeplanning.linepart",
-        "pk": 1,
-        "fields": {
-            "line": 1,
-            "name": "LAX",
-            "number": 1
-        }
-    },
-    {
-        "model": "routeplanning.linepart",
+        "model": "routeplanning.line",
         "pk": 2,
         "fields": {
-            "line": 1,
-            "name": "MCE",
-            "number": 2
+            "name": "DFW/GLH"
+        }
+    },
+    {
+        "model": "routeplanning.line",
+        "pk": 3,
+        "fields": {
+            "name": "DEN/CDR"
+        }
+    },
+    {
+        "model": "routeplanning.line",
+        "pk": 4,
+        "fields": {
+            "name": "PDX/PDT"
+        }
+    },
+    {
+        "model": "routeplanning.line",
+        "pk": 5,
+        "fields": {
+            "name": "DFW/SVC"
+        }
+    },
+    {
+        "model": "routeplanning.line",
+        "pk": 6,
+        "fields": {
+            "name": "DEN/ALS"
+        }
+    },
+    {
+        "model": "routeplanning.line",
+        "pk": 7,
+        "fields": {
+            "name": "DFW/CVN"
+        }
+    },
+    {
+        "model": "routeplanning.line",
+        "pk": 8,
+        "fields": {
+            "name": "LAX/MCE"
+        }
+    },
+    {
+        "model": "routeplanning.line",
+        "pk": 9,
+        "fields": {
+            "name": "DEN/VEL"
+        }
+    },
+    {
+        "model": "routeplanning.line",
+        "pk": 10,
+        "fields": {
+            "name": "PHX/ABQ"
+        }
+    },
+    {
+        "model": "routeplanning.line",
+        "pk": 11,
+        "fields": {
+            "name": "DEN/CEZ"
+        }
+    },
+    {
+        "model": "routeplanning.line",
+        "pk": 12,
+        "fields": {
+            "name": "ATL/BNA"
         }
     }
 ]

@@ -1,3 +1,8 @@
+$label-cell-width: 90px;
+$cell-width: 80px;
+$popover-bg-color: #e0e0e1;
+$popover-text-color: #333;
+
 .date-range-picker-group {
     .component-wrapper {
         display: inline-block;
@@ -49,7 +54,7 @@
         }
         tr.head.units td {
             padding: 5px 0 !important;
-            min-width: 80px;
+            min-width: $cell-width;
         }
         td {
             text-align: center;
@@ -59,8 +64,8 @@
             &.label-cell,
             &.axis-cell {
                 text-align: left;
-                width: 90px;
-                min-width: 90px;
+                width: $label-cell-width;
+                min-width: $label-cell-width;
                 white-space: nowrap;
                 padding: 5px 5px 5px 12px;
                 font-size: 14px;
@@ -99,6 +104,65 @@
             cursor: move;
             &.assigned {
                 background-color: #999;
+            }
+            table.flight-info {
+                position: absolute;
+                top: 4px;
+                left: 50%;
+                transform: translateX(-50%);
+                min-width: 70px;
+                width: 97%;
+                td {
+                    padding: 0;
+                    border: 0;
+                    vertical-align: middle;
+                }
+                .org,
+                .dest {
+                    font-weight: 600;
+                    font-size: 1.15em;
+                }
+                .org {
+                    text-align: left;
+                }
+                .dest {
+                    text-align: right;
+                }
+                .number {
+                    font-size: 0.85em;
+                    padding: 0 3px;
+                    text-align: center;
+                    width: 100%;
+                }
+            }
+            .bar-popover {
+                position: absolute;
+                display: none;
+                padding: 6px 12px;
+                left: 10px;
+                bottom: 100%;
+                margin-bottom: 10px;
+                border-radius: 3px;
+                background-color: $popover-bg-color;
+                color: $popover-text-color;
+                text-align: left;
+                font-size: 0.9em;
+                font-weight: 600;
+                &:before {
+                    content: '';
+                    position: absolute;
+                    left: 10px;
+                    top: 100%;
+                    border-width: 7px 6px 0;
+                    border-style: solid;
+                    border-color: $popover-bg-color transparent;
+                }
+                .field {
+                    white-space: nowrap;
+                }
+            }
+            &:hover .bar-popover {
+                display: block;
             }
         }
         #bar-placeholder {

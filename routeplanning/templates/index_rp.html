@@ -66,7 +66,20 @@
             </div>
             <!-- Bar prototype -->
             <div class="bar prototype">
-                <span class="number"></span>
+                <table class="flight-info">
+                    <tr>
+                        <td class="org"></td>
+                        <td class="number"></td>
+                        <td class="dest"></td>
+                    </tr>
+                </table>
+                <div class="bar-popover">
+                    <div class="field">Flight <span class="number"></span></div>
+                    <div class="field">Origin: <span class="org"></span></div>
+                    <div class="field">Destination: <span class="dest"></span></div>
+                    <div class="field">Sched. Depature Time: <span class="departure"></span></div>
+                    <div class="field">Sched. Arrival Time: <span class="arrival"></span></div>
+                </div>
             </div>
             <!-- Tails table -->
             <table id="flight-assignment-table" class="table gantt-table m-b-none">
@@ -157,12 +170,12 @@
         $('td[data-timestamp]').each(function() {
             var $td = $(this);
             var date = new Date($td.data('timestamp') * 1000);
-            $td.html(format2Digits(date.getMonth() + 1) + '/' + format2Digits(date.getDate()) + '/' + date.getFullYear());
+            $td.html(formatTo2Digits(date.getMonth() + 1) + '/' + formatTo2Digits(date.getDate()) + '/' + date.getFullYear());
         });
 
         /* Date pickers init */
-        $('#start_date').val(format2Digits(startDate.getMonth() + 1) + '/' + format2Digits(startDate.getDate()) + '/' + startDate.getFullYear());
-        $('#end_date').val(format2Digits(endDate.getMonth() + 1) + '/' + format2Digits(endDate.getDate()) + '/' + endDate.getFullYear());
+        $('#start_date').val(formatTo2Digits(startDate.getMonth() + 1) + '/' + formatTo2Digits(startDate.getDate()) + '/' + startDate.getFullYear());
+        $('#end_date').val(formatTo2Digits(endDate.getMonth() + 1) + '/' + formatTo2Digits(endDate.getDate()) + '/' + endDate.getFullYear());
         $('.input-group.date').datepicker({
             todayBtn: "linked",
             keyboardNavigation: false,

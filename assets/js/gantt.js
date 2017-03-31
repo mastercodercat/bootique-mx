@@ -27,7 +27,7 @@ function RoutePlanningGantt(options) {
 
 /* helper functions */
 
-function format2Digits(number) {
+function formatTo2Digits(number) {
     return (number < 10 ? '0' : '') + number;
 }
 
@@ -51,24 +51,33 @@ function getTdPosition(self, date) {
 }
 
 function replaceTimeInDate(date, timeString) {
-    var _dateString = date.getUTCFullYear() + '-' + format2Digits(date.getUTCMonth() + 1) + '-' + format2Digits(date.getUTCDate());
+    var _dateString = date.getUTCFullYear() + '-' + formatTo2Digits(date.getUTCMonth() + 1) + '-' + formatTo2Digits(date.getUTCDate());
     _dateString += 'T';
     _dateString += timeString;
     _dateString += 'Z';
     return new Date(_dateString);
 }
 
-function placeBar($tr, tdIndex, length, flightNumber) {
+function placeBar($tr, tdIndex, length, flight) {
     // length := bar-width / td-width
     var $bar = null;
+    var date;
     var $td = $tr.children('td').eq(tdIndex + 1);   // Index should be increased by 1 because first td is line/tail name cell
+
     if ($td.length > 0) {
         $bar = $('.bar.prototype').clone().removeClass('prototype');
         $bar
             .css('width', $td.css('width').replace('px', '') * length)
             .attr('data-td-index', tdIndex)
-            .attr('data-number', flightNumber)
-            .find('.number').html(flightNumber);
+            .attr('data-number', flight.number);
+
+        $bar.find('.number').html(flight.number);
+        $bar.find('.org').html(flight.origin);
+        $bar.find('.dest').html(flight.destination);
+        date = replaceTimeInDate(new Date(), flight.departure_time);
+        $bar.find('.departure').html(formatTo2Digits(date.getHours()) + ':' + formatTo2Digits(date.getMinutes()) + ':' + formatTo2Digits(date.getSeconds()));
+        date = replaceTimeInDate(new Date(), flight.arrival_time);
+        $bar.find('.arrival').html(formatTo2Digits(date.getHours()) + ':' + formatTo2Digits(date.getMinutes()) + ':' + formatTo2Digits(date.getSeconds()));
 
         $td.append($bar);
     }
@@ -143,7 +152,7 @@ RoutePlanningGantt.prototype.bindEventHandlers = function() {
 RoutePlanningGantt.prototype.checkIfAssigned = function(flightNumber, departureTime) {
     var assignmentCount = this.assignments.length;
     for (var i = 0; i < assignmentCount; i++) {
-        if (this.assignments[i].flight_number == flightNumber) {
+        if (this.assignments[i].number == flightNumber) {
             if (new Date(this.assignments[i].start_time).getTime() == departureTime.getTime()) {
                 return true;
             }
@@ -199,7 +208,7 @@ RoutePlanningGantt.prototype.refreshTemplateTable = function() {
                 }
                 tdIndex = getTdIndex(self, departureTime);
                 tdPos = getTdPosition(self, departureTime);
-                $bar = placeBar($tr, tdIndex, length, template.number);
+                $bar = placeBar($tr, tdIndex, length, template);
                 if ($bar) {
                     $bar
                         .attr('data-departure-time', departureTime.toISOString())
@@ -229,7 +238,7 @@ RoutePlanningGantt.prototype.refreshAssignmentTable = function() {
         var tdIndex = parseInt((startTime - self.options.startDate) / 1000 / self.options.unit);
         var length = (endTime - startTime) / 1000 / self.options.unit;
         var tdPos = getTdPosition(self, startTime);
-        var $bar = placeBar($tr, tdIndex, length, assignment.flight_number);
+        var $bar = placeBar($tr, tdIndex, length, assignment);
         if ($bar) {
             $bar
                 .css('left', tdPos * 100 + '%');

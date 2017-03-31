@@ -18,7 +18,7 @@ def index(request):
     end_tmstmp = request.GET.get('end')
 
     tails = Tail.objects.all()
-    lines = Line.objects.all()
+    lines = Line.objects.order_by('name').all()
 
     days_options = { '1': 1, '2': 1, '3': 1, '4': 1, '5': 3, '6': 7, }
     hours_options = { '1': 3, '2': 6, '3': 12, '4': 24, '5': 24, '6': 24, }
@@ -240,12 +240,18 @@ def api_load_data(request):
     for assignment in assignments:
         if assignment.start_time >= start_time and assignment.end_time <= end_time:
             assignment_data = {
-                'flight_number': assignment.flight_number,
+                'number': assignment.flight_number,
                 'start_time': assignment.start_time,
                 'end_time': assignment.end_time,
                 'status': assignment.status,
                 'tail': assignment.tail.number,
             }
+            if assignment.flight:
+                assignment_data['origin'] = assignment.flight.origin
+                assignment_data['destination'] = assignment.flight.destination
+                assignment_data['departure_time'] = assignment.flight.departure_time
+                assignment_data['arrival_time'] = assignment.flight.arrival_time
+                assignment_data['weekly_availability'] = assignment.flight.weekly_availability
             assignments_data.append(assignment_data)
 
     data = {
