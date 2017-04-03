@@ -24,7 +24,7 @@ class Line(models.Model):
 
 
 class LinePart(models.Model):
-    number = models.IntegerField(default=0, null=False, blank=False)
+    number = models.CharField(default='', max_length=10, null=False, blank=False)
 
     line = models.ForeignKey(Line, null=True, blank=False)
 
@@ -33,7 +33,7 @@ class LinePart(models.Model):
 
 
 class Flight(models.Model):
-    number = models.IntegerField(db_index=True, default=0, null=False, blank=False)
+    number = models.CharField(db_index=True, max_length=10, default=0, null=False, blank=False)
     origin = models.CharField(max_length=10, blank=False)
     destination = models.CharField(max_length=10, blank=False)
     departure_datetime = models.DateTimeField(null=False, blank=False)
@@ -55,7 +55,7 @@ class Assignment(models.Model):
         (2, 'Maintenance'),
     )
 
-    flight_number = models.IntegerField(default=0, null=False, blank=False)
+    flight_number = models.CharField(max_length=10, default='', null=False, blank=False)
     start_time = models.DateTimeField(null=False, blank=False)
     end_time = models.DateTimeField(null=False, blank=False)
     status = models.IntegerField(default=1, choices=STATUS_CHOICES)
