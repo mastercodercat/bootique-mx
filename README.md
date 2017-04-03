@@ -41,3 +41,8 @@ Recompile SCSS:
 
 - Run `python manage.py compress` to build and compress SCSS files
 - Restart django
+
+Load flights data from CSV to Route Planning Gantt:
+
+- Put CSV file as `flights.csv` in routeplanning/fixtures/
+- Run `python manage.py loadflightcsv`

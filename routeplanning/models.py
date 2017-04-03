@@ -16,9 +16,14 @@ class Line(models.Model):
     def __unicode__(self):
         return self.name
 
+    @property
+    def flights(self):
+        line_parts = self.linepart_set.all().values('number')
+        flight_numbers = [lp['number'] for lp in line_parts]
+        return Flight.objects.filter(number__in=flight_numbers)
+
 
 class LinePart(models.Model):
-    name = models.CharField(max_length=10, blank=False)
     number = models.IntegerField(default=0, null=False, blank=False)
 
     line = models.ForeignKey(Line, null=True, blank=False)
@@ -28,37 +33,20 @@ class LinePart(models.Model):
 
 
 class Flight(models.Model):
-    number = models.IntegerField(default=0, null=False, blank=False)
+    number = models.IntegerField(db_index=True, default=0, null=False, blank=False)
     origin = models.CharField(max_length=10, blank=False)
     destination = models.CharField(max_length=10, blank=False)
-    departure_time = models.TimeField(null=False, blank=False)
-    arrival_time = models.TimeField(null=False, blank=False)
-    weekly_availability = models.CharField(default='XXXXXXX', max_length=7, blank=False)
+    departure_datetime = models.DateTimeField(null=False, blank=False)
+    arrival_datetime = models.DateTimeField(null=False, blank=False)
 
-    line = models.ForeignKey(Line, null=True, blank=False)
+    # line = models.ForeignKey(Line, null=True, blank=False)
 
     def __unicode__(self):
         return str(self.number) + '. ' + self.origin + '-' + self.destination
 
-    def is_available_on_weekday(self, weekday):
-        weekday %= 7
-        return (self.weekly_availability[weekday:(weekday + 1)] == 'X')
-
-    def is_available_on_weekday_period(self, start, end):
-        start %= 7
-        end %= 7
-        if end < start:     # It's possible that end weekday is smaller than start
-            end += 7
-        for weekday in range(start, end + 1):
-            if self.is_available_on_weekday(weekday):
-                return True
-        return False
-
     @property
     def length(self):
-        arv_sec = self.arrival_time.hour * 3600 + self.arrival_time.minute * 60 + self.arrival_time.second
-        dpt_sec = self.departure_time.hour * 3600 + self.departure_time.minute * 60 + self.departure_time.second
-        return (arv_sec - dpt_sec) % 86400
+        return (self.arrival_datetime - self.departure_datetime).total_seconds()
 
 
 class Assignment(models.Model):

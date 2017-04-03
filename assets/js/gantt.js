@@ -51,14 +51,6 @@ function getTdPosition(self, date) {
     return parseFloat(parseInt(secondsDiff) % parseInt(self.options.unit)) / parseFloat(self.options.unit);
 }
 
-function replaceTimeInDate(date, timeString) {
-    var _dateString = date.getUTCFullYear() + '-' + formatTo2Digits(date.getUTCMonth() + 1) + '-' + formatTo2Digits(date.getUTCDate());
-    _dateString += 'T';
-    _dateString += timeString;
-    _dateString += 'Z';
-    return new Date(_dateString);
-}
-
 function placeBar($tr, tdIndex, length, object) {
     /*
      * length := bar-width / td-width
@@ -80,9 +72,9 @@ function placeBar($tr, tdIndex, length, object) {
             $bar.find('.number').html(object.number);
             $bar.find('.org').html(object.origin);
             $bar.find('.dest').html(object.destination);
-            date = replaceTimeInDate(new Date(), object.departure_time);
+            date = new Date(object.departure_datetime);
             $bar.find('.departure').html(formatTo2Digits(date.getHours()) + ':' + formatTo2Digits(date.getMinutes()) + ':' + formatTo2Digits(date.getSeconds()));
-            date = replaceTimeInDate(new Date(), object.arrival_time);
+            date = new Date(object.arrival_datetime);
             $bar.find('.arrival').html(formatTo2Digits(date.getHours()) + ':' + formatTo2Digits(date.getMinutes()) + ':' + formatTo2Digits(date.getSeconds()));
         } else {
             var status = object.status;
@@ -176,11 +168,10 @@ RoutePlanningGantt.prototype.bindEventHandlers = function() {
                     }
                 });
         } else {
-            var flightNumber = $bar.data('number');
+            var flightId = $bar.data('flight-id');
             var tdIndex = $bar.data('td-index');
-            var departureTime = new Date($bar.data('departure-time'));
 
-            self.assignFlight(flightNumber, tailNumber, departureTime)
+            self.assignFlight(flightId, tailNumber)
                 .then(function(response) {
                     if (response.success) {
                         var $td = $tr.children('td').eq(tdIndex + 1);
@@ -205,11 +196,11 @@ RoutePlanningGantt.prototype.bindEventHandlers = function() {
     });
 }
 
-RoutePlanningGantt.prototype.checkIfAssigned = function(flightNumber, departureTime) {
+RoutePlanningGantt.prototype.checkIfAssigned = function(flightNumber, departureDateTime) {
     var assignmentCount = this.assignments.length;
     for (var i = 0; i < assignmentCount; i++) {
         if (this.assignments[i].number == flightNumber) {
-            if (new Date(this.assignments[i].start_time).getTime() == departureTime.getTime()) {
+            if (new Date(this.assignments[i].start_time).getTime() == departureDateTime.getTime()) {
                 return true;
             }
         }
@@ -232,7 +223,10 @@ RoutePlanningGantt.prototype.loadData = function() {
     })
     .then(function(data) {
         data.templates.forEach(function(template) {
-            self.templates[template.number] = template;
+            if (!(template.number in self.templates)) {
+                self.templates[template.number] = []
+            }
+            self.templates[template.number].push(template);
         });
 
         data.assignments.forEach(function(assignment) {
@@ -246,38 +240,34 @@ RoutePlanningGantt.prototype.loadData = function() {
 
 RoutePlanningGantt.prototype.refreshTemplateTable = function() {
     var self = this;
-    var template, length, tdIndex, tdPos;
+    var templates, template, length, tdIndex, tdPos;
     var $bar;
+    var departureDateTime, arrivalDateTime;
 
     for (var flightNumber in self.templates) {
-        template = self.templates[flightNumber];
-        length = timeDiffInSeconds(template.arrival_time, template.departure_time) / self.options.unit;
+        templates = self.templates[flightNumber];
+        for(var index in templates) {
+            template = templates[index];
+            arrivalDateTime = new Date(template.arrival_datetime);
+            departureDateTime = new Date(template.departure_datetime);
+            length = (arrivalDateTime - departureDateTime) / 1000 / self.options.unit;
 
-        var date = new Date(self.options.startDate.getTime());
-        var $tr = self.options.flightTemplateTable.find('tr[data-line=' + template.line_id + ']');
-        while (date <= self.options.endDate) {
-            var weekday = (date.getDay() - 1) % 7;
-            if (template.weekly_availability.substring(weekday, weekday + 1) == 'X') {
-                var departureTime = replaceTimeInDate(date, template.departure_time);
-                if (departureTime < date) {
-                    departureTime.setDate(departureTime.getDate() + 1);
-                }
-                tdIndex = getTdIndex(self, departureTime);
-                tdPos = getTdPosition(self, departureTime);
-                $bar = placeBar($tr, tdIndex, length, template);
-                if ($bar) {
-                    $bar
-                        .attr('data-departure-time', departureTime.toISOString())
-                        .css('left', tdPos * 100 + '%');
-                    if (self.checkIfAssigned(template.number, departureTime)) {
-                        $bar.addClass('assigned');
-                    } else {
-                        $bar.attr('draggable', true);
-                    }
+            var date = new Date(self.options.startDate.getTime());
+            var $tr = self.options.flightTemplateTable.find('tr[data-line=' + template.line_id + ']');
+            tdIndex = getTdIndex(self, departureDateTime);
+            tdPos = getTdPosition(self, departureDateTime);
+            $bar = placeBar($tr, tdIndex, length, template);
+            if ($bar) {
+                $bar
+                    .attr('data-departure-time', departureDateTime.toISOString())
+                    .attr('data-flight-id', template.id)
+                    .css('left', tdPos * 100 + '%');
+                if (self.checkIfAssigned(template.number, departureDateTime)) {
+                    $bar.addClass('assigned');
+                } else {
+                    $bar.attr('draggable', true);
                 }
             }
-
-            date.setDate(date.getDate() + 1);
         }
     }
 }
@@ -302,7 +292,7 @@ RoutePlanningGantt.prototype.refreshAssignmentTable = function() {
     }
 }
 
-RoutePlanningGantt.prototype.assignFlight = function(flightNumber, tailNumber, departureTime) {
+RoutePlanningGantt.prototype.assignFlight = function(flightId, tailNumber) {
     var self = this;
 
     if (!self.options.assignFlightAPIUrl) {
@@ -315,9 +305,8 @@ RoutePlanningGantt.prototype.assignFlight = function(flightNumber, tailNumber, d
         url: self.options.assignFlightAPIUrl,
         data: {
             csrfmiddlewaretoken: self.options.csrfToken,
-            flight_number: flightNumber,
+            flight_id: flightId,
             tail: tailNumber,
-            departure_time: departureTime.toISOString(),
         },
     });
 }

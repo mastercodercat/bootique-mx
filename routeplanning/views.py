@@ -32,7 +32,7 @@ def index(request):
         start_time = datetime.fromtimestamp(float(start_tmstmp), tz=utc)
     else:
         start_time = datetime_now_utc()
-        start_time.replace(hour=0, minute=0, second=0, microsecond=0)
+        start_time = start_time.replace(hour=0, minute=0, second=0, microsecond=0)
         start_tmstmp = totimestamp(start_time)
 
     if start_tmstmp and end_tmstmp:
@@ -217,21 +217,20 @@ def add_flight(request):
 def api_load_data(request):
     start_time = datetime.fromtimestamp(int(request.GET.get('startdate')), tz=utc)
     end_time = datetime.fromtimestamp(int(request.GET.get('enddate')), tz=utc)
-    start_week_day = start_time.weekday()
-    end_week_day = end_time.weekday()
 
     template_data = []
-    flights = Flight.objects.all().select_related('line')
-    for flight in flights:
-        if flight.is_available_on_weekday_period(start_week_day, end_week_day):
+    lines = Line.objects.all()
+    for line in lines:
+        flights = line.flights.filter(arrival_datetime__gte=start_time).filter(departure_datetime__lte=end_time)
+        for flight in flights:
             flight_data = {
+                'id': flight.id,
                 'number': flight.number,
                 'origin': flight.origin,
                 'destination': flight.destination,
-                'departure_time': flight.departure_time,
-                'arrival_time': flight.arrival_time,
-                'weekly_availability': flight.weekly_availability,
-                'line_id': flight.line.id,
+                'departure_datetime': flight.departure_datetime,
+                'arrival_datetime': flight.arrival_datetime,
+                'line_id': line.id,
             }
             template_data.append(flight_data)
 
@@ -249,9 +248,8 @@ def api_load_data(request):
             if assignment.flight:
                 assignment_data['origin'] = assignment.flight.origin
                 assignment_data['destination'] = assignment.flight.destination
-                assignment_data['departure_time'] = assignment.flight.departure_time
-                assignment_data['arrival_time'] = assignment.flight.arrival_time
-                assignment_data['weekly_availability'] = assignment.flight.weekly_availability
+                assignment_data['departure_datetime'] = assignment.flight.departure_datetime
+                assignment_data['arrival_datetime'] = assignment.flight.arrival_datetime
             assignments_data.append(assignment_data)
 
     data = {
@@ -271,25 +269,24 @@ def api_assign_flight(request):
         return JsonResponse(result, safe=False)
 
     try:
-        flight_number = request.POST.get('flight_number')
+        flight_id = request.POST.get('flight_id')
         tail_number = request.POST.get('tail')
-        departure_time = dateutil.parser.parse(request.POST.get('departure_time'))
     except:
         result['error'] = 'Invalid parameters'
         return JsonResponse(result, safe=False, status=400)
 
     try:
         tail = Tail.objects.get(number=tail_number)
-        if Assignment.is_duplicated(tail, departure_time):
+        flight = Flight.objects.get(pk=flight_id)
+
+        if Assignment.is_duplicated(tail, flight.departure_datetime):
             result['error'] = 'Duplicated assignment'
             return JsonResponse(result, safe=False)
 
-        flight = Flight.objects.get(number=flight_number)
-
         assignment = Assignment(
             flight_number=flight.number,
-            start_time=departure_time,
-            end_time=departure_time + timedelta(seconds=flight.length),
+            start_time=flight.departure_datetime,
+            end_time=flight.arrival_datetime,
             status=1,
             flight=flight,
             tail=tail
