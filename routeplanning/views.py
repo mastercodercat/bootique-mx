@@ -221,7 +221,7 @@ def api_load_data(request):
     template_data = []
     lines = Line.objects.all()
     for line in lines:
-        flights = line.flights.filter(arrival_datetime__gte=start_time).filter(departure_datetime__lte=end_time)
+        flights = line.flights.filter(departure_datetime__gte=start_time).filter(departure_datetime__lte=end_time)
         for flight in flights:
             flight_data = {
                 'id': flight.id,
@@ -235,22 +235,21 @@ def api_load_data(request):
             template_data.append(flight_data)
 
     assignments_data = []
-    assignments = Assignment.objects.select_related('flight', 'tail').all()
+    assignments = Assignment.objects.select_related('flight', 'tail').filter(start_time__gte=start_time).filter(end_time__lte=end_time)
     for assignment in assignments:
-        if assignment.start_time >= start_time and assignment.end_time <= end_time:
-            assignment_data = {
-                'number': assignment.flight_number,
-                'start_time': assignment.start_time,
-                'end_time': assignment.end_time,
-                'status': assignment.status,
-                'tail': assignment.tail.number,
-            }
-            if assignment.flight:
-                assignment_data['origin'] = assignment.flight.origin
-                assignment_data['destination'] = assignment.flight.destination
-                assignment_data['departure_datetime'] = assignment.flight.departure_datetime
-                assignment_data['arrival_datetime'] = assignment.flight.arrival_datetime
-            assignments_data.append(assignment_data)
+        assignment_data = {
+            'number': assignment.flight_number,
+            'start_time': assignment.start_time,
+            'end_time': assignment.end_time,
+            'status': assignment.status,
+            'tail': assignment.tail.number,
+        }
+        if assignment.flight:
+            assignment_data['origin'] = assignment.flight.origin
+            assignment_data['destination'] = assignment.flight.destination
+            assignment_data['departure_datetime'] = assignment.flight.departure_datetime
+            assignment_data['arrival_datetime'] = assignment.flight.arrival_datetime
+        assignments_data.append(assignment_data)
 
     data = {
         'assignments': assignments_data,
