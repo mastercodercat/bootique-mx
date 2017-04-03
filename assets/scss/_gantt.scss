@@ -139,6 +139,7 @@ $popover-text-color: #333;
         width: 100%;
         max-width: none;
         background-color: #fff;
+        overflow-x: hidden;
 
         tr.head td {
             border-top: 0;
