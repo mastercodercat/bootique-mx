@@ -30,8 +30,10 @@ Run all the commands in the following order:
 `python manage.py loaddata engines.json`
 `python manage.py loaddata propellers.json`
 `python manage.py loaddata tails.json`
-`python manage.py loaddata lines.json`
-`python manage.py loaddata flights.json`
+`python manage.py loadflightcsv` (Before running this, put CSV file as `flights.csv` in routeplanning/fixtures/)
+`python manage.py loadlinecsv` (Before running this, put `lines.csv` and `lineparts.csv` in routeplanning/fixtures/)
+
+(Note that default CSV data is already in fixtures. Put CSV file into fixtures folder when you need to use new or updated data.)
 
 Run test:
 
@@ -41,8 +43,3 @@ Recompile SCSS:
 
 - Run `python manage.py compress` to build and compress SCSS files
 - Restart django
-
-Load flights data from CSV to Route Planning Gantt:
-
-- Put CSV file as `flights.csv` in routeplanning/fixtures/
-- Run `python manage.py loadflightcsv`

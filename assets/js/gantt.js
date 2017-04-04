@@ -32,10 +32,13 @@ function formatTo2Digits(number) {
     return (number < 10 ? '0' : '') + number;
 }
 
-function timeDiffInSeconds(time1, time2) {
-    var date1 = new Date("2010-01-01T" + time1);
-    var date2 = new Date("2010-01-01T" + time2);
-    return (date1 - date2) / 1000;
+function formatDate(date) {
+    return formatTo2Digits(date.getMonth() + 1) + '/' +
+        formatTo2Digits(date.getDate()) + '/' +
+        formatTo2Digits(date.getFullYear())  + ' ' +
+        formatTo2Digits(date.getHours())  + ':' +
+        formatTo2Digits(date.getMinutes())  + ':' +
+        formatTo2Digits(date.getSeconds());
 }
 
 function getTdIndex(self, date) {
@@ -73,9 +76,9 @@ function placeBar($tr, tdIndex, length, object) {
             $bar.find('.org').html(object.origin);
             $bar.find('.dest').html(object.destination);
             date = new Date(object.departure_datetime);
-            $bar.find('.departure').html(formatTo2Digits(date.getHours()) + ':' + formatTo2Digits(date.getMinutes()) + ':' + formatTo2Digits(date.getSeconds()));
+            $bar.find('.departure').html(formatDate(date));
             date = new Date(object.arrival_datetime);
-            $bar.find('.arrival').html(formatTo2Digits(date.getHours()) + ':' + formatTo2Digits(date.getMinutes()) + ':' + formatTo2Digits(date.getSeconds()));
+            $bar.find('.arrival').html(formatDate(date));
         } else {
             var status = object.status;
             if (status == 2) {
