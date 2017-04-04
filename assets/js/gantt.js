@@ -198,7 +198,7 @@ RoutePlanningGantt.prototype.bindEventHandlers = function() {
                 .then(function(response) {
                     if (response.success) {
                         var $newBar = $bar.clone();
-                        placeStatusBar($newBar, $td);
+                        placeStatusBar($newBar, $td, 3600 / self.options.unit);
                         $newBar.attr('data-assignment-id', response.id);
                     }
                 });
@@ -294,6 +294,8 @@ RoutePlanningGantt.prototype.loadData = function() {
 
         self.refreshTemplateTable();
         self.refreshAssignmentTable();
+
+        $('.cover').removeClass('loading');
     });
 }
 

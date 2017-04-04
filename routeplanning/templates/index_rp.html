@@ -16,7 +16,7 @@
 {% endblock %}
 
 {% block content %}
-    <div class="gantt">
+    <div class="gantt loading">
         <div class="clearfix m-b-md"><!-- Top controls -->
             <div class="unit-control btn-group">
                 <a class="btn btn-white{% if mode == '1' %} active{% endif %}"
@@ -92,7 +92,7 @@
                 <div class="field">Sched. Arrival Time: <span class="arrival"></span></div>
             </div>
         </div>
-        <div class="h-scroll-wrapper">
+        <div class="h-scroll-wrapper cover loading">
             <!-- Tails table -->
             <table id="flight-assignment-table" class="table gantt-table m-b-none">
                 <tbody>
