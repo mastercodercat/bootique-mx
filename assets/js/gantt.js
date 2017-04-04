@@ -64,11 +64,10 @@ function placeBar($tr, tdIndex, length, object) {
     var $td = $tr.children('td').eq(tdIndex + 1);   // Index should be increased by 1 because first td is line/tail name cell
 
     if ($td.length > 0) {
-        $bar = $('.bar.prototype').clone().removeClass('prototype');
-        $bar
-            .css('width', $td.css('width').replace('px', '') * length);
-
         if (object.number > 0) {
+            $bar = $('.bar.prototype').clone().removeClass('prototype');
+            $bar
+                .css('width', $td.css('width').replace('px', '') * length);
             $bar
                 .attr('data-td-index', tdIndex)
                 .attr('data-number', object.number);
@@ -79,21 +78,24 @@ function placeBar($tr, tdIndex, length, object) {
             $bar.find('.departure').html(formatDate(date));
             date = new Date(object.arrival_datetime);
             $bar.find('.arrival').html(formatDate(date));
+
+            $td.append($bar);
         } else {
             var status = object.status;
             if (status == 2) {
-                $bar.addClass('maintenance').html('Maintenance');
+                $bar = $('.status-prototype[data-status="' + status + '"]').clone();
+                placeStatusBar($bar, $td, length);
             }
         }
-
-        $td.append($bar);
     }
     return $bar;
 }
 
-function placeStatusBar($bar, $td) {
+function placeStatusBar($bar, $td, length = 1) {
     $bar
-        .css('width', $td.css('width').replace('px', ''));
+        .removeClass('status-prototype')
+        .css('width', $td.css('width').replace('px', '') * length)
+        .css('height', $td.css('height').replace('px', ''));
     $td.append($bar);
 
     return $bar;
@@ -106,15 +108,36 @@ RoutePlanningGantt.prototype.bindEventHandlers = function() {
     var $body = $('body');
     var assignmentTableId = self.options.flightAssignmentTable.attr('id');
     var assignmentTableTrSelector = '#' + assignmentTableId + ' tr:not(.head)';
+    var removeAreaSelector = '#drop-to-remove-area';
     var $prevDraggedTr, $prevDraggedTd;
     var $bar;
 
+    /* Template and status bar drag start */
+
     $body.on('dragstart', '.gantt-table tr:not(.head) > td > .bar, .status-bars > .bar', function(event) {
         $bar = $(event.target);
+        $bar.addClass('dragging');
     });
-    // $body.on('dragstart', '.status-bars > .bar', function(event) {
-    //     $bar = $(event.target);
-    // });
+
+    /* Remove area drag enter/leave/over cancel, state change */
+
+    $body.on('dragenter', removeAreaSelector, function(event) {
+        event.preventDefault();
+        if ($bar.data('assignment-id')) {
+            $(removeAreaSelector).addClass('dragging-over');
+        }
+    });
+    $body.on('dragleave', removeAreaSelector, function(event) {
+        event.preventDefault();
+        if ($bar.data('assignment-id')) {
+            $(removeAreaSelector).removeClass('dragging-over');
+        }
+    });
+    $body.on('dragover', removeAreaSelector, function(event) {
+        event.preventDefault();
+    });
+
+    /* Assignment drag enter/over */
 
     $body.on('dragenter', assignmentTableTrSelector, function(event) {
         event.preventDefault();
@@ -149,8 +172,16 @@ RoutePlanningGantt.prototype.bindEventHandlers = function() {
         }
     });
 
+    /* Drop on assignment table */
+
     $body.on('drop', assignmentTableTrSelector, function(event) {
         event.preventDefault();
+
+        $bar.removeClass('dragging');
+        if ($bar.data('assignment-id')) {
+            return; // Drag and drop over assignment table only is prohibited for now
+        }
+
         var $tr = $(event.target).closest('tr');
         var tailNumber = $tr.data('tail-number');
 
@@ -168,6 +199,7 @@ RoutePlanningGantt.prototype.bindEventHandlers = function() {
                     if (response.success) {
                         var $newBar = $bar.clone();
                         placeStatusBar($newBar, $td);
+                        $newBar.attr('data-assignment-id', response.id);
                     }
                 });
         } else {
@@ -178,8 +210,12 @@ RoutePlanningGantt.prototype.bindEventHandlers = function() {
                 .then(function(response) {
                     if (response.success) {
                         var $td = $tr.children('td').eq(tdIndex + 1);
-                        $td.append($bar.clone().attr('draggable', false));
-                        $bar.addClass('assigned').attr('draggable', false);
+                        var $newBar = $bar.clone().attr('draggable', true);
+                        $newBar.attr('data-assignment-id', response.id);
+                        $td.append($newBar);
+                        $bar
+                            .addClass('assigned')
+                            .attr('draggable', false);
                     }
                 });
         }
@@ -189,6 +225,26 @@ RoutePlanningGantt.prototype.bindEventHandlers = function() {
             $prevDraggedTd = null;
         }
     });
+
+    /* Drop on remove area */
+
+    $body.on('drop', removeAreaSelector, function(event) {
+        event.preventDefault();
+
+        $(removeAreaSelector).removeClass('dragging-over');
+
+        if ($bar.data('assignment-id')) {
+            var assignmentId = $bar.data('assignment-id');
+            self.removeAssignment(assignmentId)
+                .then(function(response) {
+                    if (response.success) {
+                        $bar.remove();
+                    }
+                });
+        }
+    });
+
+    /* dragend cancel for all */
 
     $body.on('dragend', function(event) {
         event.preventDefault();
@@ -290,7 +346,9 @@ RoutePlanningGantt.prototype.refreshAssignmentTable = function() {
         var $bar = placeBar($tr, tdIndex, length, assignment);
         if ($bar) {
             $bar
-                .css('left', tdPos * 100 + '%');
+                .css('left', tdPos * 100 + '%')
+                .attr('data-assignment-id', assignment.id)
+                .attr('draggable', true);
         }
     }
 }
@@ -299,7 +357,7 @@ RoutePlanningGantt.prototype.assignFlight = function(flightId, tailNumber) {
     var self = this;
 
     if (!self.options.assignFlightAPIUrl) {
-        console.error('Assign flight api URL not configured');
+        console.error('Assign flight API URL not configured');
         return;
     }
 
@@ -318,7 +376,7 @@ RoutePlanningGantt.prototype.assignStatus = function(tailNumber, status, startTi
     var self = this;
 
     if (!self.options.assignStatusAPIUrl) {
-        console.error('Assign status api URL not configured');
+        console.error('Assign status API URL not configured');
         return;
     }
 
@@ -331,6 +389,24 @@ RoutePlanningGantt.prototype.assignStatus = function(tailNumber, status, startTi
             status: status,
             start_time: startTime.toISOString(),
             end_time: endTime.toISOString(),
+        },
+    });
+}
+
+RoutePlanningGantt.prototype.removeAssignment = function(assignmentId) {
+    var self = this;
+
+    if (!self.options.removeAssignmentAPIUrl) {
+        console.error('Remove assignment API URL not configured');
+        return;
+    }
+
+    return $.ajax({
+        method: 'POST',
+        url: self.options.removeAssignmentAPIUrl,
+        data: {
+            csrfmiddlewaretoken: self.options.csrfToken,
+            assignment_id: assignmentId,
         },
     });
 }

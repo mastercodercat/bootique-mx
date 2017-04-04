@@ -76,7 +76,7 @@ class Assignment(models.Model):
         dup_count = cls.objects.filter(
             tail=tail,
             start_time__lte=start_time,
-            end_time__gte=start_time
+            end_time__gt=start_time
         ).count()
 
         return dup_count > 0

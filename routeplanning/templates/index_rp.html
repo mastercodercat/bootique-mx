@@ -66,7 +66,14 @@
         <!-- Status bar sources -->
         <div class="status-bars clearfix m-b-md">
             <div class="clearfix">Drag and drop: </div>
-            <div class="bar maintenance" draggable="true" data-status="2">Maintenance</div>
+            <div class="bar maintenance status-prototype" draggable="true" data-status="2">
+                <div class="left-handle"></div>
+                <div class="text">Maintenance</div>
+                <div class="right-handle"></div>
+            </div>
+            <div class="bar drop-to-remove-area" id="drop-to-remove-area">
+                <i class="fa fa-trash-o"></i> Drag and drop here to remove assignment
+            </div>
         </div>
         <!-- Bar prototype -->
         <div class="bar prototype">
@@ -211,6 +218,7 @@
             loadDataAPIUrl: "{% url 'routeplanning:api_load_data' %}",
             assignFlightAPIUrl: "{% url 'routeplanning:api_assign_flight' %}",
             assignStatusAPIUrl: "{% url 'routeplanning:api_assign_status' %}",
+            removeAssignmentAPIUrl: "{% url 'routeplanning:api_remove_assignment' %}",
             startDate: startDate,
             endDate: endDate,
             unit: unit,

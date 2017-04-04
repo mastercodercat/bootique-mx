@@ -100,12 +100,40 @@ $popover-text-color: #333;
                 white-space: nowrap;
             }
         }
-        &:hover .bar-popover {
+        &:not(.dragging):hover .bar-popover {
             display: block;
         }
         &.maintenance {
             background-color: $yellow;
-            width: 150px;
+            display: table;
+            padding-top: 0;
+            table-layout: fixed;
+
+            .left-handle,
+            .right-handle,
+            .text {
+                display: table-cell;
+                height: 100%;
+                vertical-align: middle;
+            }
+            .left-handle,
+            .right-handle {
+                width: 20px;
+                height: 100%;
+                cursor: ew-resize;
+            }
+            .text {
+                overflow: hidden;
+            }
+            &.status-prototype {
+                .left-handle,
+                .right-handle {
+                    cursor: inherit;
+                }
+                .text {
+                    padding: 0 10px;
+                }
+            }
         }
     }
     .status-bars {
@@ -118,6 +146,24 @@ $popover-text-color: #333;
             padding-top: 0;
             &:not(:last-child) {
                 margin-right: 15px;
+            }
+        }
+        .drop-to-remove-area {
+            float: right;
+            max-width: 100%;
+            text-align: center;
+            padding: 0 15px;
+            color: inherit;
+            border: 1px solid #999;
+            background: transparent;
+            cursor: pointer;
+            &.dragging-over {
+                background: $red;
+                border-color: $red;
+                color: #fff;
+            }
+            .fa {
+                pointer-events: none;
             }
         }
     }

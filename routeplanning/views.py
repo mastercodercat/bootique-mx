@@ -238,6 +238,7 @@ def api_load_data(request):
     assignments = Assignment.objects.select_related('flight', 'tail').filter(start_time__gte=start_time).filter(end_time__lte=end_time)
     for assignment in assignments:
         assignment_data = {
+            'id': assignment.id,
             'number': assignment.flight_number,
             'start_time': assignment.start_time,
             'end_time': assignment.end_time,
@@ -296,6 +297,7 @@ def api_assign_flight(request):
         return JsonResponse(result, safe=False, status=500)
 
     result['success'] = True
+    result['id'] = assignment.id
     return JsonResponse(result, safe=False)
 
 @login_required
@@ -332,6 +334,33 @@ def api_assign_status(request):
             tail=tail
         )
         assignment.save()
+    except Exception as e:
+        result['error'] = str(e)
+        return JsonResponse(result, safe=False, status=500)
+
+    result['success'] = True
+    result['id'] = assignment.id
+    return JsonResponse(result, safe=False)
+
+@login_required
+def api_remove_assignment(request):
+    result = {
+        'success': False,
+    }
+
+    if request.method != 'POST':
+        result['error'] = 'Only POST method is allowed'
+        return JsonResponse(result, safe=False)
+
+    try:
+        assignment_id = request.POST.get('assignment_id')
+    except:
+        result['error'] = 'Invalid parameters'
+        return JsonResponse(result, safe=False, status=400)
+
+    try:
+        assignment = Assignment.objects.get(pk=assignment_id)
+        assignment.delete()
     except Exception as e:
         result['error'] = str(e)
         return JsonResponse(result, safe=False, status=500)
