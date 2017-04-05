@@ -19,7 +19,7 @@ function RoutePlanningGantt(options) {
         && this.options.startDate
         && this.options.endDate
     ) {
-        this.bindEventHandlers();
+        this.initInteractables();
         this.loadData();
     } else {
         console.error('Invalid table element')
@@ -103,108 +103,72 @@ function placeStatusBar($bar, $td, length = 1) {
 
 /* class methods */
 
-RoutePlanningGantt.prototype.bindEventHandlers = function() {
+RoutePlanningGantt.prototype.initInteractables = function() {
     var self = this;
-    var $body = $('body');
     var assignmentTableId = self.options.flightAssignmentTable.attr('id');
     var assignmentTableTrSelector = '#' + assignmentTableId + ' tr:not(.head)';
+    var ganttTableBarSelector = '.gantt-table tr:not(.head) > td > .bar';
+    var statusBarPrototypeSelector = '.status-bars .bar';
+    var draggables = [ganttTableBarSelector, statusBarPrototypeSelector];
     var removeAreaSelector = '#drop-to-remove-area';
-    var $prevDraggedTr, $prevDraggedTd;
-    var $bar;
 
-    /* Template and status bar drag start */
+    // Template, assignment table bar, status bar draggable
 
-    $body.on('dragstart', '.gantt-table tr:not(.head) > td > .bar, .status-bars > .bar', function(event) {
-        $bar = $(event.target);
-        $bar.addClass('dragging');
+    draggables.forEach(function(draggableSelector) {
+        interact(draggableSelector).draggable({
+            autoScroll: true,
+            onstart: function(event) {
+                var $bar = $(event.target),
+                    $barClone = $bar.clone().addClass('drag-clone');
+                $barClone.appendTo($bar.parent());
+            },
+            onmove: function dragMoveListener(event) {
+                var $bar = $(event.target).siblings('.drag-clone'),
+                    x = (parseFloat($bar.attr('data-x')) || 0) + event.dx,
+                    y = (parseFloat($bar.attr('data-y')) || 0) + event.dy;
+
+                $bar.css('transform', 'translate(' + x + 'px, ' + y + 'px)')
+                    .attr('data-x', x)
+                    .attr('data-y', y)
+                    .addClass('dragging');
+            },
+            onend: function (event) {
+                var $bar = $(event.target).siblings('.drag-clone');
+
+                $bar.remove();
+            },
+        });
     });
 
-    /* Remove area drag enter/leave/over cancel, state change */
+    // Drop into assignment table row (only accept bars from template table)
 
-    $body.on('dragenter', removeAreaSelector, function(event) {
-        event.preventDefault();
-        if ($bar.data('assignment-id')) {
-            $(removeAreaSelector).addClass('dragging-over');
-        }
-    });
-    $body.on('dragleave', removeAreaSelector, function(event) {
-        event.preventDefault();
-        if ($bar.data('assignment-id')) {
-            $(removeAreaSelector).removeClass('dragging-over');
-        }
-    });
-    $body.on('dragover', removeAreaSelector, function(event) {
-        event.preventDefault();
-    });
+    interact(assignmentTableTrSelector).dropzone({
+        accept: ganttTableBarSelector + ', ' + statusBarPrototypeSelector,
+        ondragenter: function (event) {
+            var $bar = $(event.relatedTarget),
+                $tr = $(event.target),
+                tdIndex = $bar.data('td-index'),
+                $td = $tr.children('td').eq(tdIndex + 1);
 
-    /* Assignment drag enter/over */
+            $td.addClass('dragging-over');
+        },
+        ondragleave: function (event) {
+            var $bar = $(event.relatedTarget),
+                $tr = $(event.target),
+                tdIndex = $bar.data('td-index'),
+                $td = $tr.children('td').eq(tdIndex + 1);
 
-    $body.on('dragenter', assignmentTableTrSelector, function(event) {
-        event.preventDefault();
-    });
+            $td.removeClass('dragging-over');
+        },
+        ondrop: function (event) {
+            var $bar = $(event.relatedTarget),
+                $tr = $(event.target),
+                tdIndex = $bar.data('td-index'),
+                $td = $tr.children('td').eq(tdIndex + 1),
+                flightId = $bar.data('flight-id'),
+                tailNumber = $tr.data('tail-number');
 
-    $body.on('dragover', assignmentTableTrSelector, function(event) {
-        event.preventDefault();
-        if ($bar.data('status') > 0) {
-            var $td = $(event.target);
-            if ($td.prop('tagName').toLowerCase() != 'td') {
-                $td = $td.closest('td');
-            }
-            if (!$prevDraggedTd || $prevDraggedTd[0] !== $td[0]) {
-                if ($prevDraggedTd) {
-                    $prevDraggedTd.removeClass('dragging-over');
-                }
-                $td.addClass('dragging-over');
-                $prevDraggedTd = $td;
-            }
-        } else {
-            var tdIndex = $bar.data('td-index');
-            var $tr = $(event.target).closest('tr');
-            if (!$prevDraggedTr || $prevDraggedTr[0] !== $tr[0]) {
-                var $td = $tr.children('td').eq(tdIndex + 1);
-                if ($prevDraggedTd) {
-                    $prevDraggedTd.removeClass('dragging-over');
-                }
-                $td.addClass('dragging-over');
-                $prevDraggedTd = $td;
-                $prevDraggedTr = $tr;
-            }
-        }
-    });
-
-    /* Drop on assignment table */
-
-    $body.on('drop', assignmentTableTrSelector, function(event) {
-        event.preventDefault();
-
-        $bar.removeClass('dragging');
-        if ($bar.data('assignment-id')) {
-            return; // Drag and drop over assignment table only is prohibited for now
-        }
-
-        var $tr = $(event.target).closest('tr');
-        var tailNumber = $tr.data('tail-number');
-
-        if ($bar.data('status') > 0) {
-            var $td = $(event.target);
-            if ($td.prop('tagName').toLowerCase() != 'td') {
-                return;
-            }
-            var tdIndex = $td.index();
-            var startTime = new Date(self.options.startDate);
-            startTime.setSeconds(startTime.getSeconds() + self.options.unit * (tdIndex - 1));
-            var endTime = new Date(startTime.getTime() + 3600000);
-            self.assignStatus(tailNumber, $bar.data('status'), startTime, endTime)
-                .then(function(response) {
-                    if (response.success) {
-                        var $newBar = $bar.clone();
-                        placeStatusBar($newBar, $td, 3600 / self.options.unit);
-                        $newBar.attr('data-assignment-id', response.id);
-                    }
-                });
-        } else {
-            var flightId = $bar.data('flight-id');
-            var tdIndex = $bar.data('td-index');
+            $td.removeClass('dragging-over');
 
             self.assignFlight(flightId, tailNumber)
                 .then(function(response) {
@@ -218,40 +182,77 @@ RoutePlanningGantt.prototype.bindEventHandlers = function() {
                             .attr('draggable', false);
                     }
                 });
-        }
-
-        if ($prevDraggedTd) {
-            $prevDraggedTd.removeClass('dragging-over');
-            $prevDraggedTd = null;
-        }
+        },
     });
 
-    /* Drop on remove area */
+    // Drop into assignment table cell (only accept status bars)
 
-    $body.on('drop', removeAreaSelector, function(event) {
-        event.preventDefault();
+    interact(assignmentTableTrSelector + ' td').dropzone({
+        accept: statusBarPrototypeSelector,
+        ondragenter: function (event) {
+            var $bar = $(event.relatedTarget),
+                $td = $(event.target);
 
-        $(removeAreaSelector).removeClass('dragging-over');
+            $td.addClass('dragging-over');
+        },
+        ondragleave: function (event) {
+            var $bar = $(event.relatedTarget),
+                $td = $(event.target);
 
-        if ($bar.data('assignment-id')) {
-            var assignmentId = $bar.data('assignment-id');
-            self.removeAssignment(assignmentId)
-                .then(function(response) {
-                    if (response.success) {
-                        $bar.remove();
-                    }
-                });
-        }
+            $td.removeClass('dragging-over');
+        },
+        ondrop: function (event) {
+            var $bar = $(event.relatedTarget);
+
+            if ($bar.data('status') > 0) {
+                var $td = $(event.target),
+                    $tr = $td.closest('tr'),
+                    tailNumber = $tr.data('tail-number'),
+                    tdIndex = $td.index();
+
+                $td.removeClass('dragging-over');
+
+                var startTime = new Date(self.options.startDate);
+                startTime.setSeconds(startTime.getSeconds() + self.options.unit * (tdIndex - 1));
+                var endTime = new Date(startTime.getTime() + 3600000);
+
+                self.assignStatus(tailNumber, $bar.data('status'), startTime, endTime)
+                    .then(function(response) {
+                        if (response.success) {
+                            var $newBar = $bar.clone();
+                            placeStatusBar($newBar, $td, 3600 / self.options.unit);
+                            $newBar.attr('data-assignment-id', response.id);
+                        }
+                    });
+            }
+        },
     });
 
-    /* dragend cancel for all */
+    // Drop into Remove area
 
-    $body.on('dragend', function(event) {
-        event.preventDefault();
-        if ($prevDraggedTd) {
-            $prevDraggedTd.removeClass('dragging-over');
-            $prevDraggedTd = null;
-        }
+    interact(removeAreaSelector).dropzone({
+        accept: assignmentTableTrSelector + ' .bar',
+        ondragenter: function (event) {
+            $(event.target).addClass('dragging-over');
+        },
+        ondragleave: function (event) {
+            $(event.target).removeClass('dragging-over');
+        },
+        ondrop: function (event) {
+            var $bar = $(event.relatedTarget);
+
+            $(event.target).removeClass('dragging-over');
+
+            if ($bar.data('assignment-id')) {
+                var assignmentId = $bar.data('assignment-id');
+                self.removeAssignment(assignmentId)
+                    .then(function(response) {
+                        if (response.success) {
+                            $bar.remove();
+                        }
+                    });
+            }
+        },
     });
 }
 

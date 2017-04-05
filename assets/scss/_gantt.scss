@@ -11,13 +11,9 @@ $popover-text-color: #333;
     }
 }
 
-.h-scroll-wrapper {
-    overflow-x: auto;
-    overflow-y: visible;
-}
-
 .gantt {
     min-width: 600px;
+    overflow-x: hidden;
 
     .cover.loading {
         position: relative;
@@ -68,6 +64,9 @@ $popover-text-color: #333;
         cursor: move;
         &.assigned {
             background-color: #999;
+        }
+        &.drag-clone {
+            opacity: 0.8;
         }
         table.flight-info {
             position: absolute;
@@ -162,12 +161,17 @@ $popover-text-color: #333;
         }
     }
     .status-bars {
-        .bar {
+        .bar-container {
             float: left;
+            display: block;
+            position: relative;
+            width: 140px;
+            height: 30px;
+        }
+        .bar {
             display: block;
             height: 30px;
             line-height: 30px;
-            position: relative;
             padding-top: 0;
             &:not(:last-child) {
                 margin-right: 15px;
@@ -175,6 +179,7 @@ $popover-text-color: #333;
         }
         .drop-to-remove-area {
             float: right;
+            position: relative;
             max-width: 100%;
             text-align: center;
             padding: 0 15px;
@@ -182,6 +187,9 @@ $popover-text-color: #333;
             border: 1px solid #999;
             background: transparent;
             cursor: pointer;
+            height: 30px;
+            line-height: 28px;
+            border-radius: 3px;
             &.dragging-over {
                 background: $red;
                 border-color: $red;
@@ -210,7 +218,6 @@ $popover-text-color: #333;
         width: 100%;
         max-width: none;
         background-color: #fff;
-        overflow: hidden;
 
         tr.head td {
             border-top: 0;

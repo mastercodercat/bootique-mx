@@ -66,10 +66,12 @@
         <!-- Status bar sources -->
         <div class="status-bars clearfix m-b-md">
             <div class="clearfix">Drag and drop: </div>
-            <div class="bar maintenance status-prototype" draggable="true" data-status="2">
-                <div class="left-handle"></div>
-                <div class="text">Maintenance</div>
-                <div class="right-handle"></div>
+            <div class="bar-container">
+                <div class="bar maintenance status-prototype" draggable="true" data-status="2">
+                    <div class="left-handle"></div>
+                    <div class="text">Maintenance</div>
+                    <div class="right-handle"></div>
+                </div>
             </div>
             <div class="bar drop-to-remove-area" id="drop-to-remove-area">
                 <i class="fa fa-trash-o"></i> Drag and drop here to remove assignment
@@ -92,7 +94,7 @@
                 <div class="field">Sched. Arrival Time: <span class="arrival"></span></div>
             </div>
         </div>
-        <div class="h-scroll-wrapper cover loading">
+        <div class="cover loading">
             <!-- Tails table -->
             <table id="flight-assignment-table" class="table gantt-table m-b-none">
                 <tbody>
@@ -164,6 +166,7 @@
 {% endblock %}
 
 {% block pagejs %}
+    <script src="{% static "js/interact.min.js" %}"></script>
     <script src="{% static "js/gantt.js" %}"></script>
     <script type="text/javascript">
         var startDate = new Date({{ start_tmstmp }} * 1000);
