@@ -72,11 +72,20 @@ class Assignment(models.Model):
             return 'Other'
 
     @classmethod
-    def is_duplicated(cls, tail, start_time):
+    def is_duplicated(cls, tail, start_time, end_time):
         dup_count = cls.objects.filter(
             tail=tail,
             start_time__lte=start_time,
             end_time__gt=start_time
+        ).count()
+
+        if dup_count > 0:
+            return True
+
+        dup_count = cls.objects.filter(
+            tail=tail,
+            start_time__lte=end_time,
+            end_time__gt=end_time
         ).count()
 
         return dup_count > 0

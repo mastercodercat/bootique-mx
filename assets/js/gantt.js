@@ -143,7 +143,7 @@ RoutePlanningGantt.prototype.initInteractables = function() {
     // Drop into assignment table row (only accept bars from template table)
 
     interact(assignmentTableTrSelector).dropzone({
-        accept: ganttTableBarSelector + ', ' + statusBarPrototypeSelector,
+        accept: ganttTableBarSelector,
         ondragenter: function (event) {
             var $bar = $(event.relatedTarget),
                 $tr = $(event.target),
@@ -165,30 +165,42 @@ RoutePlanningGantt.prototype.initInteractables = function() {
                 $tr = $(event.target),
                 tdIndex = $bar.data('td-index'),
                 $td = $tr.children('td').eq(tdIndex + 1),
-                flightId = $bar.data('flight-id'),
                 tailNumber = $tr.data('tail-number');
 
             $td.removeClass('dragging-over');
 
-            self.assignFlight(flightId, tailNumber)
-                .then(function(response) {
-                    if (response.success) {
-                        var $td = $tr.children('td').eq(tdIndex + 1);
-                        var $newBar = $bar.clone().attr('draggable', true);
-                        $newBar.attr('data-assignment-id', response.id);
-                        $td.append($newBar);
-                        $bar
-                            .addClass('assigned')
-                            .attr('draggable', false);
-                    }
-                });
+            if ($bar.data('assignment-id')) {
+                var assignmentId = $bar.data('assignment-id');
+
+                self.moveAssignment(assignmentId, tailNumber)
+                    .then(function(response) {
+                        if (response.success) {
+                            $bar.appendTo($td);
+                        }
+                    });
+
+            } else {
+                var flightId = $bar.data('flight-id');
+
+                self.assignFlight(flightId, tailNumber)
+                    .then(function(response) {
+                        if (response.success) {
+                            var $newBar = $bar.clone().attr('enabled', true);
+                            $newBar.attr('data-assignment-id', response.id);
+                            $td.append($newBar);
+                            $bar
+                                .addClass('assigned')
+                                .attr('enabled', false);
+                        }
+                    });
+            }
         },
     });
 
-    // Drop into assignment table cell (only accept status bars)
+    // Drop into assignment table cell (status bar placement, status assignment move)
 
     interact(assignmentTableTrSelector + ' td').dropzone({
-        accept: statusBarPrototypeSelector,
+        accept: assignmentTableTrSelector + ' .bar[data-status], ' + statusBarPrototypeSelector,
         ondragenter: function (event) {
             var $bar = $(event.relatedTarget),
                 $td = $(event.target);
@@ -204,7 +216,23 @@ RoutePlanningGantt.prototype.initInteractables = function() {
         ondrop: function (event) {
             var $bar = $(event.relatedTarget);
 
-            if ($bar.data('status') > 0) {
+            if ($bar.data('assignment-id')) {
+                var assignmentId = $bar.data('assignment-id'),
+                    $td = $(event.target),
+                    $tr = $td.closest('tr'),
+                    tdIndex = $td.index();
+                    tailNumber = $tr.data('tail-number');
+
+                var startTime = new Date(self.options.startDate);
+                startTime.setSeconds(startTime.getSeconds() + self.options.unit * (tdIndex - 1));
+
+                self.moveAssignment(assignmentId, tailNumber, startTime)
+                    .then(function(response) {
+                        if (response.success) {
+                            $bar.appendTo($td);
+                        }
+                    });
+            } else if ($bar.data('status') > 0) {
                 var $td = $(event.target),
                     $tr = $td.closest('tr'),
                     tailNumber = $tr.data('tail-number'),
@@ -327,7 +355,7 @@ RoutePlanningGantt.prototype.refreshTemplateTable = function() {
                 if (self.checkIfAssigned(template.number, departureDateTime)) {
                     $bar.addClass('assigned');
                 } else {
-                    $bar.attr('draggable', true);
+                    $bar.attr('enabled', true);
                 }
             }
         }
@@ -351,7 +379,7 @@ RoutePlanningGantt.prototype.refreshAssignmentTable = function() {
             $bar
                 .css('left', tdPos * 100 + '%')
                 .attr('data-assignment-id', assignment.id)
-                .attr('draggable', true);
+                .attr('enabled', true);
         }
     }
 }
@@ -410,6 +438,26 @@ RoutePlanningGantt.prototype.removeAssignment = function(assignmentId) {
         data: {
             csrfmiddlewaretoken: self.options.csrfToken,
             assignment_id: assignmentId,
+        },
+    });
+}
+
+RoutePlanningGantt.prototype.moveAssignment = function(assignmentId, tailNumber, startTime = null) {
+    var self = this;
+
+    if (!self.options.moveAssignmentAPIUrl) {
+        console.error('Move assignment API URL not configured');
+        return;
+    }
+
+    return $.ajax({
+        method: 'POST',
+        url: self.options.moveAssignmentAPIUrl,
+        data: {
+            csrfmiddlewaretoken: self.options.csrfToken,
+            assignment_id: assignmentId,
+            tail: tailNumber,
+            start_time: startTime ? startTime.toISOString() : '',
         },
     });
 }
