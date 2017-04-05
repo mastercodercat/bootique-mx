@@ -1,5 +1,5 @@
 $label-cell-width: 90px;
-$cell-width: 80px;
+$cell-width: 20px;
 $popover-bg-color: #e0e0e1;
 $popover-text-color: #333;
 
@@ -129,35 +129,14 @@ $popover-text-color: #333;
         }
         &.maintenance {
             background-color: $yellow;
-            display: table;
             padding-top: 0;
-            table-layout: fixed;
-
-            .left-handle,
-            .right-handle,
-            .text {
-                display: table-cell;
-                height: 100%;
-                vertical-align: middle;
-            }
-            .left-handle,
-            .right-handle {
-                width: 20px;
-                height: 100%;
-                cursor: ew-resize;
-            }
-            .text {
-                overflow: hidden;
-            }
-            &.status-prototype {
-                .left-handle,
-                .right-handle {
-                    cursor: inherit;
-                }
-                .text {
-                    padding: 0 10px;
-                }
-            }
+            text-align: center;
+        }
+    }
+    &.small-cells .bar {
+        .org,
+        .dest {
+            display: none;
         }
     }
     .status-bars {
@@ -229,9 +208,18 @@ $popover-text-color: #333;
         }
         td {
             text-align: center;
-            border: 1px solid $border-color;
+            border-top: 1px solid $border-color;
+            border-bottom: 1px solid $border-color;
             padding: 8px 10px;
             position: relative;
+            &.border-right {
+                &:not(:last-child) {
+                    border-right: 1px solid $border-color;
+                }
+            }
+            &.label-cell {
+                border-right: 1px solid $border-color;
+            }
             &.label-cell,
             &.axis-cell {
                 text-align: left;

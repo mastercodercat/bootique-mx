@@ -16,7 +16,7 @@
 {% endblock %}
 
 {% block content %}
-    <div class="gantt loading">
+    <div class="gantt loading{% if days > 1 %} small-cells{% endif %}">
         <div class="clearfix m-b-md"><!-- Top controls -->
             <div class="unit-control btn-group">
                 <a class="btn btn-white{% if mode == '1' %} active{% endif %}"
@@ -68,9 +68,7 @@
             <div class="clearfix">Drag and drop: </div>
             <div class="bar-container">
                 <div class="bar maintenance status-prototype" draggable="true" data-status="2">
-                    <div class="left-handle"></div>
-                    <div class="text">Maintenance</div>
-                    <div class="right-handle"></div>
+                    Maintenance
                 </div>
             </div>
             <div class="bar drop-to-remove-area" id="drop-to-remove-area">
@@ -106,14 +104,14 @@
                             Tails
                         </td>
                         {% for big_unit in big_units %}
-                            <td colspan="{{ big_unit_colspan }}" data-timestamp="{{ big_unit }}">
+                            <td class="border-right" colspan="{{ big_unit_colspan }}" data-timestamp="{{ big_unit }}">
                                 &nbsp;
                             </td>
                         {% endfor %}
                     </tr>
                     <tr class="head units">
                         {% for small_unit in small_units %}
-                            <td>{{ small_unit }}</td>
+                            <td{% if forloop.counter|divisibleby:hours %} class="border-right"{% endif %}>{{ small_unit }}</td>
                         {% endfor %}
                     </tr>
                     {% for tail in tails %}
@@ -122,7 +120,7 @@
                                 <a href="{% url 'routeplanning:edit_tail' tail_id=tail.id %}">{{ tail.number }}</a>
                             </td>
                             {% for small_unit in small_units %}
-                                <td></td>
+                                <td{% if forloop.counter|divisibleby:hours %} class="border-right"{% endif %}></td>
                             {% endfor %}
                         </tr>
                     {% endfor %}
@@ -139,14 +137,14 @@
                             Lines
                         </td>
                         {% for big_unit in big_units %}
-                            <td colspan="{{ big_unit_colspan }}" data-timestamp="{{ big_unit }}">
+                            <td class="border-right" colspan="{{ big_unit_colspan }}" data-timestamp="{{ big_unit }}">
                                 &nbsp;
                             </td>
                         {% endfor %}
                     </tr>
                     <tr class="head units">
                         {% for small_unit in small_units %}
-                            <td>{{ small_unit }}</td>
+                            <td{% if forloop.counter|divisibleby:hours %} class="border-right"{% endif %}>{{ small_unit }}</td>
                         {% endfor %}
                     </tr>
                     {% for line in lines %}
@@ -155,7 +153,7 @@
                                 <a href="{% url 'routeplanning:edit_line' line_id=line.id %}">{{ line.name }}</a>
                             </td>
                             {% for small_unit in small_units %}
-                                <td></td>
+                                <td{% if forloop.counter|divisibleby:hours %} class="border-right"{% endif %}></td>
                             {% endfor %}
                         </tr>
                     {% endfor %}
@@ -185,7 +183,10 @@
         $('td[data-timestamp]').each(function() {
             var $td = $(this);
             var date = new Date($td.data('timestamp') * 1000);
-            $td.html(formatTo2Digits(date.getMonth() + 1) + '/' + formatTo2Digits(date.getDate()) + '/' + date.getFullYear());
+            $td.html(weekDayString(date.getDay()).substr(0, 3) + ' ' +
+                (date.getMonth() + 1) + '/' +
+                date.getDate() + '/' +
+                date.getFullYear());
         });
 
         /* Date pickers init */

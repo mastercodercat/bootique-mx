@@ -21,8 +21,8 @@ def index(request):
     lines = Line.objects.order_by('name').all()
 
     days_options = { '1': 1, '2': 1, '3': 1, '4': 1, '5': 3, '6': 7, }
-    hours_options = { '1': 3, '2': 6, '3': 12, '4': 24, '5': 24, '6': 24, }
-    units_per_hour_options = { '1': 4, '2': 2, '3': 1, '4': 1, '5': 1, '6': 1, }
+    hours_options = { '1': 3, '2': 6, '3': 12, '4': 24, '5': 24, '6': 6, }
+    units_per_hour_options = { '1': 4, '2': 2, '3': 1, '4': 1, '5': 1, '6': 0.25, }
 
     days = days_options[mode]
     hours = hours_options[mode]
@@ -49,8 +49,12 @@ def index(request):
     for d in range(0, days):
         big_units.append(totimestamp(start_time + timedelta(days=d)))
         for h in range(0, hours):
-            for u in range(0, units_per_hour):
-                small_units.append(str(format_to_2_digits(h)) + ':' + str(format_to_2_digits(60 / units_per_hour * u)))
+            if units_per_hour > 1:
+                for u in range(0, units_per_hour):
+                    small_units.append(str(format_to_2_digits(h)) + ':' + str(format_to_2_digits(60 / units_per_hour * u)))
+            else:
+                hn = int(h * (1 / units_per_hour))
+                small_units.append(str(format_to_2_digits(hn)))
 
     context = {
         'tails': tails,
