@@ -111,7 +111,7 @@
                     </tr>
                     <tr class="head units">
                         {% for small_unit in small_units %}
-                            <td{% if forloop.counter|divisibleby:hours %} class="border-right"{% endif %}>{{ small_unit }}</td>
+                            <td{% if days > 1 and forloop.counter|divisibleby:hours %} class="border-right"{% endif %}>{{ small_unit }}</td>
                         {% endfor %}
                     </tr>
                     {% for tail in tails %}
@@ -120,7 +120,7 @@
                                 <a href="{% url 'routeplanning:edit_tail' tail_id=tail.id %}">{{ tail.number }}</a>
                             </td>
                             {% for small_unit in small_units %}
-                                <td{% if forloop.counter|divisibleby:hours %} class="border-right"{% endif %}></td>
+                                <td{% if days > 1 and forloop.counter|divisibleby:hours %} class="border-right"{% endif %}></td>
                             {% endfor %}
                         </tr>
                     {% endfor %}
@@ -144,7 +144,7 @@
                     </tr>
                     <tr class="head units">
                         {% for small_unit in small_units %}
-                            <td{% if forloop.counter|divisibleby:hours %} class="border-right"{% endif %}>{{ small_unit }}</td>
+                            <td{% if days > 1 and forloop.counter|divisibleby:hours %} class="border-right"{% endif %}>{{ small_unit }}</td>
                         {% endfor %}
                     </tr>
                     {% for line in lines %}
@@ -153,7 +153,7 @@
                                 <a href="{% url 'routeplanning:edit_line' line_id=line.id %}">{{ line.name }}</a>
                             </td>
                             {% for small_unit in small_units %}
-                                <td{% if forloop.counter|divisibleby:hours %} class="border-right"{% endif %}></td>
+                                <td{% if days > 1 and forloop.counter|divisibleby:hours %} class="border-right"{% endif %}></td>
                             {% endfor %}
                         </tr>
                     {% endfor %}

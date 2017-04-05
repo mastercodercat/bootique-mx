@@ -131,6 +131,7 @@ $popover-text-color: #333;
             background-color: $yellow;
             padding-top: 0;
             text-align: center;
+            line-height: 30px;
         }
     }
     &.small-cells .bar {
@@ -144,7 +145,7 @@ $popover-text-color: #333;
             float: left;
             display: block;
             position: relative;
-            width: 140px;
+            min-width: 140px;
             height: 30px;
         }
         .bar {
@@ -152,6 +153,7 @@ $popover-text-color: #333;
             height: 30px;
             line-height: 30px;
             padding-top: 0;
+            min-width: 140px;
             &:not(:last-child) {
                 margin-right: 15px;
             }
