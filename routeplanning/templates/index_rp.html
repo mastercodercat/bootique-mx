@@ -71,7 +71,7 @@
                     Maintenance
                 </div>
             </div>
-            <div class="bar drop-to-remove-area" id="drop-to-remove-area">
+            <div class="drop-to-remove-area" id="drop-to-remove-area">
                 <i class="fa fa-trash-o"></i> Drag and drop here to remove assignment
             </div>
         </div>
@@ -224,6 +224,7 @@
             assignStatusAPIUrl: "{% url 'routeplanning:api_assign_status' %}",
             moveAssignmentAPIUrl: "{% url 'routeplanning:api_move_assignment' %}",
             removeAssignmentAPIUrl: "{% url 'routeplanning:api_remove_assignment' %}",
+            resizeAssignmentAPIUrl: "{% url 'routeplanning:api_resize_assignment' %}",
             startDate: startDate,
             endDate: endDate,
             unit: unit,

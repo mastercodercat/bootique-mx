@@ -404,7 +404,7 @@ def api_move_assignment(request):
         else:
             end_time = start_time + (assignment.end_time - assignment.start_time)
 
-        if Assignment.is_duplicated(tail, start_time, end_time):
+        if Assignment.is_duplicated(tail, start_time, end_time, assignment):
             result['error'] = 'Duplicated assignment'
             return JsonResponse(result, safe=False)
 
@@ -412,6 +412,48 @@ def api_move_assignment(request):
         if start_time_str:
             assignment.start_time = start_time
             assignment.end_time = end_time
+        assignment.save()
+    except Exception as e:
+        result['error'] = str(e)
+        return JsonResponse(result, safe=False, status=500)
+
+    result['success'] = True
+    return JsonResponse(result, safe=False)
+
+@login_required
+def api_resize_assignment(request):
+    result = {
+        'success': False,
+    }
+
+    if request.method != 'POST':
+        result['error'] = 'Only POST method is allowed'
+        return JsonResponse(result, safe=False)
+
+    try:
+        assignment_id = request.POST.get('assignment_id')
+        pos = request.POST.get('position')  # start or end
+        diff_seconds = round(float(request.POST.get('diff_seconds')) / 300.0) * 300.0     # changed time in seconds
+    except:
+        result['error'] = 'Invalid parameters'
+        return JsonResponse(result, safe=False, status=400)
+
+    try:
+        assignment = Assignment.objects.get(pk=assignment_id)
+
+        start_time = assignment.start_time
+        end_time = assignment.end_time
+        if pos == 'end':
+            end_time = end_time + timedelta(seconds=diff_seconds)
+        else:
+            start_time = start_time - timedelta(seconds=diff_seconds)
+
+        if Assignment.is_duplicated(assignment.tail, start_time, end_time, assignment):
+            result['error'] = 'Duplicated assignment'
+            return JsonResponse(result, safe=False)
+
+        assignment.start_time = start_time
+        assignment.end_time = end_time
         assignment.save()
     except Exception as e:
         result['error'] = str(e)

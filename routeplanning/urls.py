@@ -16,6 +16,7 @@ urlpatterns = [
     url(r'^api/tail/assignstatus/*$', views.api_assign_status, name='api_assign_status'),
     url(r'^api/assignment/move/*$', views.api_move_assignment, name='api_move_assignment'),
     url(r'^api/assignment/remove/*$', views.api_remove_assignment, name='api_remove_assignment'),
+    url(r'^api/assignment/resize/*$', views.api_resize_assignment, name='api_resize_assignment'),
 
     url(r'^$', views.index, name='index'),
 ]

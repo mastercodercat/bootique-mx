@@ -61,7 +61,6 @@ $popover-text-color: #333;
         text-align: center;
         padding-top: 5px;
         z-index: 1;
-        cursor: move;
         &.assigned {
             background-color: #999;
         }
@@ -249,6 +248,24 @@ $popover-text-color: #333;
                 &:hover {
                     opacity: 0.85;
                 }
+            }
+        }
+        .bar[data-status] {
+            &:before,
+            &:after {
+                content: '';
+                position: absolute;
+                top: 5px;
+                bottom: 5px;
+                width: 5px;
+                background-color: rgba(0, 0, 0, 0.15);
+                cursor: ew-resize;
+            }
+            &:before {
+                left: 3px;
+            }
+            &:after {
+                right: 3px;
             }
         }
         #bar-placeholder {

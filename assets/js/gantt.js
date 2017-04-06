@@ -4,7 +4,7 @@
  * Route planning gantt class
  *
  * options:
- *  loadDataAPIUrl, assignFlightAPIUrl, assignStatusAPIUrl, startDate, endDate,
+ *  [api urls], startDate, endDate,
  *  flightAssignmentTable, flightTemplateTable, unit(in seconds), csrfToken
  */
 function RoutePlanningGantt(options) {
@@ -44,6 +44,10 @@ function formatDate(date) {
         formatTo2Digits(date.getHours())  + ':' +
         formatTo2Digits(date.getMinutes())  + ':' +
         formatTo2Digits(date.getSeconds());
+}
+
+function getTdWidth($td) {
+    return parseFloat($td.css('width').replace('px', ''));
 }
 
 function getTdIndex(self, date) {
@@ -117,20 +121,78 @@ RoutePlanningGantt.prototype.initInteractables = function() {
     var draggables = [ganttTableBarSelector, statusBarPrototypeSelector];
     var removeAreaSelector = '#drop-to-remove-area';
 
+    // Resizeable status assignment bar
+
+    interact(assignmentTableTrSelector + ' .bar[data-status]').resizable({
+        edges: { left: true, right: true }
+    })
+    .on('resizestart', function(event) {
+        var $bar = $(event.target);
+
+        $bar.attr('data-org-width', $bar.width());
+    })
+    .on('resizemove', function(event) {
+        var $bar = $(event.target);
+        var resizeUnit = parseFloat(getTdWidth($bar.closest('td')) * 300 / self.options.unit);  // Resize unit will be per 5 mins
+
+        var ow = parseFloat($bar.attr('data-org-width'));
+        var w = Math.round(parseFloat(event.rect.width) / resizeUnit) * resizeUnit;
+        var tx = event.deltaRect.left != 0 ? ow - w : 0;
+
+        $bar.css('width', w)
+            .css('transform', 'translateX(' + tx + 'px)')
+            .attr('data-dw', w - ow)
+            .attr('data-pos', event.deltaRect.left != 0 ? 'start' : 'end');
+    })
+    .on('resizeend', function(event) {
+        var $bar = $(event.target);
+        var dw = $bar.attr('data-dw');
+        var pos = $bar.attr('data-pos');
+
+        var dt = parseFloat(dw) / getTdWidth($bar.closest('td')) * self.options.unit;
+        var assignmentId = $bar.data('assignment-id');
+        if (!assignmentId) {
+            console.log('No assignment Id on resizing status bar');
+            $bar.css('width', $bar.attr('data-org-width'))
+                .css('transform', 'none')
+                .attr('data-dw', '')
+                .attr('data-pos', '');
+            return;
+        }
+        self.resizeAssignment(assignmentId, pos, dt)
+        .then(
+            function(response) {
+                if (!response.success) {
+                    $bar.css('width', $bar.attr('data-org-width'))
+                        .css('transform', 'none')
+                        .attr('data-dw', '')
+                        .attr('data-pos', '');
+                }
+            },
+            function() {
+                $bar.css('width', $bar.attr('data-org-width'))
+                    .css('transform', 'none')
+                    .attr('data-dw', '')
+                    .attr('data-pos', '');
+            }
+        );
+    });
+
     // Template, assignment table bar, status bar draggable
 
     draggables.forEach(function(draggableSelector) {
         interact(draggableSelector).draggable({
             autoScroll: true,
             onstart: function(event) {
-                var $bar = $(event.target),
-                    $barClone = $bar.clone().addClass('drag-clone');
+                var $bar = $(event.target);
+                var $barClone = $bar.clone().addClass('drag-clone');
+
                 $barClone.appendTo($bar.parent());
             },
             onmove: function dragMoveListener(event) {
-                var $bar = $(event.target).siblings('.drag-clone'),
-                    x = (parseFloat($bar.attr('data-x')) || 0) + event.dx,
-                    y = (parseFloat($bar.attr('data-y')) || 0) + event.dy;
+                var $bar = $(event.target).siblings('.drag-clone');
+                var x = (parseFloat($bar.attr('data-x')) || 0) + event.dx;
+                var y = (parseFloat($bar.attr('data-y')) || 0) + event.dy;
 
                 $bar.css('transform', 'translate(' + x + 'px, ' + y + 'px)')
                     .attr('data-x', x)
@@ -150,27 +212,27 @@ RoutePlanningGantt.prototype.initInteractables = function() {
     interact(assignmentTableTrSelector).dropzone({
         accept: ganttTableBarSelector,
         ondragenter: function (event) {
-            var $bar = $(event.relatedTarget),
-                $tr = $(event.target),
-                tdIndex = $bar.data('td-index'),
-                $td = $tr.children('td').eq(tdIndex + 1);
+            var $bar = $(event.relatedTarget);
+            var $tr = $(event.target);
+            var tdIndex = $bar.data('td-index');
+            var $td = $tr.children('td').eq(tdIndex + 1);
 
             $td.addClass('dragging-over');
         },
         ondragleave: function (event) {
-            var $bar = $(event.relatedTarget),
-                $tr = $(event.target),
-                tdIndex = $bar.data('td-index'),
-                $td = $tr.children('td').eq(tdIndex + 1);
+            var $bar = $(event.relatedTarget);
+            var $tr = $(event.target);
+            var tdIndex = $bar.data('td-index');
+            var $td = $tr.children('td').eq(tdIndex + 1);
 
             $td.removeClass('dragging-over');
         },
         ondrop: function (event) {
-            var $bar = $(event.relatedTarget),
-                $tr = $(event.target),
-                tdIndex = $bar.data('td-index'),
-                $td = $tr.children('td').eq(tdIndex + 1),
-                tailNumber = $tr.data('tail-number');
+            var $bar = $(event.relatedTarget);
+            var $tr = $(event.target);
+            var tdIndex = $bar.data('td-index');
+            var $td = $tr.children('td').eq(tdIndex + 1);
+            var tailNumber = $tr.data('tail-number');
 
             $td.removeClass('dragging-over');
 
@@ -207,14 +269,14 @@ RoutePlanningGantt.prototype.initInteractables = function() {
     interact(assignmentTableTrSelector + ' td').dropzone({
         accept: assignmentTableTrSelector + ' .bar[data-status], ' + statusBarPrototypeSelector,
         ondragenter: function (event) {
-            var $bar = $(event.relatedTarget),
-                $td = $(event.target);
+            var $bar = $(event.relatedTarget);
+            var $td = $(event.target);
 
             $td.addClass('dragging-over');
         },
         ondragleave: function (event) {
-            var $bar = $(event.relatedTarget),
-                $td = $(event.target);
+            var $bar = $(event.relatedTarget);
+            var $td = $(event.target);
 
             $td.removeClass('dragging-over');
         },
@@ -222,11 +284,13 @@ RoutePlanningGantt.prototype.initInteractables = function() {
             var $bar = $(event.relatedTarget);
 
             if ($bar.data('assignment-id')) {
-                var assignmentId = $bar.data('assignment-id'),
-                    $td = $(event.target),
-                    $tr = $td.closest('tr'),
-                    tdIndex = $td.index();
-                    tailNumber = $tr.data('tail-number');
+                var assignmentId = $bar.data('assignment-id');
+                var $td = $(event.target);
+                var $tr = $td.closest('tr');
+                var tdIndex = $td.index();
+                var tailNumber = $tr.data('tail-number');
+
+                $td.removeClass('dragging-over');
 
                 var startTime = new Date(self.options.startDate);
                 startTime.setSeconds(startTime.getSeconds() + self.options.unit * (tdIndex - 1));
@@ -238,10 +302,10 @@ RoutePlanningGantt.prototype.initInteractables = function() {
                         }
                     });
             } else if ($bar.data('status') > 0) {
-                var $td = $(event.target),
-                    $tr = $td.closest('tr'),
-                    tailNumber = $tr.data('tail-number'),
-                    tdIndex = $td.index();
+                var $td = $(event.target);
+                var $tr = $td.closest('tr');
+                var tailNumber = $tr.data('tail-number');
+                var tdIndex = $td.index();
 
                 $td.removeClass('dragging-over');
 
@@ -463,6 +527,26 @@ RoutePlanningGantt.prototype.moveAssignment = function(assignmentId, tailNumber,
             assignment_id: assignmentId,
             tail: tailNumber,
             start_time: startTime ? startTime.toISOString() : '',
+        },
+    });
+}
+
+RoutePlanningGantt.prototype.resizeAssignment = function(assignmentId, pos, diffSeconds) {
+    var self = this;
+
+    if (!self.options.moveAssignmentAPIUrl) {
+        console.error('Move assignment API URL not configured');
+        return;
+    }
+
+    return $.ajax({
+        method: 'POST',
+        url: self.options.resizeAssignmentAPIUrl,
+        data: {
+            csrfmiddlewaretoken: self.options.csrfToken,
+            assignment_id: assignmentId,
+            position: pos,
+            diff_seconds: diffSeconds,
         },
     });
 }
