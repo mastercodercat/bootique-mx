@@ -68,8 +68,13 @@
         <div class="status-bars clearfix m-b-md">
             <div class="clearfix">Drag and drop: </div>
             <div class="bar-container">
-                <div class="bar maintenance status-prototype" draggable="true" data-status="2">
-                    Maintenance
+                <div class="bar status-bar maintenance status-prototype" draggable="true" data-status="2">
+                    <span>Maintenance</span>
+                    <div class="info status-popover">
+                        <div class="field">Status: Maintenance</div>
+                        <div class="field">Sched. Start Time: <span class="start"></span></div>
+                        <div class="field">Sched. End Time: <span class="end"></span></div>
+                    </div>
                 </div>
             </div>
             <div class="drop-to-remove-area" id="drop-to-remove-area">

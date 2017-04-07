@@ -132,8 +132,44 @@ $popover-text-color: #333;
             text-align: center;
             line-height: 30px;
         }
+        &.status-bar {
+            .status-popover {
+                position: absolute;
+                display: none;
+                padding: 6px 12px;
+                left: 10px;
+                bottom: 100%;
+                margin-bottom: 10px;
+                border-radius: 3px;
+                background-color: $popover-bg-color;
+                color: $popover-text-color;
+                text-align: left;
+                font-size: 0.9em;
+                line-height: 1.5;
+                font-weight: 600;
+                &:before {
+                    content: '';
+                    position: absolute;
+                    left: 10px;
+                    top: 100%;
+                    border-width: 7px 6px 0;
+                    border-style: solid;
+                    border-color: $popover-bg-color transparent;
+                }
+                .field {
+                    white-space: nowrap;
+                }
+            }
+            &:hover,
+            &.resizing {
+                .status-popover {
+                    display: block;
+                }
+            }
+        }
     }
     &.small-cells .bar .flight-info {
+        min-width: 0;
         .org,
         .dest {
             display: none;

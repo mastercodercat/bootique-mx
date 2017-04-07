@@ -448,4 +448,6 @@ def api_resize_assignment(request):
         return JsonResponse(result, safe=False, status=500)
 
     result['success'] = True
+    result['start_time'] = assignment.start_time.isoformat()
+    result['end_time'] = assignment.end_time.isoformat()
     return JsonResponse(result, safe=False)

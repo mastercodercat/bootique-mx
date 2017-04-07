@@ -93,18 +93,30 @@ function placeBar($tr, tdIndex, length, object) {
             var status = object.status;
             if (status == 2) {
                 $bar = $('.status-prototype[data-status="' + status + '"]').clone();
-                placeStatusBar($bar, $td, length);
+                placeStatusBar($bar, $td, length, object);
             }
         }
     }
     return $bar;
 }
 
-function placeStatusBar($bar, $td, length = 1) {
+function setStatusBarInfo($bar, object) {
+    var $info = $bar.find('.info');
+    date = new Date(object.start_time);
+    $info.find('.start').html(formatDate(date));
+    date = new Date(object.end_time);
+    $info.find('.end').html(formatDate(date));
+}
+
+function placeStatusBar($bar, $td, length, object) {
+    /// TODO: set start position based on start time
     $bar
         .removeClass('status-prototype')
         .css('width', $td.css('width').replace('px', '') * length)
         .css('height', $td.css('height').replace('px', ''));
+
+    setStatusBarInfo($bar, object);
+
     $td.append($bar);
 
     return $bar;
@@ -129,7 +141,8 @@ RoutePlanningGantt.prototype.initInteractables = function() {
     .on('resizestart', function(event) {
         var $bar = $(event.target);
 
-        $bar.attr('data-org-width', $bar.width());
+        $bar.attr('data-org-width', $bar.width())
+            .addClass('resizing');
     })
     .on('resizemove', function(event) {
         var $bar = $(event.target);
@@ -137,12 +150,17 @@ RoutePlanningGantt.prototype.initInteractables = function() {
 
         var ow = parseFloat($bar.attr('data-org-width'));
         var w = Math.round(parseFloat(event.rect.width) / resizeUnit) * resizeUnit;
+        var dw = w - ow;
         var tx = event.deltaRect.left != 0 ? ow - w : 0;
+        var pos = event.deltaRect.left != 0 ? 'start' : 'end';
 
         $bar.css('width', w)
             .css('transform', 'translateX(' + tx + 'px)')
-            .attr('data-dw', w - ow)
-            .attr('data-pos', event.deltaRect.left != 0 ? 'start' : 'end');
+            .attr('data-dw', dw)
+            .attr('data-pos', pos);
+
+        // TODO: Temporary start and end time calculation
+        /// var dt = parseFloat(dw) / getTdWidth($bar.closest('td')) * self.options.unit;
     })
     .on('resizeend', function(event) {
         var $bar = $(event.target);
@@ -159,14 +177,28 @@ RoutePlanningGantt.prototype.initInteractables = function() {
                 .attr('data-pos', '');
             return;
         }
+
+        $bar.removeClass('resizing');
+
         self.resizeAssignment(assignmentId, pos, dt)
         .then(
             function(response) {
-                if (!response.success) {
-                    $bar.css('width', $bar.attr('data-org-width'))
-                        .css('transform', 'none')
-                        .attr('data-dw', '')
-                        .attr('data-pos', '');
+                $bar.css('width', $bar.attr('data-org-width'))
+                    .css('transform', 'none')
+                    .attr('data-dw', '')
+                    .attr('data-pos', '');
+
+                if (response.success) {
+                    var startTime = new Date(response.start_time);
+                    var endTime = new Date(response.end_time);
+                    var tdIndex = getTdIndex(self, startTime);
+
+                    placeStatusBar(
+                        $bar,
+                        $bar.closest('tr').children('td').eq(tdIndex + 1),
+                        (endTime - startTime) / 1000 / self.options.unit,
+                        response
+                    );
                 }
             },
             function() {
@@ -317,7 +349,10 @@ RoutePlanningGantt.prototype.initInteractables = function() {
                     .then(function(response) {
                         if (response.success) {
                             var $newBar = $bar.clone();
-                            placeStatusBar($newBar, $td, 3600 / self.options.unit);
+                            placeStatusBar($newBar, $td, 3600 / self.options.unit, {
+                                start_time: startTime,
+                                end_time: endTime,
+                            });
                             $newBar.attr('data-assignment-id', response.id);
                         }
                     });
