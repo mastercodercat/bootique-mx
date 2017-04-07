@@ -168,70 +168,70 @@
     {% compress js %}
         <script src="{% static "js/interact.min.js" %}"></script>
         <script src="{% static "js/gantt.js" %}"></script>
-        <script type="text/javascript">
-            var startDate = new Date({{ start_tmstmp }} * 1000);
-            {% if end_tmstmp %}
-                var endDate = new Date({{ end_tmstmp }} * 1000);
-            {% else %}
-                var endDate = new Date(startDate.getTime());
-                endDate.setDate(endDate.getDate() + {{ days }} - 1);
-                endDate.setHours(23);
-                endDate.setMinutes(59);
-                endDate.setSeconds(59);
-                endDate.setMilliseconds(0);
-            {% endif %}
-
-            /* Replace timestamps with dates in the table header */
-            $('td[data-timestamp]').each(function() {
-                var $td = $(this);
-                var date = new Date($td.data('timestamp') * 1000);
-                $td.html(weekDayString(date.getDay()).substr(0, 3) + ' ' +
-                    (date.getMonth() + 1) + '/' +
-                    date.getDate() + '/' +
-                    date.getFullYear());
-            });
-
-            /* Date pickers init */
-            $('#start_date').val(formatTo2Digits(startDate.getMonth() + 1) + '/' + formatTo2Digits(startDate.getDate()) + '/' + startDate.getFullYear());
-            $('#end_date').val(formatTo2Digits(endDate.getMonth() + 1) + '/' + formatTo2Digits(endDate.getDate()) + '/' + endDate.getFullYear());
-            $('.input-group.date').datepicker({
-                todayBtn: "linked",
-                keyboardNavigation: false,
-                forceParse: false,
-                calendarWeeks: true,
-                autoclose: true,
-            });
-
-            /* Date form */
-            $('#date-form').on('submit', function() {
-                var startDate = new Date($('#start_date').val());
-                $('#start_tmstmp').val(parseInt(startDate.getTime() / 1000));
-                var endDate = new Date($('#end_date').val());
-                $('#end_tmstmp').val(parseInt(endDate.getTime() / 1000));
-            });
-
-            /* Gantt table init */
-            
-            startDate.setHours(0);
-            startDate.setMinutes(0);
-            startDate.setSeconds(0);
-            startDate.setMilliseconds(0);
-
-            var unit = 3600 / {{ units_per_hour }};
-            var gantt = new RoutePlanningGantt({
-                flightAssignmentTable: $('#flight-assignment-table'),
-                flightTemplateTable: $('#flight-template-table'),
-                loadDataAPIUrl: "{% url 'routeplanning:api_load_data' %}",
-                assignFlightAPIUrl: "{% url 'routeplanning:api_assign_flight' %}",
-                assignStatusAPIUrl: "{% url 'routeplanning:api_assign_status' %}",
-                moveAssignmentAPIUrl: "{% url 'routeplanning:api_move_assignment' %}",
-                removeAssignmentAPIUrl: "{% url 'routeplanning:api_remove_assignment' %}",
-                resizeAssignmentAPIUrl: "{% url 'routeplanning:api_resize_assignment' %}",
-                startDate: startDate,
-                endDate: endDate,
-                unit: unit,
-                csrfToken: "{{ csrf_token }}",
-            });
-        </script>
     {% endcompress %}
+    <script type="text/javascript">
+        var startDate = new Date({{ start_tmstmp }} * 1000);
+        {% if end_tmstmp %}
+            var endDate = new Date({{ end_tmstmp }} * 1000);
+        {% else %}
+            var endDate = new Date(startDate.getTime());
+            endDate.setDate(endDate.getDate() + {{ days }} - 1);
+            endDate.setHours(23);
+            endDate.setMinutes(59);
+            endDate.setSeconds(59);
+            endDate.setMilliseconds(0);
+        {% endif %}
+
+        /* Replace timestamps with dates in the table header */
+        $('td[data-timestamp]').each(function() {
+            var $td = $(this);
+            var date = new Date($td.data('timestamp') * 1000);
+            $td.html(weekDayString(date.getDay()).substr(0, 3) + ' ' +
+                (date.getMonth() + 1) + '/' +
+                date.getDate() + '/' +
+                date.getFullYear());
+        });
+
+        /* Date pickers init */
+        $('#start_date').val(formatTo2Digits(startDate.getMonth() + 1) + '/' + formatTo2Digits(startDate.getDate()) + '/' + startDate.getFullYear());
+        $('#end_date').val(formatTo2Digits(endDate.getMonth() + 1) + '/' + formatTo2Digits(endDate.getDate()) + '/' + endDate.getFullYear());
+        $('.input-group.date').datepicker({
+            todayBtn: "linked",
+            keyboardNavigation: false,
+            forceParse: false,
+            calendarWeeks: true,
+            autoclose: true,
+        });
+
+        /* Date form */
+        $('#date-form').on('submit', function() {
+            var startDate = new Date($('#start_date').val());
+            $('#start_tmstmp').val(parseInt(startDate.getTime() / 1000));
+            var endDate = new Date($('#end_date').val());
+            $('#end_tmstmp').val(parseInt(endDate.getTime() / 1000));
+        });
+
+        /* Gantt table init */
+        
+        startDate.setHours(0);
+        startDate.setMinutes(0);
+        startDate.setSeconds(0);
+        startDate.setMilliseconds(0);
+
+        var unit = 3600 / {{ units_per_hour }};
+        var gantt = new RoutePlanningGantt({
+            flightAssignmentTable: $('#flight-assignment-table'),
+            flightTemplateTable: $('#flight-template-table'),
+            loadDataAPIUrl: "{% url 'routeplanning:api_load_data' %}",
+            assignFlightAPIUrl: "{% url 'routeplanning:api_assign_flight' %}",
+            assignStatusAPIUrl: "{% url 'routeplanning:api_assign_status' %}",
+            moveAssignmentAPIUrl: "{% url 'routeplanning:api_move_assignment' %}",
+            removeAssignmentAPIUrl: "{% url 'routeplanning:api_remove_assignment' %}",
+            resizeAssignmentAPIUrl: "{% url 'routeplanning:api_resize_assignment' %}",
+            startDate: startDate,
+            endDate: endDate,
+            unit: unit,
+            csrfToken: "{{ csrf_token }}",
+        });
+    </script>
 {% endblock %}
