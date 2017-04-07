@@ -1,7 +1,8 @@
-DEBUG = True
+DEBUG = False   # Should be False for production server
+
 DATABASES['default'] = dj_database_url.config(default='postgres://db_user_name:db_user_pass@localhost/db_name')
 DATABASES['default']['ENGINE'] = 'django.db.backends.postgresql_psycopg2'
 
-# ALLOWED_HOSTS = ['mxdev.boutiqueair.com',]    # Allowed Hosts config on Production server
+ALLOWED_HOSTS = ['mxdev.boutiqueair.com',]    # Allowed Hosts config on Production server
 
-# COMPRESS_OFFLINE = True       # Django compressor mode. True on Production server, False on Development server
+# COMPRESS_OFFLINE = False       # Uncomment this line for development. Sets Django compressor to compress on the fly.

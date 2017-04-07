@@ -15,13 +15,12 @@ from home.helpers import *
 def index(request):
     mode = request.GET.get('mode') if request.GET.get('mode') else '1'
     start_tmstmp = request.GET.get('start')
-    end_tmstmp = request.GET.get('end')
 
     tails = Tail.objects.all()
     lines = Line.objects.order_by('name').all()
 
-    days_options = { '1': 1, '2': 1, '3': 1, '4': 1, '5': 3, '6': 7, }
-    hours_options = { '1': 3, '2': 6, '3': 12, '4': 24, '5': 24, '6': 6, }
+    days_options = { '1': 1, '2': 1, '3': 1, '4': 1, '5': 3, '6': 7, }          # Date mark count
+    hours_options = { '1': 3, '2': 6, '3': 12, '4': 24, '5': 24, '6': 6, }      # Hours mark count
     units_per_hour_options = { '1': 4, '2': 2, '3': 1, '4': 1, '5': 1, '6': 0.25, }
 
     days = days_options[mode]
@@ -35,26 +34,15 @@ def index(request):
         start_time = start_time.replace(hour=0, minute=0, second=0, microsecond=0)
         start_tmstmp = totimestamp(start_time)
 
-    if start_tmstmp and end_tmstmp:
-        end_time = datetime.fromtimestamp(float(end_tmstmp), tz=utc)
-        diff_days = int((end_time - start_time).total_seconds() / 3600)
-        days = diff_days if days > diff_days else days
+    if request.GET.get('days'):
+        _days = int(request.GET.get('days'))
+        days = _days if _days <= days else days
         days = 1 if days < 1 else days
 
-    end_time = start_time + timedelta(days=days)
-    end_tmstmp = totimestamp(end_time)
-
-    big_units = list()
-    small_units = list()
-    for d in range(0, days):
-        big_units.append(totimestamp(start_time + timedelta(days=d)))
-        for h in range(0, hours):
-            if units_per_hour > 1:
-                for u in range(0, units_per_hour):
-                    small_units.append(str(format_to_2_digits(h)) + ':' + str(format_to_2_digits(60 / units_per_hour * u)))
-            else:
-                hn = int(h * (1 / units_per_hour))
-                small_units.append(str(format_to_2_digits(hn)))
+    big_unit_colspan = units_per_hour * hours if units_per_hour > 1 else hours
+    big_units = range(0, days)
+    small_units = range(0, big_unit_colspan * days)
+    table_length_in_secs = days * 24 * 3600 if days > 1 else hours * 3600
 
     context = {
         'tails': tails,
@@ -63,12 +51,12 @@ def index(request):
         'small_units': small_units,
         'days': days,
         'hours': hours,
-        'big_unit_colspan': units_per_hour * hours if units_per_hour > 1 else hours,
-        'days': days,
+        'big_unit_colspan': big_unit_colspan,
         'units_per_hour': units_per_hour,
         'mode': mode,
         'start_tmstmp': start_tmstmp,
-        'end_tmstmp': end_tmstmp,
+        'prev_start_tmstmp': int(start_tmstmp) - table_length_in_secs,
+        'next_start_tmstmp': int(start_tmstmp) + table_length_in_secs,
         'csrf_token': csrf.get_token(request),
     }
     return render(request, 'index_rp.html', context)
