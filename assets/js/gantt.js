@@ -116,7 +116,7 @@ RoutePlanningGantt.prototype.initInteractables = function() {
     var self = this;
     var assignmentTableId = self.options.flightAssignmentTable.attr('id');
     var assignmentTableTrSelector = '#' + assignmentTableId + ' tr:not(.head)';
-    var ganttTableBarSelector = '.gantt-table tr:not(.head) > td > .bar';
+    var ganttTableBarSelector = '.gantt-table tr:not(.head) > td > .bar:not(.assigned)';
     var statusBarPrototypeSelector = '.status-bars .bar';
     var draggables = [ganttTableBarSelector, statusBarPrototypeSelector];
     var removeAreaSelector = '#drop-to-remove-area';
@@ -345,7 +345,10 @@ RoutePlanningGantt.prototype.initInteractables = function() {
                 self.removeAssignment(assignmentId)
                     .then(function(response) {
                         if (response.success) {
+                            var tdIndex = $bar.closest('td').index();
+                            var flightNumber = $bar.data('number');
                             $bar.remove();
+                            self.options.flightTemplateTable.find('td:nth-child(' + (tdIndex + 1) + ') .bar.assigned[data-number="' + flightNumber + '"]').removeClass('assigned');
                         }
                     });
             }

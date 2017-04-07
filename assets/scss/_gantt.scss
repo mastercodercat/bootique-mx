@@ -92,7 +92,7 @@ $popover-text-color: #333;
             }
             .number {
                 font-size: 0.85em;
-                padding: 0 3px;
+                padding: 2px 3px;
                 text-align: center;
                 width: 100%;
             }
@@ -133,7 +133,7 @@ $popover-text-color: #333;
             line-height: 30px;
         }
     }
-    &.small-cells .bar {
+    &.small-cells .bar .flight-info {
         .org,
         .dest {
             display: none;
