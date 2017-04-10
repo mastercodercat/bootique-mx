@@ -1,5 +1,25 @@
 "use strict";
 
+/* helper functions */
+
+function formatTo2Digits(number) {
+    return (number < 10 ? '0' : '') + number;
+}
+
+function weekDayString(weekday) {
+    var weekdays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    return weekdays[weekday % 7];
+}
+
+function formatDate(date) {
+    return formatTo2Digits(date.getMonth() + 1) + '/' +
+        formatTo2Digits(date.getDate()) + '/' +
+        formatTo2Digits(date.getFullYear())  + ' ' +
+        formatTo2Digits(date.getHours())  + ':' +
+        formatTo2Digits(date.getMinutes())  + ':' +
+        formatTo2Digits(date.getSeconds());
+}
+
 /*
  * Route planning gantt class
  *
@@ -26,48 +46,36 @@ function RoutePlanningGantt(options) {
     }
 }
 
-/* helper functions */
+/* class methods */
 
-function formatTo2Digits(number) {
-    return (number < 10 ? '0' : '') + number;
-}
-
-function weekDayString(weekday) {
-    var weekdays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-    return weekdays[weekday % 7];
-}
-
-function formatDate(date) {
-    return formatTo2Digits(date.getMonth() + 1) + '/' +
-        formatTo2Digits(date.getDate()) + '/' +
-        formatTo2Digits(date.getFullYear())  + ' ' +
-        formatTo2Digits(date.getHours())  + ':' +
-        formatTo2Digits(date.getMinutes())  + ':' +
-        formatTo2Digits(date.getSeconds());
-}
-
-function getTdWidth($td) {
+RoutePlanningGantt.prototype.getTdWidth = function($td) {
     return parseFloat($td.css('width').replace('px', ''));
 }
 
-function getTdIndex(self, date) {
+RoutePlanningGantt.prototype.getTdIndex = function(date) {
+    var self = this;
+
     var diffFromStart = (date - self.options.startDate) / 1000;
     return Math.floor(diffFromStart / self.options.unit);
 }
 
-function getTdPosition(self, date) {
-    var _date = new Date(date.getTime());
-    _date.setMinutes(0);
-    _date.setSeconds(0);
-    var secondsDiff = (date - _date) / 1000;
+RoutePlanningGantt.prototype.getTdPosition = function(date) {
+    var self = this;
+
+    // var _date = new Date(date.getTime());
+    // _date.setMinutes(0);
+    // _date.setSeconds(0);
+    // var secondsDiff = (date - _date) / 1000;
+    var secondsDiff = (date - self.options.startDate) / 1000;
     return parseFloat(parseInt(secondsDiff) % parseInt(self.options.unit)) / parseFloat(self.options.unit);
 }
 
-function placeBar($tr, tdIndex, length, object) {
+RoutePlanningGantt.prototype.placeBar = function($tr, tdIndex, length, object) {
     /*
      * length := bar-width / td-width
      * object can be flight (from template table) or assignment (from assignment table)
      */
+    var self = this;
     var $bar = null;
     var date;
     var $td = $tr.children('td').eq(tdIndex + 1);   // Index should be increased by 1 because first td is line/tail name cell
@@ -93,14 +101,14 @@ function placeBar($tr, tdIndex, length, object) {
             var status = object.status;
             if (status == 2) {
                 $bar = $('.status-prototype[data-status="' + status + '"]').clone();
-                placeStatusBar($bar, $td, length, object);
+                self.placeStatusBar($bar, $td, length, object);
             }
         }
     }
     return $bar;
 }
 
-function setStatusBarInfo($bar, object) {
+RoutePlanningGantt.prototype.setStatusBarInfo = function($bar, object) {
     var $info = $bar.find('.info');
     date = new Date(object.start_time);
     $info.find('.start').html(formatDate(date));
@@ -108,21 +116,22 @@ function setStatusBarInfo($bar, object) {
     $info.find('.end').html(formatDate(date));
 }
 
-function placeStatusBar($bar, $td, length, object) {
-    /// TODO: set start position based on start time
+RoutePlanningGantt.prototype.placeStatusBar = function($bar, $td, length, object) {
+    var self = this;
+    var tdPos = self.getTdPosition(new Date(object.start_time));
+
     $bar
         .removeClass('status-prototype')
+        .css('left', tdPos * 100 + '%')
         .css('width', $td.css('width').replace('px', '') * length)
         .css('height', $td.css('height').replace('px', ''));
 
-    setStatusBarInfo($bar, object);
+    self.setStatusBarInfo($bar, object);
 
     $td.append($bar);
 
     return $bar;
 }
-
-/* class methods */
 
 RoutePlanningGantt.prototype.initInteractables = function() {
     var self = this;
@@ -146,7 +155,7 @@ RoutePlanningGantt.prototype.initInteractables = function() {
     })
     .on('resizemove', function(event) {
         var $bar = $(event.target);
-        var resizeUnit = parseFloat(getTdWidth($bar.closest('td')) * 300 / self.options.unit);  // Resize unit will be per 5 mins
+        var resizeUnit = parseFloat(self.getTdWidth($bar.closest('td')) * 300 / self.options.unit);  // Resize unit will be per 5 mins
 
         var ow = parseFloat($bar.attr('data-org-width'));
         var w = Math.round(parseFloat(event.rect.width) / resizeUnit) * resizeUnit;
@@ -158,16 +167,13 @@ RoutePlanningGantt.prototype.initInteractables = function() {
             .css('transform', 'translateX(' + tx + 'px)')
             .attr('data-dw', dw)
             .attr('data-pos', pos);
-
-        // TODO: Temporary start and end time calculation
-        /// var dt = parseFloat(dw) / getTdWidth($bar.closest('td')) * self.options.unit;
     })
     .on('resizeend', function(event) {
         var $bar = $(event.target);
         var dw = $bar.attr('data-dw');
         var pos = $bar.attr('data-pos');
 
-        var dt = parseFloat(dw) / getTdWidth($bar.closest('td')) * self.options.unit;
+        var dt = parseFloat(dw) / self.getTdWidth($bar.closest('td')) * self.options.unit;
         var assignmentId = $bar.data('assignment-id');
         if (!assignmentId) {
             console.log('No assignment Id on resizing status bar');
@@ -191,9 +197,9 @@ RoutePlanningGantt.prototype.initInteractables = function() {
                 if (response.success) {
                     var startTime = new Date(response.start_time);
                     var endTime = new Date(response.end_time);
-                    var tdIndex = getTdIndex(self, startTime);
+                    var tdIndex = self.getTdIndex(startTime);
 
-                    placeStatusBar(
+                    self.placeStatusBar(
                         $bar,
                         $bar.closest('tr').children('td').eq(tdIndex + 1),
                         (endTime - startTime) / 1000 / self.options.unit,
@@ -349,7 +355,7 @@ RoutePlanningGantt.prototype.initInteractables = function() {
                     .then(function(response) {
                         if (response.success) {
                             var $newBar = $bar.clone();
-                            placeStatusBar($newBar, $td, 3600 / self.options.unit, {
+                            self.placeStatusBar($newBar, $td, 3600 / self.options.unit, {
                                 start_time: startTime,
                                 end_time: endTime,
                             });
@@ -451,9 +457,9 @@ RoutePlanningGantt.prototype.refreshTemplateTable = function() {
 
             var date = new Date(self.options.startDate.getTime());
             var $tr = self.options.flightTemplateTable.find('tr[data-line=' + template.line_id + ']');
-            tdIndex = getTdIndex(self, departureDateTime);
-            tdPos = getTdPosition(self, departureDateTime);
-            $bar = placeBar($tr, tdIndex, length, template);
+            tdIndex = self.getTdIndex(departureDateTime);
+            tdPos = self.getTdPosition(departureDateTime);
+            $bar = self.placeBar($tr, tdIndex, length, template);
             if ($bar) {
                 $bar
                     .attr('data-departure-time', departureDateTime.toISOString())
@@ -480,8 +486,8 @@ RoutePlanningGantt.prototype.refreshAssignmentTable = function() {
         var endTime = new Date(assignment.end_time);
         var tdIndex = parseInt((startTime - self.options.startDate) / 1000 / self.options.unit);
         var length = (endTime - startTime) / 1000 / self.options.unit;
-        var tdPos = getTdPosition(self, startTime);
-        var $bar = placeBar($tr, tdIndex, length, assignment);
+        var tdPos = self.getTdPosition(startTime);
+        var $bar = self.placeBar($tr, tdIndex, length, assignment);
         if ($bar) {
             $bar
                 .css('left', tdPos * 100 + '%')
