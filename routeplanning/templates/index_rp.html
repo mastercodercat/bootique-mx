@@ -182,7 +182,7 @@
         <script src="{% static "js/gantt.js" %}"></script>
     {% endcompress %}
     <script type="text/javascript">
-        var readOnly = {{ can_write_gantt | yesno:"false,true" }};
+        var readOnly = {{ request.user|can_write_gantt|yesno:"false,true" }};
         var days = {{ days }};
         var hours = {{ hours }};
         var unit = 3600 / {{ units_per_hour }};
