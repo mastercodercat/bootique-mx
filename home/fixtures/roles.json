@@ -1,0 +1,18 @@
+[
+    {
+        "model": "home.userrole",
+        "pk": 1,
+        "fields": {
+            "name": "Maintenance",
+            "access": 7
+        }
+    },
+    {
+        "model": "home.userrole",
+        "pk": 2,
+        "fields": {
+            "name": "Dispatcher",
+            "access": 12
+        }
+    }
+]

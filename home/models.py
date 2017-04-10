@@ -8,12 +8,46 @@ from home.helpers import datetime_now_utc
 from inspection.models import *
 
 
+_bit = lambda x: 2 ** (x-1)
+INSPECTION_READABLE = _bit(1)
+INSPECTION_WRITABLE = _bit(2)
+GANTT_READABLE = _bit(3)
+GANTT_WRITABLE = _bit(4)
+
+class UserRole(models.Model):
+    name = models.CharField(max_length=20, blank=True)
+    access = models.IntegerField(default=0, null=False, blank=False)
+
+    class Meta:
+        db_table = 'user_role'
+
+    def __str__(self):
+        return self.name
+
+    @property
+    def can_read_inspection(self):
+        return self.access & INSPECTION_READABLE > 0
+
+    @property
+    def can_write_inspection(self):
+        return self.access & INSPECTION_WRITABLE > 0
+
+    @property
+    def can_read_gantt(self):
+        return self.access & GANTT_READABLE > 0
+
+    @property
+    def can_write_gantt(self):
+        return self.access & GANTT_WRITABLE > 0
+
+
 class UserProfile(models.Model):
     user = models.OneToOneField(User, null=True, blank=True, related_name='userprofile')
     is_admin = models.BooleanField(default=False, blank=True)
 
     # Todo: Consider cascading deletion of personal_data
     personal_data = models.OneToOneField('PersonalData', null=True, blank=True)
+    role = models.ForeignKey(UserRole, null=True, blank=False)
 
     @property
     def full_name(self):
@@ -36,6 +70,7 @@ class PersonalData(models.Model):
 
     class Meta:
         db_table = 'personal_data'
+        verbose_name_plural = 'personal data'
 
     def __unicode__(self):
         return self.first_name + " " + self.last_name

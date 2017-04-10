@@ -23,6 +23,7 @@ Initial project configuration:
 Load fixures:
 
 Run all the commands in the following order:
+`python manage.py loaddata roles.json`
 `python manage.py loaddata inspection.json`
 `python manage.py loaddata aircraft.json`
 `python manage.py loaddata aircraft_inspection_record.json`
