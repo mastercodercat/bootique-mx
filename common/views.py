@@ -10,4 +10,4 @@ def index_redirect(request):
     elif can_read_gantt(request.user):
         return redirect('routeplanning:index')
     else:
-        raise Http404("Not Found")
+        return redirect('account_login')
