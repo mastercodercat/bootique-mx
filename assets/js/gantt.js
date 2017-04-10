@@ -39,7 +39,9 @@ function RoutePlanningGantt(options) {
         && this.options.startDate
         && this.options.endDate
     ) {
-        this.initInteractables();
+        if (!this.options.readOnly) {
+            this.initInteractables();
+        }
         this.loadData();
     } else {
         console.error('Invalid table element')

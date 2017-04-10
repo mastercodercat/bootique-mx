@@ -3,15 +3,17 @@ import json
 import dateutil.parser
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse, JsonResponse, HttpResponseForbidden
 from django.middleware import csrf
 
 from routeplanning.models import *
 from routeplanning.forms import *
-from home.helpers import *
+from common.helpers import *
+from common.decorators import *
 
 
 @login_required
+@gantt_readable_required
 def index(request):
     mode = request.GET.get('mode') if request.GET.get('mode') else '1'
     start_tmstmp = request.GET.get('start')
@@ -62,6 +64,7 @@ def index(request):
     return render(request, 'index_rp.html', context)
 
 @login_required
+@gantt_writable_required
 def add_tail(request):
     form = TailForm(request.POST or None)
 
@@ -86,11 +89,14 @@ def add_tail(request):
         return render(request, 'tail.html', context)
 
 @login_required
+@gantt_readable_required
 def edit_tail(request, tail_id=None):
     tail = get_object_or_404(Tail, pk=tail_id)
 
     form = TailForm(request.POST or None, instance=tail)
     if request.method == 'POST':
+        if not can_write_gantt(request.user):
+            return HttpResponseForbidden()
         if form.is_valid():
             tail = form.save()
 
@@ -108,6 +114,7 @@ def edit_tail(request, tail_id=None):
         return render(request, 'tail.html', context)
 
 @login_required
+@gantt_writable_required
 def add_line(request):
     form = LineForm(request.POST or None)
     if request.method == 'POST':
@@ -116,9 +123,9 @@ def add_line(request):
             line.save()
 
             for i in range(1, 12):
-                entered_line_part_name = form.cleaned_data['part' + str(i)]
-                if entered_line_part_name:
-                    line_part = LinePart(name=entered_line_part_name, number=i, line=line)    
+                entered_line_part_number = form.cleaned_data['part' + str(i)]
+                if entered_line_part_number:
+                    line_part = LinePart(number=entered_line_part_number, line=line)    
                     line_part.save()
                 else:
                     break
@@ -140,32 +147,35 @@ def add_line(request):
         return render(request, 'line.html', context)
 
 @login_required
+@gantt_readable_required
 def edit_line(request, line_id=None):
     line = get_object_or_404(Line, pk=line_id)
 
     initialData = {
         'name': line.name,
     }
-    for line_part in line.linepart_set.all():
-        initialData['part' + str(line_part.number)] = line_part.name
+    for i, line_part in enumerate(line.linepart_set.all()):
+        initialData['part' + str(i)] = line_part.number
 
     form = LineForm(request.POST or initialData)
     if request.method == 'POST':
+        if not can_write_gantt(request.user):
+            return HttpResponseForbidden()
         if form.is_valid():
             if line.name != form.cleaned_data['name']:
                 line.name = form.cleaned_data['name']
                 line.save()
 
             for i in range(1, 12):
-                entered_line_part_name = form.cleaned_data['part' + str(i)]
-                if entered_line_part_name:
+                entered_line_part_number = form.cleaned_data['part' + str(i)]
+                if entered_line_part_number:
                     try:
                         line_part = line.linepart_set.get(number=i)
-                        if line_part.name != entered_line_part_name:
-                            line_part.name = entered_line_part_name
+                        if line_part.number != entered_line_part_number:
+                            line_part.number = entered_line_part_number
                             line_part.save()
                     except:
-                        line_part = LinePart(name=entered_line_part_name, number=i, line=line)    
+                        line_part = LinePart(number=entered_line_part_number, line=line)    
                         line_part.save()
                 else:
                     break
@@ -184,6 +194,7 @@ def edit_line(request, line_id=None):
         return render(request, 'line.html', context)
 
 @login_required
+@gantt_writable_required
 def flights(request):
     flights = Flight.objects.all()
 
@@ -193,6 +204,7 @@ def flights(request):
     return render(request, 'flights.html', context)
 
 @login_required
+@gantt_writable_required
 def add_flight(request):
     form = FlightForm(request.POST or None)
     if request.method == 'POST':
@@ -206,6 +218,7 @@ def add_flight(request):
     return render(request, 'flight.html', context)
 
 @login_required
+@gantt_readable_required
 def api_load_data(request):
     start_time = datetime.fromtimestamp(int(request.GET.get('startdate')), tz=utc)
     end_time = datetime.fromtimestamp(int(request.GET.get('enddate')), tz=utc)
@@ -251,6 +264,7 @@ def api_load_data(request):
     return JsonResponse(data, safe=False)
 
 @login_required
+@gantt_writable_required
 def api_assign_flight(request):
     result = {
         'success': False,
@@ -293,6 +307,7 @@ def api_assign_flight(request):
     return JsonResponse(result, safe=False)
 
 @login_required
+@gantt_writable_required
 def api_assign_status(request):
     result = {
         'success': False,
@@ -335,6 +350,7 @@ def api_assign_status(request):
     return JsonResponse(result, safe=False)
 
 @login_required
+@gantt_writable_required
 def api_remove_assignment(request):
     result = {
         'success': False,
@@ -361,6 +377,7 @@ def api_remove_assignment(request):
     return JsonResponse(result, safe=False)
 
 @login_required
+@gantt_writable_required
 def api_move_assignment(request):
     result = {
         'success': False,
@@ -409,6 +426,7 @@ def api_move_assignment(request):
     return JsonResponse(result, safe=False)
 
 @login_required
+@gantt_writable_required
 def api_resize_assignment(request):
     result = {
         'success': False,

@@ -1,6 +1,7 @@
 {% extends "layout.html" %}
 {% load staticfiles %}
 {% load addclass %}
+{% load permission %}
 
 {% block head_title %}{{ title }}{% endblock %}
 
@@ -41,11 +42,13 @@
                                 </div>
                             </div>
                         {% endfor %}
-                        <div class="text-right m-t-lg">
-                            <button id="save-and-add-another" class="btn btn-default" type="button">Save and add another</button>
-                            <button id="save-and-continue" class="btn btn-default" type="button">Save and continue editing</button>
-                            <button class="btn btn-primary" type="submit">Save</button>
-                        </div>
+                        {% if request.user|can_write_gantt %}
+                            <div class="text-right m-t-lg">
+                                <button id="save-and-add-another" class="btn btn-default" type="button">Save and add another</button>
+                                <button id="save-and-continue" class="btn btn-default" type="button">Save and continue editing</button>
+                                <button class="btn btn-primary" type="submit">Save</button>
+                            </div>
+                        {% endif %}
                     </form>
                 </div>
             </div>

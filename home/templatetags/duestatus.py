@@ -1,7 +1,7 @@
 from django import template
 from django.utils.safestring import mark_safe
 
-from home.helpers import is_past_due, is_within_threshold, is_coming_due
+from common.helpers import is_past_due, is_within_threshold, is_coming_due
 
 register = template.Library()
 

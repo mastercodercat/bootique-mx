@@ -11,3 +11,4 @@ media/*
 static/*
 **/migrations/**
 mxtracking/local_settings.py
+assets/tmp

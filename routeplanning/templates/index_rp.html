@@ -1,6 +1,7 @@
 {% extends "layout.html" %}
 {% load staticfiles %}
 {% load compress %}
+{% load permission %}
 
 {% block head_title %}Route Planning Gantt{% endblock %}
 
@@ -64,23 +65,25 @@
                 </div>
             </div>
         </div>
-        <!-- Status bar sources -->
-        <div class="status-bars clearfix m-b-md">
-            <div class="clearfix">Drag and drop: </div>
-            <div class="bar-container">
-                <div class="bar status-bar maintenance status-prototype" draggable="true" data-status="2">
-                    <span>Maintenance</span>
-                    <div class="info status-popover">
-                        <div class="field">Status: Maintenance</div>
-                        <div class="field">Sched. Start Time: <span class="start"></span></div>
-                        <div class="field">Sched. End Time: <span class="end"></span></div>
+        <!-- Status bar sources, remove area -->
+        {% if request.user|can_write_gantt %}
+            <div class="status-bars clearfix m-b-md">
+                <div class="clearfix">Drag and drop: </div>
+                <div class="bar-container">
+                    <div class="bar status-bar maintenance status-prototype" draggable="true" data-status="2">
+                        <span>Maintenance</span>
+                        <div class="info status-popover">
+                            <div class="field">Status: Maintenance</div>
+                            <div class="field">Sched. Start Time: <span class="start"></span></div>
+                            <div class="field">Sched. End Time: <span class="end"></span></div>
+                        </div>
                     </div>
                 </div>
+                <div class="drop-to-remove-area" id="drop-to-remove-area">
+                    <i class="fa fa-trash-o"></i> Drag and drop here to remove assignment
+                </div>
             </div>
-            <div class="drop-to-remove-area" id="drop-to-remove-area">
-                <i class="fa fa-trash-o"></i> Drag and drop here to remove assignment
-            </div>
-        </div>
+        {% endif %}
         <!-- Bar prototype -->
         <div class="bar prototype">
             <table class="flight-info">
@@ -104,9 +107,11 @@
                 <tbody>
                     <tr class="head days">
                         <td class="label-cell" rowspan="2">
-                            <a href="{% url 'routeplanning:add_tail' %}" class="btn btn-primary btn-circle-xs" type="button">
-                                <i class="fa fa-plus"></i>
-                            </a>
+                            {% if request.user|can_write_gantt %}
+                                <a href="{% url 'routeplanning:add_tail' %}" class="btn btn-primary btn-circle-xs" type="button">
+                                    <i class="fa fa-plus"></i>
+                                </a>
+                            {% endif %}
                             Tails
                         </td>
                         {% for big_unit in big_units %}
@@ -137,9 +142,11 @@
                 <tbody>
                     <tr class="head days">
                         <td class="label-cell" rowspan="2">
-                            <a href="{% url 'routeplanning:add_line' %}" class="btn btn-primary btn-circle-xs" type="button">
-                                <i class="fa fa-plus"></i>
-                            </a>
+                            {% if request.user|can_write_gantt %}
+                                <a href="{% url 'routeplanning:add_line' %}" class="btn btn-primary btn-circle-xs" type="button">
+                                    <i class="fa fa-plus"></i>
+                                </a>
+                            {% endif %}
                             Lines
                         </td>
                         {% for big_unit in big_units %}
@@ -175,6 +182,7 @@
         <script src="{% static "js/gantt.js" %}"></script>
     {% endcompress %}
     <script type="text/javascript">
+        var readOnly = {{ can_write_gantt | yesno:"false,true" }};
         var days = {{ days }};
         var hours = {{ hours }};
         var unit = 3600 / {{ units_per_hour }};
@@ -264,6 +272,7 @@
             startDate: startDate,
             endDate: endDate,
             unit: unit,
+            readOnly: readOnly,
             csrfToken: "{{ csrf_token }}",
         });
     </script>

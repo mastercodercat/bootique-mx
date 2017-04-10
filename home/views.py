@@ -1,13 +1,16 @@
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
+from django.http import HttpResponseForbidden
 from datetime import timedelta
 
 from home.models import *
 from home.forms import *
-from home.helpers import is_past_due, is_within_threshold
+from common.helpers import *
+from common.decorators import *
 
 
 @login_required
+@inspection_readable_required
 def overview(request):
     aircrafts = Aircraft.objects.all().select_related('airframe')
 
@@ -34,6 +37,7 @@ def overview(request):
     return render(request, 'overview.html', context)
 
 @login_required
+@inspection_readable_required
 def aircraft_details(request, reg=''):
     aircraft = get_object_or_404(Aircraft.objects.select_related('airframe'), reg=reg)
 
@@ -43,6 +47,7 @@ def aircraft_details(request, reg=''):
     return render(request, 'details.html', context)
 
 @login_required
+@inspection_readable_required
 def aircraft_task_list(request, reg=''):
     aircraft = get_object_or_404(Aircraft.objects.select_related('inspection_program'), reg=reg)
 
@@ -52,6 +57,7 @@ def aircraft_task_list(request, reg=''):
     return render(request, 'task_list.html', context)
 
 @login_required
+@inspection_readable_required
 def aircraft_mels(request, reg=''):
     aircraft = get_object_or_404(Aircraft, reg=reg)
 
@@ -62,12 +68,15 @@ def aircraft_mels(request, reg=''):
 
 # maybe temporary
 @login_required
+@inspection_readable_required
 def aircraft_assign_program(request, reg=''):
     aircraft = get_object_or_404(Aircraft, reg=reg)
     form = AssignInspectionProgramForm(request.POST or {
         'inspection_program': aircraft.inspection_program
     })
     if request.method == 'POST':
+        if not can_write_inspection(request.user):
+            return HttpResponseForbidden()
         if form.is_valid():
             inspection_program = form.cleaned_data.get('inspection_program')
             aircraft.inspection_program = inspection_program

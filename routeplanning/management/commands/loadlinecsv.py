@@ -3,7 +3,7 @@ import csv, datetime, sys
 from django.core.management.base import BaseCommand, CommandError
 
 from routeplanning.models import Line, LinePart
-from home.helpers import utc
+from common.helpers import utc
 
 class Command(BaseCommand):
     help = 'Load lines and line parts from fixtures/lines.csv and fixtures/lineparts.csv'

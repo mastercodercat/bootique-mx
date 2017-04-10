@@ -38,28 +38,28 @@ def format_to_2_digits(num):
 
 def can_read_inspection(user):
     try:
-        profile = UserProfile.objects.get(user=user).select_related('role')
+        profile = UserProfile.objects.select_related('role').get(user=user)
         return profile.role.can_read_inspection
     except:
         return False
 
 def can_write_inspection(user):
     try:
-        profile = UserProfile.objects.get(user=user).select_related('role')
+        profile = UserProfile.objects.select_related('role').get(user=user)
         return profile.role.can_write_inspection
     except:
         return False
 
 def can_read_gantt(user):
     try:
-        profile = UserProfile.objects.get(user=user).select_related('role')
+        profile = UserProfile.objects.select_related('role').get(user=user)
         return profile.role.can_read_gantt
     except:
         return False
 
 def can_write_gantt(user):
     try:
-        profile = UserProfile.objects.get(user=user).select_related('role')
+        profile = UserProfile.objects.select_related('role').get(user=user)
         return profile.role.can_write_gantt
     except:
         return False
