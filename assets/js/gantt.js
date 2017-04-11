@@ -101,10 +101,8 @@ RoutePlanningGantt.prototype.placeBar = function($tr, tdIndex, length, object) {
             $td.append($bar);
         } else {
             var status = object.status;
-            if (status == 2) {
-                $bar = $('.status-prototype[data-status="' + status + '"]').clone();
-                self.placeStatusBar($bar, $td, length, object);
-            }
+            $bar = $('.status-prototype[data-status="' + status + '"]').clone();
+            self.placeStatusBar($bar, $td, length, object);
         }
     }
     return $bar;

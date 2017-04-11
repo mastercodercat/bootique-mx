@@ -29,7 +29,7 @@ class LinePart(models.Model):
     line = models.ForeignKey(Line, null=True, blank=False)
 
     def __unicode__(self):
-        return self.name
+        return self.number
 
 
 class Flight(models.Model):
@@ -53,6 +53,7 @@ class Assignment(models.Model):
     STATUS_CHOICES = (
         (1, 'Flight'),
         (2, 'Maintenance'),
+        (3, 'Unscheduled Flight'),
     )
 
     flight_number = models.CharField(max_length=10, default='', null=False, blank=False)
@@ -68,6 +69,8 @@ class Assignment(models.Model):
             return 'Flight ' + str(self.flight_number) + ' Assignment'
         elif self.status == 2:
             return 'Maintenance'
+        elif self.status == 3:
+            return 'Unscheduled Flight'
         else:
             return 'Other'
 

@@ -12,7 +12,7 @@ class TailForm(ModelForm):
 class LineForm(forms.Form):
     name = forms.CharField(label='Name', required=True)
     part1 = forms.CharField(label='Part of Line 1', required=True)
-    part2 = forms.CharField(label='Part of Line 2', required=True)
+    part2 = forms.CharField(label='Part of Line 2', required=False)
     part3 = forms.CharField(label='Part of Line 3', required=False)
     part4 = forms.CharField(label='Part of Line 4', required=False)
     part5 = forms.CharField(label='Part of Line 5', required=False)

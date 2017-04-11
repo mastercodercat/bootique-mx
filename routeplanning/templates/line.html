@@ -23,13 +23,13 @@
 {% endblock %}
 
 {% block content %}
-    <div class="ibox">
-        <div class="ibox-title">
-            <h3>{{ title }}</h3>
-        </div>
-        <div class="ibox-content">
-            <div class="row">
-                <div class="col-lg-6 col-md-8 col-sm-10 col-xs-12">
+    <div class="row">
+        <div class="col-lg-6 col-md-8 col-sm-12 col-xs-12">
+            <div class="ibox">
+                <div class="ibox-title">
+                    <h3>{{ title }}</h3>
+                </div>
+                <div class="ibox-content">
                     <form class="form-horizontal" id="add-line-form" action="" method="POST">
                         {% csrf_token %}
                         <input type="hidden" id="action_after_save" name="action_after_save" value="save" />
@@ -53,11 +53,30 @@
                 </div>
             </div>
         </div>
+        <div class="col-lg-3 col-md-4 col-sm-12 col-xs-12">
+            <div class="ibox">
+                <div class="ibox-title">
+                    <h3>Full List of Lines</h3>
+                </div>
+                <div class="ibox-content">
+                    {% for line in lines %}
+                        <div class="clearfix m-xs line-container">
+                            {{ line.name }}
+                            <div class="pull-right">
+                                <a href="{% url 'routeplanning:edit_line' line_id=line.id %}" class="btn btn-primary btn-xs"><i class="fa fa-fw fa-edit"></i></a>
+                                <a class="btn-delete btn btn-danger btn-xs" href="javascript:;" data-delete-url="{% url 'routeplanning:delete_line' line_id=line.id %}"><i class="fa fa-fw fa-trash"></i></a>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
     </div>
 {% endblock %}
 
 {% block pagejs %}
 <script type="text/javascript">
+    var csrfToken = "{{ csrf_token }}";
     $('#save-and-add-another').on('click', function() {
         $('#action_after_save').val('save-and-add-another');
         $('#add-line-form').submit();
@@ -65,6 +84,20 @@
     $('#save-and-continue').on('click', function() {
         $('#action_after_save').val('save-and-continue');
         $('#add-line-form').submit();
+    });
+    $('.btn-delete').on('click', function() {
+        var $btn = $(this);
+        $.ajax({
+            url: $btn.data('delete-url'),
+            method: 'DELETE',
+            beforeSend: function(xhr) {
+                xhr.setRequestHeader("X-CSRFToken", csrfToken);
+            },
+        })
+        .then(function() {
+            $btn.closest('.line-container').remove();
+        });
+        return false;
     });
 </script>
 {% endblock %}

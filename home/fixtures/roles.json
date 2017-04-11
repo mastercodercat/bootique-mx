@@ -14,5 +14,13 @@
             "name": "Dispatcher",
             "access": 12
         }
+    },
+    {
+        "model": "home.userrole",
+        "pk": 3,
+        "fields": {
+            "name": "Admin",
+            "access": 15
+        }
     }
 ]

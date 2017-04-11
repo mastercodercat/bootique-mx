@@ -67,26 +67,27 @@ def index(request):
 @gantt_writable_required
 def add_tail(request):
     form = TailForm(request.POST or None)
+    action_after_save = request.POST.get('action_after_save')
 
     if request.method == 'POST':
         if form.is_valid():
             tail = form.save()
 
-    action_after_save = request.POST.get('action_after_save')
+            if action_after_save == 'save-and-continue':
+                return redirect('routeplanning:edit_tail', tail_id=tail.id)
+            elif action_after_save == 'save':
+                return redirect('routeplanning:index')
+            elif action_after_save == 'save-and-add-another':
+                form = TailForm()
 
-    if action_after_save == 'save-and-continue':
-        return redirect('routeplanning:edit_tail', tail_id=tail.id)
-    elif action_after_save == 'save-and-add-another':
-        form = TailForm()
-
-    if action_after_save == 'save':
-        return redirect('routeplanning:index')
-    else:
-        context = {
-            'form': form,
-            'title': 'Add Tail',
-        }
-        return render(request, 'tail.html', context)
+    tails = Tail.objects.all()
+    context = {
+        'form': form,
+        'title': 'Add Tail',
+        'tails': tails,
+        'csrf_token': csrf.get_token(request),
+    }
+    return render(request, 'tail.html', context)
 
 @login_required
 @gantt_readable_required
@@ -94,29 +95,56 @@ def edit_tail(request, tail_id=None):
     tail = get_object_or_404(Tail, pk=tail_id)
 
     form = TailForm(request.POST or None, instance=tail)
+    action_after_save = request.POST.get('action_after_save')
+
     if request.method == 'POST':
         if not can_write_gantt(request.user):
             return HttpResponseForbidden()
         if form.is_valid():
             tail = form.save()
 
-    action_after_save = request.POST.get('action_after_save')
+            if action_after_save == 'save-and-add-another':
+                return redirect('routeplanning:add_tail')
+            elif action_after_save == 'save':
+                return redirect('routeplanning:index')
+            elif action_after_save == 'save-and-add-another':
+                form = LineForm()
 
-    if action_after_save == 'save-and-add-another':
-        return redirect('routeplanning:add_tail')
-    elif action_after_save == 'save':
-        return redirect('routeplanning:index')
+    tails = Tail.objects.all()
+    context = {
+        'form': form,
+        'title': 'Edit Tail ' + tail.number,
+        'tails': tails,
+        'csrf_token': csrf.get_token(request),
+    }
+    return render(request, 'tail.html', context)
+
+@login_required
+@gantt_writable_required
+def delete_tail(request, tail_id=None):
+    result = {
+        'success': False,
+    }
+    if request.method == 'DELETE':
+        try:
+            if tail_id:
+                tail = Tail.objects.get(pk=tail_id)
+                tail.delete()
+                result['success'] = True
+            else:
+                result['error'] = 'Tail id should be specified'
+        except:
+            result['error'] = 'Error occurred while deleting tail'
     else:
-        context = {
-            'form': form,
-            'title': 'Edit Tail ' + tail.number,
-        }
-        return render(request, 'tail.html', context)
+        result['error'] = 'Only DELETE method allowed for this api'
+    return JsonResponse(result, safe=False)
 
 @login_required
 @gantt_writable_required
 def add_line(request):
     form = LineForm(request.POST or None)
+    action_after_save = request.POST.get('action_after_save')
+
     if request.method == 'POST':
         if form.is_valid():
             line = Line(name=form.cleaned_data['name'])    
@@ -130,21 +158,21 @@ def add_line(request):
                 else:
                     break
 
-    action_after_save = request.POST.get('action_after_save')
+            if action_after_save == 'save-and-continue':
+                return redirect('routeplanning:edit_line', line_id=line.id)
+            elif action_after_save == 'save-and-add-another':
+                form = LineForm()
+            elif action_after_save == 'save':
+                return redirect('routeplanning:index')
 
-    if action_after_save == 'save-and-continue':
-        return redirect('routeplanning:edit_line', line_id=line.id)
-    elif action_after_save == 'save-and-add-another':
-        form = LineForm()
-
-    if action_after_save == 'save':
-        return redirect('routeplanning:index')
-    else:
-        context = {
-            'form': form,
-            'title': 'Add Line',
-        }
-        return render(request, 'line.html', context)
+    lines = Line.objects.all()
+    context = {
+        'form': form,
+        'title': 'Add Line',
+        'lines': lines,
+        'csrf_token': csrf.get_token(request),
+    }
+    return render(request, 'line.html', context)
 
 @login_required
 @gantt_readable_required
@@ -158,6 +186,8 @@ def edit_line(request, line_id=None):
         initialData['part' + str(i)] = line_part.number
 
     form = LineForm(request.POST or initialData)
+    action_after_save = request.POST.get('action_after_save')
+
     if request.method == 'POST':
         if not can_write_gantt(request.user):
             return HttpResponseForbidden()
@@ -180,18 +210,41 @@ def edit_line(request, line_id=None):
                 else:
                     break
 
-    action_after_save = request.POST.get('action_after_save')
+            if action_after_save == 'save-and-add-another':
+                return redirect('routeplanning:add_line')
+            elif action_after_save == 'save':
+                return redirect('routeplanning:index')
+            elif action_after_save == 'save-and-add-another':
+                form = LineForm()
 
-    if action_after_save == 'save-and-add-another':
-        return redirect('routeplanning:add_line')
-    elif action_after_save == 'save':
-        return redirect('routeplanning:index')
+    lines = Line.objects.all()
+    context = {
+        'form': form,
+        'title': 'Edit Line ' + line.name,
+        'lines': lines,
+        'csrf_token': csrf.get_token(request),
+    }
+    return render(request, 'line.html', context)
+
+@login_required
+@gantt_writable_required
+def delete_line(request, line_id=None):
+    result = {
+        'success': False,
+    }
+    if request.method == 'DELETE':
+        try:
+            if line_id:
+                line = Line.objects.get(pk=line_id)
+                line.delete()
+                result['success'] = True
+            else:
+                result['error'] = 'Line id should be specified'
+        except:
+            result['error'] = 'Error occurred while deleting line'
     else:
-        context = {
-            'form': form,
-            'title': 'Edit Line ' + line.name,
-        }
-        return render(request, 'line.html', context)
+        result['error'] = 'Only DELETE method allowed for this api'
+    return JsonResponse(result, safe=False)
 
 @login_required
 @gantt_writable_required
@@ -336,7 +389,7 @@ def api_assign_status(request):
             flight_number=0,
             start_time=start_time,
             end_time=end_time,
-            status=2,
+            status=status,
             flight=None,
             tail=tail
         )

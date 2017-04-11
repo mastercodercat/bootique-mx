@@ -128,11 +128,14 @@ $popover-text-color: #333;
         }
         &.maintenance {
             background-color: $yellow;
+        }
+        &.unscheduled-flight {
+            background-color: #2C5F90;
+        }
+        &.status-bar {
             padding-top: 0;
             text-align: center;
             line-height: 30px;
-        }
-        &.status-bar {
             .status-popover {
                 position: absolute;
                 display: none;
@@ -160,7 +163,7 @@ $popover-text-color: #333;
                     white-space: nowrap;
                 }
             }
-            &:hover,
+            &:not(.status-prototype):hover,
             &.resizing {
                 .status-popover {
                     display: block;
@@ -182,6 +185,9 @@ $popover-text-color: #333;
             position: relative;
             min-width: 140px;
             height: 30px;
+            & + .bar-container {
+                margin-left: 10px;
+            }
         }
         .bar {
             display: block;
