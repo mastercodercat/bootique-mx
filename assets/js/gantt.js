@@ -42,6 +42,8 @@ function RoutePlanningGantt(options) {
         if (!this.options.readOnly) {
             this.initInteractables();
         }
+        this.displayNowIndicator(this.options.flightAssignmentTable);
+        this.displayNowIndicator(this.options.flightTemplateTable);
         this.loadData();
     } else {
         console.error('Invalid table element')
@@ -131,6 +133,17 @@ RoutePlanningGantt.prototype.placeStatusBar = function($bar, $td, length, object
     $td.append($bar);
 
     return $bar;
+}
+
+RoutePlanningGantt.prototype.displayNowIndicator = function($table) {
+    var self = this;
+    var now = new Date();
+    if (now >= self.options.startDate && now <= self.options.endDate) {
+        var firstColumnWidth = parseFloat($table.find('td:first-child').css('width').replace('px', ''));
+        var normalCellWidth = parseFloat($table.find('tr:not(.head) td:nth-child(3)').css('width').replace('px', ''));
+        var left = firstColumnWidth + normalCellWidth * (now - self.options.startDate) / 1000 / self.options.unit;
+        $table.closest('.table-wrapper').find('.now-indicator').css('left', left).removeClass('hidden');
+    }
 }
 
 RoutePlanningGantt.prototype.initInteractables = function() {

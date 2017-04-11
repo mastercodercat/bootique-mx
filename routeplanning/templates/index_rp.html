@@ -113,75 +113,81 @@
         </div>
         <div class="cover loading">
             <!-- Tails table -->
-            <table id="flight-assignment-table" class="table gantt-table m-b-none">
-                <tbody>
-                    <tr class="head days">
-                        <td class="label-cell" rowspan="2">
-                            {% if request.user|can_write_gantt %}
-                                <a href="{% url 'routeplanning:add_tail' %}" class="btn btn-primary btn-circle-xs" type="button">
-                                    <i class="fa fa-plus"></i>
-                                </a>
-                            {% endif %}
-                            Tails
-                        </td>
-                        {% for big_unit in big_units %}
-                            <td class="unit border-right" colspan="{{ big_unit_colspan }}">
-                                &nbsp;
+            <div class="table-wrapper">
+                <div class="now-indicator hidden"></div>
+                <table id="flight-assignment-table" class="table gantt-table m-b-none">
+                    <tbody>
+                        <tr class="head days">
+                            <td class="label-cell" rowspan="2">
+                                {% if request.user|can_write_gantt %}
+                                    <a href="{% url 'routeplanning:add_tail' %}" class="btn btn-primary btn-circle-xs" type="button">
+                                        <i class="fa fa-plus"></i>
+                                    </a>
+                                {% endif %}
+                                Tails
                             </td>
-                        {% endfor %}
-                    </tr>
-                    <tr class="head units">
-                        {% for small_unit in small_units %}
-                            <td class="unit{% if days > 1 and forloop.counter|divisibleby:hours %} border-right{% endif %}">&nbsp;</td>
-                        {% endfor %}
-                    </tr>
-                    {% for tail in tails %}
-                        <tr data-tail-number="{{ tail.number }}">
-                            <td class="axis-cell tail">
-                                <a href="{% url 'routeplanning:edit_tail' tail_id=tail.id %}">{{ tail.number }}</a>
-                            </td>
-                            {% for small_unit in small_units %}
-                                <td{% if days > 1 and forloop.counter|divisibleby:hours %} class="border-right"{% endif %}></td>
+                            {% for big_unit in big_units %}
+                                <td class="unit border-right" colspan="{{ big_unit_colspan }}">
+                                    &nbsp;
+                                </td>
                             {% endfor %}
                         </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+                        <tr class="head units">
+                            {% for small_unit in small_units %}
+                                <td class="unit{% if days > 1 and forloop.counter|divisibleby:hours %} border-right{% endif %}">&nbsp;</td>
+                            {% endfor %}
+                        </tr>
+                        {% for tail in tails %}
+                            <tr data-tail-number="{{ tail.number }}">
+                                <td class="axis-cell tail">
+                                    <a href="{% url 'routeplanning:edit_tail' tail_id=tail.id %}">{{ tail.number }}</a>
+                                </td>
+                                {% for small_unit in small_units %}
+                                    <td{% if days > 1 and forloop.counter|divisibleby:hours %} class="border-right"{% endif %}></td>
+                                {% endfor %}
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
             <!-- Lines table -->
-            <table id="flight-template-table" class="table gantt-table m-b-none">
-                <tbody>
-                    <tr class="head days">
-                        <td class="label-cell" rowspan="2">
-                            {% if request.user|can_write_gantt %}
-                                <a href="{% url 'routeplanning:add_line' %}" class="btn btn-primary btn-circle-xs" type="button">
-                                    <i class="fa fa-plus"></i>
-                                </a>
-                            {% endif %}
-                            Lines
-                        </td>
-                        {% for big_unit in big_units %}
-                            <td class="unit border-right" colspan="{{ big_unit_colspan }}">
-                                &nbsp;
+            <div class="table-wrapper">
+                <div class="now-indicator hidden"></div>
+                <table id="flight-template-table" class="table gantt-table m-b-none">
+                    <tbody>
+                        <tr class="head days">
+                            <td class="label-cell" rowspan="2">
+                                {% if request.user|can_write_gantt %}
+                                    <a href="{% url 'routeplanning:add_line' %}" class="btn btn-primary btn-circle-xs" type="button">
+                                        <i class="fa fa-plus"></i>
+                                    </a>
+                                {% endif %}
+                                Lines
                             </td>
-                        {% endfor %}
-                    </tr>
-                    <tr class="head units">
-                        {% for small_unit in small_units %}
-                            <td class="unit{% if days > 1 and forloop.counter|divisibleby:hours %} border-right{% endif %}">&nbsp;</td>
-                        {% endfor %}
-                    </tr>
-                    {% for line in lines %}
-                        <tr data-line="{{ line.id }}">
-                            <td class="axis-cell line">
-                                <a href="{% url 'routeplanning:edit_line' line_id=line.id %}">{{ line.name }}</a>
-                            </td>
-                            {% for small_unit in small_units %}
-                                <td{% if days > 1 and forloop.counter|divisibleby:hours %} class="border-right"{% endif %}></td>
+                            {% for big_unit in big_units %}
+                                <td class="unit border-right" colspan="{{ big_unit_colspan }}">
+                                    &nbsp;
+                                </td>
                             {% endfor %}
                         </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+                        <tr class="head units">
+                            {% for small_unit in small_units %}
+                                <td class="unit{% if days > 1 and forloop.counter|divisibleby:hours %} border-right{% endif %}">&nbsp;</td>
+                            {% endfor %}
+                        </tr>
+                        {% for line in lines %}
+                            <tr data-line="{{ line.id }}">
+                                <td class="axis-cell line">
+                                    <a href="{% url 'routeplanning:edit_line' line_id=line.id %}">{{ line.name }}</a>
+                                </td>
+                                {% for small_unit in small_units %}
+                                    <td{% if days > 1 and forloop.counter|divisibleby:hours %} class="border-right"{% endif %}></td>
+                                {% endfor %}
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 {% endblock %}

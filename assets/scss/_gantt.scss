@@ -233,8 +233,17 @@ $popover-text-color: #333;
         line-height: 20px;
     }
     .table-wrapper {
-        background: #fff;
-        display: inline-block;
+        position: relative;
+        .now-indicator {
+            display: block;
+            position: absolute;
+            top: 63px;
+            bottom: 0;
+            border-left: 1px solid $red;
+            &.hidden {
+                display: none;
+            }
+        }
     }
     .gantt-table {
         width: 100%;
