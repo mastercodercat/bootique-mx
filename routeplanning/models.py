@@ -76,6 +76,8 @@ class Assignment(models.Model):
 
     @classmethod
     def is_duplicated(cls, tail, start_time, end_time, exclude_check_assignment=None):
+        # start time check
+
         query = cls.objects.filter(
             tail=tail,
             start_time__lte=start_time,
@@ -84,8 +86,20 @@ class Assignment(models.Model):
         if exclude_check_assignment:
             query = query.exclude(pk=exclude_check_assignment.id)
         dup_count = query.count()
-
         if dup_count > 0:
             return True
 
-        return dup_count > 0
+        # end time check
+
+        query = cls.objects.filter(
+            tail=tail,
+            start_time__lt=end_time,
+            end_time__gte=end_time
+        )
+        if exclude_check_assignment:
+            query = query.exclude(pk=exclude_check_assignment.id)
+        dup_count = query.count()
+        if dup_count > 0:
+            return True
+
+        return False

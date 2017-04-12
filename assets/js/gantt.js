@@ -268,7 +268,10 @@ RoutePlanningGantt.prototype.initInteractables = function() {
             var tdIndex = $bar.data('td-index');
             var $td = $tr.children('td').eq(tdIndex + 1);
 
-            $td.addClass('dragging-over');
+            $td.addClass('dragging-over').find('.shadow').css({
+                'left': $bar.css('left'),
+                'width': $bar.css('width'),
+            });
         },
         ondragleave: function (event) {
             var $bar = $(event.relatedTarget);
@@ -323,7 +326,18 @@ RoutePlanningGantt.prototype.initInteractables = function() {
             var $bar = $(event.relatedTarget);
             var $td = $(event.target);
 
-            $td.addClass('dragging-over');
+            if ($bar.hasClass('status-prototype')) {
+                var length = 3600 / self.options.unit * 100;
+                $td.addClass('dragging-over').find('.shadow').css({
+                    'left': 0,
+                    'width': length + '%',
+                });
+            } else {
+                $td.addClass('dragging-over').find('.shadow').css({
+                    'left': $bar.css('left'),
+                    'width': $bar.css('width'),
+                });
+            }
         },
         ondragleave: function (event) {
             var $bar = $(event.relatedTarget);

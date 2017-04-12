@@ -5,6 +5,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, JsonResponse, HttpResponseForbidden
 from django.middleware import csrf
+from django.db.models import Q
 
 from routeplanning.models import *
 from routeplanning.forms import *
@@ -279,7 +280,10 @@ def api_load_data(request):
     template_data = []
     lines = Line.objects.all()
     for line in lines:
-        flights = line.flights.filter(departure_datetime__gte=start_time).filter(departure_datetime__lte=end_time)
+        flights = line.flights.filter(
+            (Q(departure_datetime__gte=start_time) & Q(departure_datetime__lt=end_time)) |
+            (Q(arrival_datetime__gt=start_time) & Q(arrival_datetime__lte=end_time))
+        )
         for flight in flights:
             flight_data = {
                 'id': flight.id,
@@ -293,7 +297,10 @@ def api_load_data(request):
             template_data.append(flight_data)
 
     assignments_data = []
-    assignments = Assignment.objects.select_related('flight', 'tail').filter(start_time__gte=start_time).filter(end_time__lte=end_time)
+    assignments = Assignment.objects.select_related('flight', 'tail').filter(
+        (Q(start_time__gte=start_time) & Q(start_time__lt=end_time)) |
+        (Q(end_time__gt=start_time) & Q(end_time__lte=end_time))
+    )
     for assignment in assignments:
         assignment_data = {
             'id': assignment.id,

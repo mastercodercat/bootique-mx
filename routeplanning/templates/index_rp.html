@@ -143,7 +143,9 @@
                                     <a href="{% url 'routeplanning:edit_tail' tail_id=tail.id %}">{{ tail.number }}</a>
                                 </td>
                                 {% for small_unit in small_units %}
-                                    <td{% if days > 1 and forloop.counter|divisibleby:hours %} class="border-right"{% endif %}></td>
+                                    <td{% if days > 1 and forloop.counter|divisibleby:hours %} class="border-right"{% endif %}>
+                                        <div class="shadow"></div>
+                                    </td>
                                 {% endfor %}
                             </tr>
                         {% endfor %}

@@ -291,8 +291,17 @@ $popover-text-color: #333;
                 border-top-color: $dark-gray;
                 color: $label-badget-color;
             }
-            &.dragging-over {
+            .shadow {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 0;
+                height: 100%;
                 background: #f0f0f1;
+                display: none;
+            }
+            &.dragging-over .shadow {
+                display: block;
             }
             a:not(.btn) {
                 color: inherit;
