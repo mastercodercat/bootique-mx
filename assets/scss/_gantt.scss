@@ -321,6 +321,9 @@ $popover-text-color: #333;
                 & > a {
                     background: $nav-bg;
                     color: #fff;
+                    &:hover {
+                        background: lighten($nav-bg, 10%);
+                    }
                 }
             }
             &.axis-cell.line {
@@ -328,6 +331,9 @@ $popover-text-color: #333;
                 & > a {
                     background: $dark-gray;
                     color: $label-badget-color;
+                    &:hover {
+                        background: lighten($dark-gray, 10%);
+                    }
                 }
             }
             .shadow {
@@ -344,9 +350,6 @@ $popover-text-color: #333;
             }
             a:not(.btn) {
                 color: inherit;
-                &:hover {
-                    opacity: 0.85;
-                }
             }
         }
         .bar[data-status] {
