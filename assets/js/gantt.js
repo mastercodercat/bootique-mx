@@ -61,7 +61,8 @@ RoutePlanningGantt.prototype.getTdIndex = function(date) {
     var self = this;
 
     var diffFromStart = (date - self.options.startDate) / 1000;
-    return Math.floor(diffFromStart / self.options.unit);
+    var index = parseInt(diffFromStart / self.options.unit);
+    return index > 0 ? index : 0;
 }
 
 RoutePlanningGantt.prototype.getTdPosition = function(date) {
@@ -71,8 +72,10 @@ RoutePlanningGantt.prototype.getTdPosition = function(date) {
     // _date.setMinutes(0);
     // _date.setSeconds(0);
     // var secondsDiff = (date - _date) / 1000;
-    var secondsDiff = (date - self.options.startDate) / 1000;
-    return parseFloat(parseInt(secondsDiff) % parseInt(self.options.unit)) / parseFloat(self.options.unit);
+    var secondsDiff = parseInt((date - self.options.startDate) / 1000);
+    var unit = parseInt(self.options.unit);
+    var signalModifier = secondsDiff >= 0 ? 0 : -1;
+    return parseFloat(secondsDiff % unit + signalModifier * unit) / parseFloat(self.options.unit);
 }
 
 RoutePlanningGantt.prototype.placeBar = function($tr, tdIndex, length, object) {

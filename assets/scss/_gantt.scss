@@ -280,6 +280,7 @@ $popover-text-color: #333;
         tr.head td {
             border-top: 0;
             vertical-align: middle;
+            text-align: center;
         }
         tr.head.units td {
             padding: 5px 0 !important;
@@ -305,18 +306,29 @@ $popover-text-color: #333;
                 width: $label-cell-width;
                 min-width: $label-cell-width;
                 white-space: nowrap;
-                padding: 5px 5px 5px 12px;
+                padding: 0;
                 font-size: 14px;
                 font-weight: 600;
             }
+            &.axis-cell > a {
+                padding: 5px 5px 5px 12px;
+                display: block;
+                position: relative;
+                width: 100%;
+                z-index: 2;
+            }
             &.axis-cell.tail {
-                background: $nav-bg;
-                color: #fff;
+                & > a {
+                    background: $nav-bg;
+                    color: #fff;
+                }
             }
             &.axis-cell.line {
-                background: $dark-gray;
                 border-top-color: $dark-gray;
-                color: $label-badget-color;
+                & > a {
+                    background: $dark-gray;
+                    color: $label-badget-color;
+                }
             }
             .shadow {
                 position: absolute;

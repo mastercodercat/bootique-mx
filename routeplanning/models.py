@@ -1,6 +1,7 @@
 from __future__ import unicode_literals
 
 from django.db import models
+from django.db.models import Q
 
 
 class Tail(models.Model):
@@ -79,22 +80,12 @@ class Assignment(models.Model):
         # start time check
 
         query = cls.objects.filter(
-            tail=tail,
-            start_time__lte=start_time,
-            end_time__gt=start_time
-        )
-        if exclude_check_assignment:
-            query = query.exclude(pk=exclude_check_assignment.id)
-        dup_count = query.count()
-        if dup_count > 0:
-            return True
-
-        # end time check
-
-        query = cls.objects.filter(
-            tail=tail,
-            start_time__lt=end_time,
-            end_time__gte=end_time
+            Q(tail=tail) &
+            (
+                (Q(start_time__lte=start_time) & Q(end_time__gt=start_time)) |
+                (Q(start_time__lt=end_time) & Q(end_time__gte=end_time)) |
+                (Q(start_time__gte=start_time) & Q(end_time__lte=end_time))
+            )
         )
         if exclude_check_assignment:
             query = query.exclude(pk=exclude_check_assignment.id)
