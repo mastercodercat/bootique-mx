@@ -38,7 +38,7 @@ def index(request):
 
     if request.GET.get('days'):
         _days = int(request.GET.get('days'))
-        days = _days if _days <= days else days
+        days = 14 if days > 14 else days
         days = 1 if days < 1 else days
 
     big_unit_colspan = units_per_hour * hours if units_per_hour > 1 else hours

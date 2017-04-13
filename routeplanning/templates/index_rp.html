@@ -18,7 +18,7 @@
 {% endblock %}
 
 {% block content %}
-    <div class="gantt loading{% if days > 1 %} small-cells{% endif %}">
+    <div class="gantt loading{% if days > 1 %} small-cells{% endif %}{% if days > 5 %} no-flight-number{% endif %}">
         <div class="clearfix m-b-md"><!-- Top controls -->
             <div class="unit-control btn-group">
                 <a class="btn btn-white{% if mode == '1' %} active{% endif %}"
@@ -114,9 +114,9 @@
             </div>
         </div>
         <div class="cover loading">
-            <div class="cover-inner">
+            <div class="cover-inner pull-left">
                 <!-- Tails table -->
-                <div class="table-wrapper">
+                <div class="table-wrapper pull-left">
                     <div class="now-indicator hidden"></div>
                     <table id="flight-assignment-table" class="table gantt-table m-b-none">
                         <tbody>
@@ -154,7 +154,7 @@
                     </table>
                 </div>
                 <!-- Lines table -->
-                <div class="table-wrapper">
+                <div class="table-wrapper pull-left">
                     <div class="now-indicator hidden"></div>
                     <table id="flight-template-table" class="table gantt-table m-b-none">
                         <tbody>
