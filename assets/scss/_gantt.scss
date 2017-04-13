@@ -15,28 +15,40 @@ $popover-text-color: #333;
     min-width: 600px;
     overflow-x: hidden;
 
-    .cover.loading {
+    .cover {
+        width: 100%;
+        overflow-x: auto;
+        top: -30px;
+        margin-bottom: -30px;
         position: relative;
-        &:before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(255, 255, 255, 0.6);
-            z-index: 999;
+        .cover-inner {
+            overflow: hidden;
+            padding-top: 50px;
+            min-width: 100%;
         }
-        &:after {
-            content: 'Loading...';
-            position: absolute;
-            left: 50%;
-            top: 150px;
-            transform: translateX(-50%);
-            color: #333;
-            font-size: 20px;
-            font-weight: 600;
-            z-index: 1000;
+        &.loading {
+            position: relative;
+            &:before {
+                content: '';
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(255, 255, 255, 0.6);
+                z-index: 999;
+            }
+            &:after {
+                content: 'Loading...';
+                position: absolute;
+                left: 50%;
+                top: 150px;
+                transform: translateX(-50%);
+                color: #333;
+                font-size: 20px;
+                font-weight: 600;
+                z-index: 1000;
+            }
         }
     }
 
@@ -59,13 +71,18 @@ $popover-text-color: #333;
         color: #fff;
         border-radius: 3px;
         text-align: center;
-        padding-top: 5px;
         z-index: 1;
         &.assigned {
             background-color: #999;
         }
         &.drag-clone {
             opacity: 0.8;
+        }
+        .flight-info-table-wrapper {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
         }
         table.flight-info {
             position: absolute;
@@ -101,7 +118,8 @@ $popover-text-color: #333;
             position: absolute;
             display: none;
             padding: 6px 12px;
-            left: 10px;
+            left: 30%;
+            margin-left: -15px;
             bottom: 100%;
             margin-bottom: 10px;
             border-radius: 3px;
@@ -178,6 +196,11 @@ $popover-text-color: #333;
             display: none;
         }
     }
+    &.no-flight-number .bar .flight-info {
+        .number {
+            display: none;
+        }
+    }
     .status-bars {
         .bar-container {
             float: left;
@@ -234,6 +257,7 @@ $popover-text-color: #333;
     }
     .table-wrapper {
         position: relative;
+        min-width: 100%;
         .now-indicator {
             display: block;
             position: absolute;

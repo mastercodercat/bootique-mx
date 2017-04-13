@@ -25,7 +25,8 @@ function formatDate(date) {
  *
  * options:
  *  [api urls], startDate, endDate,
- *  flightAssignmentTable, flightTemplateTable, unit(in seconds), csrfToken
+ *  flightAssignmentTable, flightTemplateTable, unit(in seconds), tablesWrapperSelector,
+ *  csrfToken
  */
 function RoutePlanningGantt(options) {
     this.mode = 1;
@@ -464,7 +465,10 @@ RoutePlanningGantt.prototype.loadData = function() {
         self.refreshTemplateTable();
         self.refreshAssignmentTable();
 
-        $('.cover').removeClass('loading');
+        var $cover = $(self.options.tablesWrapperSelector);
+        var $coverInner = $cover.children('.cover-inner');
+        $cover.removeClass('loading');
+        $coverInner.css('width', $coverInner.css('width'));
     });
 }
 
