@@ -26,7 +26,15 @@ def index(request):
     hours_options = { '1': 3, '2': 6, '3': 12, '4': 24, '5': 24, '6': 6, }      # Hours mark count
     units_per_hour_options = { '1': 4, '2': 2, '3': 1, '4': 1, '5': 1, '6': 0.25, }
 
-    days = days_options[mode]
+    if request.GET.get('days'):
+        days = int(request.GET.get('days'))
+        days = 14 if days > 14 else days
+        days = 1 if days < 1 else days
+        if days > 3:
+            mode = '6'
+    else:
+        days = days_options[mode]
+
     hours = hours_options[mode]
     units_per_hour = units_per_hour_options[mode]
 
@@ -36,11 +44,6 @@ def index(request):
         start_time = datetime_now_utc()
         start_time = start_time.replace(hour=0, minute=0, second=0, microsecond=0)
         start_tmstmp = totimestamp(start_time)
-
-    if request.GET.get('days'):
-        _days = int(request.GET.get('days'))
-        days = 14 if days > 14 else days
-        days = 1 if days < 1 else days
 
     big_unit_colspan = units_per_hour * hours if units_per_hour > 1 else hours
     big_units = range(0, days)

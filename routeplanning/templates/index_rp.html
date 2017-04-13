@@ -18,7 +18,7 @@
 {% endblock %}
 
 {% block content %}
-    <div class="gantt loading{% if days > 1 %} small-cells{% endif %}{% if days > 5 %} no-flight-number{% endif %}">
+    <div class="gantt loading{% if days > 1 %} small-cells{% endif %}{% if days > 3 %} no-flight-number{% endif %}">
         <div class="clearfix m-b-md"><!-- Top controls -->
             <div class="unit-control btn-group">
                 <a class="btn btn-white{% if mode == '1' %} active{% endif %}"
@@ -137,9 +137,7 @@
                             </tr>
                             <tr class="head units">
                                 {% for small_unit in small_units %}
-                                    <td{% if days > 1 and forloop.counter|divisibleby:hours %} class="border-right"{% endif %}>
-                                        <div class="shadow"></div>
-                                    </td>
+                                    <td class="unit{% if days > 1 and forloop.counter|divisibleby:hours %} border-right{% endif %}">&nbsp;</td>
                                 {% endfor %}
                             </tr>
                             {% for tail in tails %}
@@ -148,7 +146,9 @@
                                         <a href="{% url 'routeplanning:edit_tail' tail_id=tail.id %}">{{ tail.number }}</a>
                                     </td>
                                     {% for small_unit in small_units %}
-                                        <td{% if days > 1 and forloop.counter|divisibleby:hours %} class="border-right"{% endif %}></td>
+                                        <td{% if days > 1 and forloop.counter|divisibleby:hours %} class="border-right"{% endif %}>
+                                            <div class="shadow"></div>
+                                        </td>
                                     {% endfor %}
                                 </tr>
                             {% endfor %}

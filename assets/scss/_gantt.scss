@@ -189,6 +189,9 @@ $popover-text-color: #333;
             }
         }
     }
+    &.small-cells .bar[data-status]:not(.status-prototype) > span {
+        display: none;
+    }
     &.small-cells .bar .flight-info {
         min-width: 0;
         .org,
