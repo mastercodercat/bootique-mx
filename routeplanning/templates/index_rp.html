@@ -67,7 +67,7 @@
         </div>
         <!-- Status bar sources, remove area -->
         {% if request.user|can_write_gantt %}
-            <div class="status-bars clearfix m-b-md">
+            <div class="status-bars clearfix">
                 <div class="clearfix">Drag and drop: </div>
                 <div class="bar-container">
                     <div class="bar status-bar maintenance status-prototype" draggable="true" data-status="2">
@@ -96,13 +96,15 @@
         {% endif %}
         <!-- Bar prototype -->
         <div class="bar prototype">
-            <table class="flight-info">
-                <tr>
-                    <td class="org"></td>
-                    <td class="number"></td>
-                    <td class="dest"></td>
-                </tr>
-            </table>
+            <div class="flight-info-table-wrapper">
+                <table class="flight-info">
+                    <tr>
+                        <td class="org"></td>
+                        <td class="number"></td>
+                        <td class="dest"></td>
+                    </tr>
+                </table>
+            </div>
             <div class="bar-popover">
                 <div class="field">Flight <span class="number"></span></div>
                 <div class="field">Origin: <span class="org"></span></div>
@@ -112,81 +114,83 @@
             </div>
         </div>
         <div class="cover loading">
-            <!-- Tails table -->
-            <div class="table-wrapper">
-                <div class="now-indicator hidden"></div>
-                <table id="flight-assignment-table" class="table gantt-table m-b-none">
-                    <tbody>
-                        <tr class="head days">
-                            <td class="label-cell" rowspan="2">
-                                {% if request.user|can_write_gantt %}
-                                    <a href="{% url 'routeplanning:add_tail' %}" class="btn btn-primary btn-circle-xs" type="button">
-                                        <i class="fa fa-plus"></i>
-                                    </a>
-                                {% endif %}
-                                Tails
-                            </td>
-                            {% for big_unit in big_units %}
-                                <td class="unit border-right" colspan="{{ big_unit_colspan }}">
-                                    &nbsp;
+            <div class="cover-inner">
+                <!-- Tails table -->
+                <div class="table-wrapper">
+                    <div class="now-indicator hidden"></div>
+                    <table id="flight-assignment-table" class="table gantt-table m-b-none">
+                        <tbody>
+                            <tr class="head days">
+                                <td class="label-cell" rowspan="2">
+                                    {% if request.user|can_write_gantt %}
+                                        <a href="{% url 'routeplanning:add_tail' %}" class="btn btn-primary btn-circle-xs" type="button">
+                                            <i class="fa fa-plus"></i>
+                                        </a>
+                                    {% endif %}
+                                    Tails
                                 </td>
-                            {% endfor %}
-                        </tr>
-                        <tr class="head units">
-                            {% for small_unit in small_units %}
-                                <td class="unit{% if days > 1 and forloop.counter|divisibleby:hours %} border-right{% endif %}">&nbsp;</td>
-                            {% endfor %}
-                        </tr>
-                        {% for tail in tails %}
-                            <tr data-tail-number="{{ tail.number }}">
-                                <td class="axis-cell tail">
-                                    <a href="{% url 'routeplanning:edit_tail' tail_id=tail.id %}">{{ tail.number }}</a>
-                                </td>
-                                {% for small_unit in small_units %}
-                                    <td{% if days > 1 and forloop.counter|divisibleby:hours %} class="border-right"{% endif %}></td>
+                                {% for big_unit in big_units %}
+                                    <td class="unit border-right" colspan="{{ big_unit_colspan }}">
+                                        &nbsp;
+                                    </td>
                                 {% endfor %}
                             </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-            <!-- Lines table -->
-            <div class="table-wrapper">
-                <div class="now-indicator hidden"></div>
-                <table id="flight-template-table" class="table gantt-table m-b-none">
-                    <tbody>
-                        <tr class="head days">
-                            <td class="label-cell" rowspan="2">
-                                {% if request.user|can_write_gantt %}
-                                    <a href="{% url 'routeplanning:add_line' %}" class="btn btn-primary btn-circle-xs" type="button">
-                                        <i class="fa fa-plus"></i>
-                                    </a>
-                                {% endif %}
-                                Lines
-                            </td>
-                            {% for big_unit in big_units %}
-                                <td class="unit border-right" colspan="{{ big_unit_colspan }}">
-                                    &nbsp;
-                                </td>
-                            {% endfor %}
-                        </tr>
-                        <tr class="head units">
-                            {% for small_unit in small_units %}
-                                <td class="unit{% if days > 1 and forloop.counter|divisibleby:hours %} border-right{% endif %}">&nbsp;</td>
-                            {% endfor %}
-                        </tr>
-                        {% for line in lines %}
-                            <tr data-line="{{ line.id }}">
-                                <td class="axis-cell line">
-                                    <a href="{% url 'routeplanning:edit_line' line_id=line.id %}">{{ line.name }}</a>
-                                </td>
+                            <tr class="head units">
                                 {% for small_unit in small_units %}
-                                    <td{% if days > 1 and forloop.counter|divisibleby:hours %} class="border-right"{% endif %}></td>
+                                    <td class="unit{% if days > 1 and forloop.counter|divisibleby:hours %} border-right{% endif %}">&nbsp;</td>
                                 {% endfor %}
                             </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                            {% for tail in tails %}
+                                <tr data-tail-number="{{ tail.number }}">
+                                    <td class="axis-cell tail">
+                                        <a href="{% url 'routeplanning:edit_tail' tail_id=tail.id %}">{{ tail.number }}</a>
+                                    </td>
+                                    {% for small_unit in small_units %}
+                                        <td{% if days > 1 and forloop.counter|divisibleby:hours %} class="border-right"{% endif %}></td>
+                                    {% endfor %}
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <!-- Lines table -->
+                <div class="table-wrapper">
+                    <div class="now-indicator hidden"></div>
+                    <table id="flight-template-table" class="table gantt-table m-b-none">
+                        <tbody>
+                            <tr class="head days">
+                                <td class="label-cell" rowspan="2">
+                                    {% if request.user|can_write_gantt %}
+                                        <a href="{% url 'routeplanning:add_line' %}" class="btn btn-primary btn-circle-xs" type="button">
+                                            <i class="fa fa-plus"></i>
+                                        </a>
+                                    {% endif %}
+                                    Lines
+                                </td>
+                                {% for big_unit in big_units %}
+                                    <td class="unit border-right" colspan="{{ big_unit_colspan }}">
+                                        &nbsp;
+                                    </td>
+                                {% endfor %}
+                            </tr>
+                            <tr class="head units">
+                                {% for small_unit in small_units %}
+                                    <td class="unit{% if days > 1 and forloop.counter|divisibleby:hours %} border-right{% endif %}">&nbsp;</td>
+                                {% endfor %}
+                            </tr>
+                            {% for line in lines %}
+                                <tr data-line="{{ line.id }}">
+                                    <td class="axis-cell line">
+                                        <a href="{% url 'routeplanning:edit_line' line_id=line.id %}">{{ line.name }}</a>
+                                    </td>
+                                    {% for small_unit in small_units %}
+                                        <td{% if days > 1 and forloop.counter|divisibleby:hours %} class="border-right"{% endif %}></td>
+                                    {% endfor %}
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
@@ -216,11 +220,11 @@
         /* Calculate end date */
 
         var endDate = new Date(startDate.getTime());
-        endDate.setDate(endDate.getDate() + days - 1);
-        endDate.setHours(23);
-        endDate.setMinutes(59);
-        endDate.setSeconds(59);
-        endDate.setMilliseconds(0);
+        if (days > 1) {
+            endDate.setHours(endDate.getHours() + 24 * days);
+        } else {
+            endDate.setHours(endDate.getHours() + hours);
+        }
 
         /* Fill table date/time labels */
 
@@ -289,6 +293,7 @@
             endDate: endDate,
             unit: unit,
             readOnly: readOnly,
+            tablesWrapperSelector: '.cover',
             csrfToken: "{{ csrf_token }}",
         });
     </script>

@@ -15,28 +15,37 @@ $popover-text-color: #333;
     min-width: 600px;
     overflow-x: hidden;
 
-    .cover.loading {
-        position: relative;
-        &:before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 0;
+    .cover {
+        width: 100%;
+        overflow-x: auto;
+        .cover-inner {
             width: 100%;
-            height: 100%;
-            background-color: rgba(255, 255, 255, 0.6);
-            z-index: 999;
+            overflow: hidden;
+            padding-top: 40px;
         }
-        &:after {
-            content: 'Loading...';
-            position: absolute;
-            left: 50%;
-            top: 150px;
-            transform: translateX(-50%);
-            color: #333;
-            font-size: 20px;
-            font-weight: 600;
-            z-index: 1000;
+        &.loading {
+            position: relative;
+            &:before {
+                content: '';
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(255, 255, 255, 0.6);
+                z-index: 999;
+            }
+            &:after {
+                content: 'Loading...';
+                position: absolute;
+                left: 50%;
+                top: 150px;
+                transform: translateX(-50%);
+                color: #333;
+                font-size: 20px;
+                font-weight: 600;
+                z-index: 1000;
+            }
         }
     }
 
@@ -59,13 +68,18 @@ $popover-text-color: #333;
         color: #fff;
         border-radius: 3px;
         text-align: center;
-        padding-top: 5px;
         z-index: 1;
         &.assigned {
             background-color: #999;
         }
         &.drag-clone {
             opacity: 0.8;
+        }
+        .flight-info-table-wrapper {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
         }
         table.flight-info {
             position: absolute;
