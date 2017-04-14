@@ -284,8 +284,9 @@ def api_load_data(request):
     lines = Line.objects.all()
     for line in lines:
         flights = line.flights.filter(
-            (Q(departure_datetime__gte=start_time) & Q(departure_datetime__lt=end_time)) |
-            (Q(arrival_datetime__gt=start_time) & Q(arrival_datetime__lte=end_time))
+            (Q(departure_datetime__gte=start_time) & Q(departure_datetime__lte=end_time)) |
+            (Q(arrival_datetime__gte=start_time) & Q(arrival_datetime__lte=end_time)) |
+            (Q(departure_datetime__lte=start_time) & Q(arrival_datetime__gte=end_time))
         )
         for flight in flights:
             flight_data = {
@@ -301,8 +302,9 @@ def api_load_data(request):
 
     assignments_data = []
     assignments = Assignment.objects.select_related('flight', 'tail').filter(
-        (Q(start_time__gte=start_time) & Q(start_time__lt=end_time)) |
-        (Q(end_time__gt=start_time) & Q(end_time__lte=end_time))
+        (Q(start_time__gte=start_time) & Q(start_time__lte=end_time)) |
+        (Q(end_time__gte=start_time) & Q(end_time__lte=end_time)) |
+        (Q(start_time__lte=start_time) & Q(end_time__gte=end_time))
     )
     for assignment in assignments:
         assignment_data = {

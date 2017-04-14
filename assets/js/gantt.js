@@ -518,7 +518,7 @@ RoutePlanningGantt.prototype.refreshAssignmentTable = function() {
         var $tr = self.options.flightAssignmentTable.find('tr[data-tail-number="' + assignment.tail + '"]');
         var startTime = new Date(assignment.start_time);
         var endTime = new Date(assignment.end_time);
-        var tdIndex = parseInt((startTime - self.options.startDate) / 1000 / self.options.unit);
+        var tdIndex = self.getTdIndex(startTime);
         var length = (endTime - startTime) / 1000 / self.options.unit;
         var tdPos = self.getTdPosition(startTime);
         var $bar = self.placeBar($tr, tdIndex, length, assignment);
