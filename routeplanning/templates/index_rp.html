@@ -221,7 +221,7 @@
 
         /* Calculate end date */
 
-        var endDate = new Date(startDate.getTime());
+        var endDate = new Date(startDate.getTime() - 1000);
         if (days > 1) {
             endDate.setHours(endDate.getHours() + 24 * days);
         } else {
