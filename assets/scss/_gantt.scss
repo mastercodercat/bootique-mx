@@ -262,15 +262,25 @@ $popover-text-color: #333;
     .table-wrapper {
         position: relative;
         min-width: 100%;
-        .now-indicator {
+    }
+    .now-indicator {
+        display: block;
+        position: absolute;
+        top: 63px;
+        bottom: 0;
+        border-left: 1px solid $red;
+        &.hidden {
+            display: none;
+        }
+    }
+    .selection-area-indicator {
+        border: 1px solid $navy;
+        background-color: rgba($navy, 0.5);
+        position: absolute;
+        display: none;
+        z-index: 100;
+        &.active {
             display: block;
-            position: absolute;
-            top: 63px;
-            bottom: 0;
-            border-left: 1px solid $red;
-            &.hidden {
-                display: none;
-            }
         }
     }
     .gantt-table {

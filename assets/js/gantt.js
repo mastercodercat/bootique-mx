@@ -409,6 +409,68 @@ RoutePlanningGantt.prototype.initInteractables = function() {
             }
         },
     });
+
+    // Select multiple and do action
+
+    $(self.options.tablesWrapperSelector + ' .table-wrapper').on('mousedown', function(event) {
+        var $target = $(event.target);
+        if ($target.hasClass('bar') || $target.closest('.bar').length > 0) {
+            return;
+        }
+
+        event.preventDefault();
+
+        var $tableWrapper = $(this);
+        var twOffset = $tableWrapper.offset();
+        var $selectionMarker = $tableWrapper.children('.selection-area-indicator');
+        var x = event.pageX - twOffset.left;
+        var y = event.pageY - twOffset.top;
+
+        $selectionMarker
+            .css({
+                left: x,
+                top: y,
+                width: 0,
+                height: 0,
+            })
+            .attr('data-init-x', x)
+            .attr('data-init-y', y)
+            .addClass('active');
+    })
+    .on('mousemove', function(event) {
+        var $tableWrapper = $(this);
+        var twOffset = $tableWrapper.offset();
+        var $selectionMarker = $tableWrapper.children('.selection-area-indicator');
+
+        if ($selectionMarker.hasClass('active')) {
+            event.preventDefault();
+            var ix = parseInt($selectionMarker.attr('data-init-x'));
+            var iy = parseInt($selectionMarker.attr('data-init-y'));
+            var x = event.pageX - twOffset.left;
+            var y = event.pageY - twOffset.top;
+            var w = Math.abs(ix - x);
+            var h = Math.abs(iy - y);
+            $selectionMarker.css({
+                width: w,
+                height: h,
+            });
+            if (x < ix) {
+                $selectionMarker.css('left', x);
+            }
+            if (y < iy) {
+                $selectionMarker.css('top', y);
+            }
+        }
+    })
+    .on('mouseup', function(event) {
+        var $tableWrapper = $(this);
+        var $selectionMarker = $tableWrapper.children('.selection-area-indicator');
+
+        if ($selectionMarker.hasClass('active')) {
+            event.preventDefault();
+            $selectionMarker.removeClass('active');
+        }
+    });
 }
 
 RoutePlanningGantt.prototype.checkIfAssigned = function(flightNumber, departureDateTime) {
