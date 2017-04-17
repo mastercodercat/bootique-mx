@@ -370,6 +370,12 @@ $popover-text-color: #333;
             &:after {
                 right: 3px;
             }
+            & > span {
+                display: inline-block;
+                max-width: 100%;
+                overflow: hidden;
+                white-space: nowrap;
+            }
         }
         #bar-placeholder {
             position: absolute;
