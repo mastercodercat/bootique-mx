@@ -142,13 +142,12 @@
                                 {% endfor %}
                             </tr>
                             {% for tail in tails %}
-                                <tr data-tail-number="{{ tail.number }}">
+                                <tr data-tail-number="{{ tail.number }}" data-index="{{ forloop.counter|add:-1 }}">
                                     <td class="axis-cell tail">
                                         <a href="{% url 'routeplanning:edit_tail' tail_id=tail.id %}">{{ tail.number }}</a>
                                     </td>
                                     {% for small_unit in small_units %}
                                         <td{% if days > 1 and forloop.counter|divisibleby:hours %} class="border-right"{% endif %}>
-                                            <div class="shadow"></div>
                                         </td>
                                     {% endfor %}
                                 </tr>
@@ -183,7 +182,7 @@
                                 {% endfor %}
                             </tr>
                             {% for line in lines %}
-                                <tr data-line="{{ line.id }}">
+                                <tr data-line="{{ line.id }}" data-index="{{ forloop.counter|add:-1 }}">
                                     <td class="axis-cell line">
                                         <a href="{% url 'routeplanning:edit_line' line_id=line.id %}">{{ line.name }}</a>
                                     </td>
@@ -286,7 +285,7 @@
 
         var $cover = $('.cover');
         var $coverInner = $cover.children('.cover-inner');
-        $coverInner.css('width', (parseInt($cover.css('width').replace('px', '')) - 90) * (days > 1 ? 14 : 14 * (24 / hours)));
+        $coverInner.css('width', (parseInt($cover.css('width').replace('px', '')) - 90) * (days > 1 ? 14 / days : 14 * (24 / hours)));
 
         /* Gantt table init */
 

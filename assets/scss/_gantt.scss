@@ -76,7 +76,17 @@ $popover-text-color: #333;
             background-color: #999;
         }
         &.selected {
-            border: 1px solid $red;
+            &:before {
+                content: '';
+                display: block;
+                position: absolute;
+                background: rgba(255, 255, 255, 0.5);
+                border-radius: 3px;
+                left: 2px;
+                top: 2px;
+                right: 2px;
+                bottom: 2px;
+            }
         }
         &.drag-clone {
             opacity: 0.8;
@@ -359,15 +369,15 @@ $popover-text-color: #333;
                 background: #f0f0f1;
                 display: none;
             }
-            &.dragging-over .shadow {
-                display: block;
+            &.dragging-over {
+                background: #f0f0f1;
             }
             a:not(.btn) {
                 color: inherit;
             }
         }
         .bar[data-status] {
-            &:before,
+            /*&:before,
             &:after {
                 content: '';
                 position: absolute;
@@ -382,7 +392,7 @@ $popover-text-color: #333;
             }
             &:after {
                 right: 3px;
-            }
+            }*/
             & > span {
                 display: inline-block;
                 max-width: 100%;

@@ -332,6 +332,7 @@ def api_load_data(request):
 def api_assign_flight(request):
     result = {
         'success': False,
+        'assigned_flights': {},
     }
 
     if request.method != 'POST':
@@ -339,35 +340,33 @@ def api_assign_flight(request):
         return JsonResponse(result, safe=False)
 
     try:
-        flight_id = request.POST.get('flight_id')
-        tail_number = request.POST.get('tail')
+        flight_data = json.loads(request.POST.get('flight_data'))
     except:
         result['error'] = 'Invalid parameters'
         return JsonResponse(result, safe=False, status=400)
 
-    try:
-        tail = Tail.objects.get(number=tail_number)
-        flight = Flight.objects.get(pk=flight_id)
+    for data in flight_data:
+        try:
+            flight_id = data['flight']
+            tail_number = data['tail']
+            tail = Tail.objects.get(number=tail_number)
+            flight = Flight.objects.get(pk=flight_id)
 
-        if Assignment.is_duplicated(tail, flight.departure_datetime, flight.arrival_datetime):
-            result['error'] = 'Duplicated assignment'
-            return JsonResponse(result, safe=False)
-
-        assignment = Assignment(
-            flight_number=flight.number,
-            start_time=flight.departure_datetime,
-            end_time=flight.arrival_datetime,
-            status=1,
-            flight=flight,
-            tail=tail
-        )
-        assignment.save()
-    except Exception as e:
-        result['error'] = str(e)
-        return JsonResponse(result, safe=False, status=500)
+            if not Assignment.is_duplicated(tail, flight.departure_datetime, flight.arrival_datetime):
+                assignment = Assignment(
+                    flight_number=flight.number,
+                    start_time=flight.departure_datetime,
+                    end_time=flight.arrival_datetime,
+                    status=1,
+                    flight=flight,
+                    tail=tail
+                )
+                assignment.save()
+                result['assigned_flights'][flight_id] = assignment.id
+        except Exception as e:
+            print(str(e))
 
     result['success'] = True
-    result['id'] = assignment.id
     return JsonResponse(result, safe=False)
 
 @login_required
@@ -418,6 +417,7 @@ def api_assign_status(request):
 def api_remove_assignment(request):
     result = {
         'success': False,
+        'removed_assignments': [],
     }
 
     if request.method != 'POST':
@@ -425,17 +425,18 @@ def api_remove_assignment(request):
         return JsonResponse(result, safe=False)
 
     try:
-        assignment_id = request.POST.get('assignment_id')
+        assignment_ids = json.loads(request.POST.get('assignment_data'))
     except:
         result['error'] = 'Invalid parameters'
         return JsonResponse(result, safe=False, status=400)
 
-    try:
-        assignment = Assignment.objects.get(pk=assignment_id)
-        assignment.delete()
-    except Exception as e:
-        result['error'] = str(e)
-        return JsonResponse(result, safe=False, status=500)
+    for assignment_id in assignment_ids:
+        try:
+            assignment = Assignment.objects.get(pk=assignment_id)
+            assignment.delete()
+            result['removed_assignments'].append(assignment_id)
+        except Exception as e:
+            print(str(e))
 
     result['success'] = True
     return JsonResponse(result, safe=False)
@@ -445,6 +446,7 @@ def api_remove_assignment(request):
 def api_move_assignment(request):
     result = {
         'success': False,
+        'assignments': {},
     }
 
     if request.method != 'POST':
@@ -452,43 +454,48 @@ def api_move_assignment(request):
         return JsonResponse(result, safe=False)
 
     try:
-        assignment_id = request.POST.get('assignment_id')
-        tail_number = request.POST.get('tail')
-        start_time_str = request.POST.get('start_time')
-        if start_time_str:
-            start_time = dateutil.parser.parse(start_time_str)
-        else:
-            start_time = None
+        assignment_data = json.loads(request.POST.get('assignment_data'))
     except:
         result['error'] = 'Invalid parameters'
         return JsonResponse(result, safe=False, status=400)
 
-    try:
-        assignment = Assignment.objects.get(pk=assignment_id)
-        tail = Tail.objects.get(number=tail_number)
+    for data in assignment_data:
+        try:
+            assignment_id = data['assignment_id']
+            tail_number = data['tail']
+            try:
+                start_time_str = data['start_time']
+                if start_time_str:
+                    start_time = dateutil.parser.parse(start_time_str)
+                else:
+                    start_time = None
+            except:
+                start_time_str = None
+                start_time = None
 
-        if not start_time:
-            start_time = assignment.start_time
-            end_time = assignment.end_time
-        else:
-            end_time = start_time + (assignment.end_time - assignment.start_time)
+            assignment = Assignment.objects.get(pk=assignment_id)
+            tail = Tail.objects.get(number=tail_number)
 
-        if Assignment.is_duplicated(tail, start_time, end_time, assignment):
-            result['error'] = 'Duplicated assignment'
-            return JsonResponse(result, safe=False)
+            if not start_time:
+                start_time = assignment.start_time
+                end_time = assignment.end_time
+            else:
+                end_time = start_time + (assignment.end_time - assignment.start_time)
 
-        assignment.tail = tail
-        if start_time_str:
-            assignment.start_time = start_time
-            assignment.end_time = end_time
-        assignment.save()
-    except Exception as e:
-        result['error'] = str(e)
-        return JsonResponse(result, safe=False, status=500)
+            if not Assignment.is_duplicated(tail, start_time, end_time, assignment):
+                assignment.tail = tail
+                if start_time_str:
+                    assignment.start_time = start_time
+                    assignment.end_time = end_time
+                assignment.save()
+                result['assignments'][assignment.id] = {
+                    'start_time': assignment.start_time.isoformat(),
+                    'end_time': assignment.end_time.isoformat(),
+                }
+        except Exception as e:
+            print(str(e))
 
     result['success'] = True
-    result['start_time'] = assignment.start_time.isoformat()
-    result['end_time'] = assignment.end_time.isoformat()
     return JsonResponse(result, safe=False)
 
 @login_required
@@ -519,6 +526,10 @@ def api_resize_assignment(request):
             end_time = end_time + timedelta(seconds=diff_seconds)
         else:
             start_time = start_time - timedelta(seconds=diff_seconds)
+
+        if start_time >= end_time:
+            result['error'] = 'Start time cannot be later than end time'
+            return JsonResponse(result, safe=False, status=400)
 
         if Assignment.is_duplicated(assignment.tail, start_time, end_time, assignment):
             result['error'] = 'Duplicated assignment'

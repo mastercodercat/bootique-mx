@@ -236,24 +236,46 @@ RoutePlanningGantt.prototype.initInteractables = function() {
             autoScroll: true,
             onstart: function(event) {
                 var $bar = $(event.target);
-                var $barClone = $bar.clone().addClass('drag-clone');
-
-                $barClone.appendTo($bar.parent());
+                if ($bar.hasClass('selected')) {
+                    var $selected = $bar.closest('.gantt-table').find('.bar.selected');
+                } else {
+                    var $selected = $bar;
+                }
+                $selected.each(function() {
+                    var $selectedBar = $(this);
+                    var $barClone = $selectedBar.clone().addClass('drag-clone').removeClass('selected');
+                    $barClone.addClass('dragging').insertAfter($selectedBar);
+                });
             },
             onmove: function dragMoveListener(event) {
-                var $bar = $(event.target).siblings('.drag-clone');
-                var x = (parseFloat($bar.attr('data-x')) || 0) + event.dx;
-                var y = (parseFloat($bar.attr('data-y')) || 0) + event.dy;
+                var $bar = $(event.target);
+                if ($bar.hasClass('selected')) {
+                    var $selected = $bar.closest('.gantt-table').find('.bar.selected');
+                } else {
+                    var $selected = $bar;
+                }
+                $selected.each(function() {
+                    var $selectedBar = $(this);
+                    var $bar = $selectedBar.next('.drag-clone');
+                    var x = (parseFloat($bar.attr('data-x')) || 0) + event.dx;
+                    var y = (parseFloat($bar.attr('data-y')) || 0) + event.dy;
 
-                $bar.css('transform', 'translate(' + x + 'px, ' + y + 'px)')
-                    .attr('data-x', x)
-                    .attr('data-y', y)
-                    .addClass('dragging');
+                    $bar.css('transform', 'translate(' + x + 'px, ' + y + 'px)')
+                        .attr('data-x', x)
+                        .attr('data-y', y);
+                });
             },
             onend: function (event) {
-                var $bar = $(event.target).siblings('.drag-clone');
-
-                $bar.remove();
+                var $bar = $(event.target);
+                if ($bar.hasClass('selected')) {
+                    var $selected = $bar.closest('.gantt-table').find('.bar.selected');
+                } else {
+                    var $selected = $bar;
+                }
+                $selected.each(function() {
+                    var $selectedBar = $(this);
+                    $selectedBar.removeClass('selected').next('.drag-clone').remove();
+                });
             },
         });
     });
@@ -264,56 +286,149 @@ RoutePlanningGantt.prototype.initInteractables = function() {
         accept: ganttTableBarSelector,
         ondragenter: function (event) {
             var $bar = $(event.relatedTarget);
-            var $tr = $(event.target);
-            var tdIndex = $bar.data('td-index');
-            var $td = $tr.children('td').eq(tdIndex + 1);
+            var $hoveringTr = $(event.target);
+            var hoveringTrIndex = parseInt($hoveringTr.data('index'));
+            var primaryTrIndex = parseInt($bar.closest('tr').data('index'));
 
-            $td.addClass('dragging-over').find('.shadow').css({
-                'left': $bar.css('left'),
-                'width': $bar.css('width'),
+            if ($bar.hasClass('selected')) {
+                var $selected = $bar.closest('.gantt-table').find('.bar.selected');
+            } else {
+                var $selected = $bar;
+            }
+
+            $selected.each(function() {
+                var $selectedBar = $(this);
+                var originalTrIndex = parseInt($selectedBar.closest('tr').data('index'));
+                if (primaryTrIndex == originalTrIndex) {
+                    var $tr = $hoveringTr;
+                } else {
+                    var newTrIndex = hoveringTrIndex - primaryTrIndex + originalTrIndex;
+                    var $tr = $hoveringTr.siblings('tr[data-index="' + newTrIndex + '"]');
+                }
+                if ($tr.length > 0) {
+                    var tdIndex = $selectedBar.data('td-index');
+                    var $td = $tr.children('td').eq(tdIndex + 1);
+
+                    $td.addClass('dragging-over');
+                }
             });
         },
         ondragleave: function (event) {
             var $bar = $(event.relatedTarget);
-            var $tr = $(event.target);
-            var tdIndex = $bar.data('td-index');
-            var $td = $tr.children('td').eq(tdIndex + 1);
+            var $hoveringTr = $(event.target);
+            var hoveringTrIndex = parseInt($hoveringTr.data('index'));
+            var primaryTrIndex = parseInt($bar.closest('tr').data('index'));
 
-            $td.removeClass('dragging-over');
+            if ($bar.hasClass('selected')) {
+                var $selected = $bar.closest('.gantt-table').find('.bar.selected');
+            } else {
+                var $selected = $bar;
+            }
+
+            $selected.each(function() {
+                var $selectedBar = $(this);
+                var originalTrIndex = parseInt($selectedBar.closest('tr').data('index'));
+                if (primaryTrIndex == originalTrIndex) {
+                    var $tr = $hoveringTr;
+                } else {
+                    var newTrIndex = hoveringTrIndex - primaryTrIndex + originalTrIndex;
+                    var $tr = $hoveringTr.siblings('tr[data-index="' + newTrIndex + '"]');
+                }
+                if ($tr.length > 0) {
+                    var tdIndex = $selectedBar.data('td-index');
+                    var $td = $tr.children('td').eq(tdIndex + 1);
+
+                    $td.removeClass('dragging-over');
+                }
+            });
         },
         ondrop: function (event) {
             var $bar = $(event.relatedTarget);
-            var $tr = $(event.target);
-            var tdIndex = $bar.data('td-index');
-            var $td = $tr.children('td').eq(tdIndex + 1);
-            var tailNumber = $tr.data('tail-number');
+            var $hoveringTr = $(event.target);
+            var hoveringTrIndex = parseInt($hoveringTr.data('index'));
+            var primaryTrIndex = parseInt($bar.closest('tr').data('index'));
 
-            $td.removeClass('dragging-over');
-
-            if ($bar.data('assignment-id')) {
-                var assignmentId = $bar.data('assignment-id');
-
-                self.moveAssignment(assignmentId, tailNumber)
-                    .then(function(response) {
-                        if (response.success) {
-                            $bar.appendTo($td);
-                        }
-                    });
-
+            if ($bar.hasClass('selected')) {
+                var $selected = $bar.closest('.gantt-table').find('.bar.selected');
             } else {
-                var flightId = $bar.data('flight-id');
+                var $selected = $bar;
+            }
 
-                self.assignFlight(flightId, tailNumber)
-                    .then(function(response) {
+            var assignmentData = [];
+            var elementMoveData = [];
+            var assigning = true;
+
+            $selected.each(function() {
+                var $selectedBar = $(this);
+                var originalTrIndex = parseInt($selectedBar.closest('tr').data('index'));
+                if (primaryTrIndex == originalTrIndex) {
+                    var $tr = $hoveringTr;
+                } else {
+                    var newTrIndex = hoveringTrIndex - primaryTrIndex + originalTrIndex;
+                    var $tr = $hoveringTr.siblings('tr[data-index="' + newTrIndex + '"]');
+                }
+                if ($tr.length > 0) {
+                    var tdIndex = $selectedBar.data('td-index');
+                    var $td = $tr.children('td').eq(tdIndex + 1);
+                    var tailNumber = $tr.data('tail-number');
+
+                    $td.removeClass('dragging-over');
+
+                    if ($selectedBar.data('assignment-id')) {
+                        var assignmentId = $selectedBar.data('assignment-id');
+                        assigning = false;
+                        assignmentData.push({
+                            assignment_id: assignmentId,
+                            tail: tailNumber,
+                        });
+                        elementMoveData.push({
+                            assignmentId: assignmentId,
+                            bar: $selectedBar,
+                            td: $td,
+                        });
+                    } else {
+                        var flightId = $selectedBar.data('flight-id');
+                        assignmentData.push({
+                            flight: flightId,
+                            tail: tailNumber,
+                        });
+                        elementMoveData.push({
+                            flightId: flightId,
+                            bar: $selectedBar,
+                            td: $td,
+                        });
+                    }
+                }
+            });
+
+            if (assigning) {
+                self.assignFlight(assignmentData)
+                    .then(function(elementMoveData, response) {
                         if (response.success) {
-                            var $newBar = $bar.clone().attr('enabled', true);
-                            $newBar.attr('data-assignment-id', response.id);
-                            $td.append($newBar);
-                            $bar
-                                .addClass('assigned')
-                                .attr('enabled', false);
+                            var assignedFlights = response.assigned_flights; /* { flightId: assignmentId, ... } */
+                            elementMoveData.forEach(function(data) {
+                                if (data.flightId in assignedFlights) {
+                                    var $newBar = data.bar.clone().attr('enabled', true);
+                                    $newBar.attr('data-assignment-id', assignedFlights[data.flightId]);
+                                    data.td.append($newBar);
+                                    data.bar.addClass('assigned')
+                                        .attr('enabled', false);
+                                }
+                            });
                         }
-                    });
+                    }.bind(this, elementMoveData));
+            } else {
+                self.moveAssignment(assignmentData)
+                    .then(function(elementMoveData, response) {
+                        if (response.success) {
+                            var assignments = response.assignments; /* { assignment_id: { start_time, end_time }, ... } */
+                            elementMoveData.forEach(function(data) {
+                                if (data.assignmentId in assignments) {
+                                    data.bar.appendTo(data.td);
+                                }
+                            });
+                        }
+                    }.bind(this, elementMoveData));
             }
         },
     });
@@ -347,13 +462,22 @@ RoutePlanningGantt.prototype.initInteractables = function() {
                 var seconds = oldStartTime.getTime() / 1000 + diffSeconds;
                 var startTime = new Date(Math.round(seconds / 300) * 300 * 1000);
 
-                self.moveAssignment(assignmentId, tailNumber, startTime)
+                var assignmentData = [{
+                    assignment_id: assignmentId,
+                    tail: tailNumber,
+                    start_time: startTime,
+                }];
+                self.moveAssignment(assignmentData)
                     .then(function(response) {
                         if (response.success) {
-                            tdIndex = self.getTdIndex(startTime);
-                            var $newTd = $tr.children('td').eq(tdIndex + 1);
-                            var length = (new Date(response.end_time) - new Date(response.start_time)) / 1000 / self.options.unit;
-                            self.placeStatusBar($bar, $newTd, length, response);
+                            var assignments = response.assignments; /* { assignment_id: { start_time, end_time }, ... } */
+                            if (assignmentId in assignments) {
+                                var assignmentData = assignments[assignmentId];
+                                tdIndex = self.getTdIndex(startTime);
+                                var $newTd = $tr.children('td').eq(tdIndex + 1);
+                                var length = (new Date(assignmentData.end_time) - new Date(assignmentData.start_time)) / 1000 / self.options.unit;
+                                self.placeStatusBar($bar, $newTd, length, assignmentData);
+                            }
                         }
                     });
             } else if ($bar.data('status') > 0) {
@@ -396,17 +520,44 @@ RoutePlanningGantt.prototype.initInteractables = function() {
 
             $(event.target).removeClass('dragging-over');
 
-            if ($bar.data('assignment-id')) {
-                var assignmentId = $bar.data('assignment-id');
-                self.removeAssignment(assignmentId)
-                    .then(function(response) {
-                        if (response.success) {
-                            var tdIndex = $bar.closest('td').index();
-                            var flightNumber = $bar.data('number');
-                            $bar.remove();
-                            self.options.flightTemplateTable.find('td:nth-child(' + (tdIndex + 1) + ') .bar.assigned[data-number="' + flightNumber + '"]').removeClass('assigned');
-                        }
+            if ($bar.hasClass('selected')) {
+                var $selected = $bar.closest('.gantt-table').find('.bar.selected');
+            } else {
+                var $selected = $bar;
+            }
+
+            var assignmentIdsToRemove = [];
+            var elementRemoveData = [];
+
+            $selected.each(function() {
+                var $selectedBar = $(this);
+                if ($selectedBar.data('assignment-id')) {
+                    var assignmentId = $selectedBar.data('assignment-id');
+                    assignmentIdsToRemove.push(assignmentId);
+                    elementRemoveData.push({
+                        assignmentId: assignmentId,
+                        bar: $selectedBar,
                     });
+                }
+            });
+
+            if (assignmentIdsToRemove.length > 0) {
+                self.removeAssignment(assignmentIdsToRemove)
+                    .then(function(elementRemoveData, response) {
+                        if (response.success) {
+                            var removedAssignments = response.removed_assignments; /* [ assignment_ids ] */
+                            elementRemoveData.forEach(function(data) {
+                                if (removedAssignments.indexOf(data.assignmentId) >= 0) {
+                                    var tdIndex = data.bar.closest('td').index();
+                                    var flightNumber = data.bar.data('number');
+                                    data.bar.remove();
+                                    console.log(flightNumber)///
+                                    console.log(self.options.flightTemplateTable.find('td:nth-child(' + (tdIndex + 1) + ') .bar.assigned[data-number="' + flightNumber + '"]'))///
+                                    self.options.flightTemplateTable.find('td:nth-child(' + (tdIndex + 1) + ') .bar.assigned[data-number="' + flightNumber + '"]').removeClass('assigned');
+                                }
+                            });
+                        }
+                    }.bind(this, elementRemoveData));
             }
         },
     });
@@ -486,6 +637,7 @@ RoutePlanningGantt.prototype.initInteractables = function() {
                 if (
                     ((bx >= sx && bx <= sxe) || (bxe >= sx && bxe <= sxe) || (bx <= sx && bxe >= sxe))
                     && ((by >= sy && by <= sye) || (bye >= sy && bye <= sye) || (by <= sy && bye >= sye))
+                    && !$bar.hasClass('assigned')
                 ) {
                     $bar.addClass('selected');
                 }
@@ -598,7 +750,7 @@ RoutePlanningGantt.prototype.refreshAssignmentTable = function() {
     }
 }
 
-RoutePlanningGantt.prototype.assignFlight = function(flightId, tailNumber) {
+RoutePlanningGantt.prototype.assignFlight = function(flightData) {
     var self = this;
 
     if (!self.options.assignFlightAPIUrl) {
@@ -611,8 +763,7 @@ RoutePlanningGantt.prototype.assignFlight = function(flightId, tailNumber) {
         url: self.options.assignFlightAPIUrl,
         data: {
             csrfmiddlewaretoken: self.options.csrfToken,
-            flight_id: flightId,
-            tail: tailNumber,
+            flight_data: JSON.stringify(flightData),
         },
     });
 }
@@ -638,7 +789,7 @@ RoutePlanningGantt.prototype.assignStatus = function(tailNumber, status, startTi
     });
 }
 
-RoutePlanningGantt.prototype.removeAssignment = function(assignmentId) {
+RoutePlanningGantt.prototype.removeAssignment = function(assignmentIdsToRemove) {
     var self = this;
 
     if (!self.options.removeAssignmentAPIUrl) {
@@ -651,12 +802,12 @@ RoutePlanningGantt.prototype.removeAssignment = function(assignmentId) {
         url: self.options.removeAssignmentAPIUrl,
         data: {
             csrfmiddlewaretoken: self.options.csrfToken,
-            assignment_id: assignmentId,
+            assignment_data: JSON.stringify(assignmentIdsToRemove),
         },
     });
 }
 
-RoutePlanningGantt.prototype.moveAssignment = function(assignmentId, tailNumber, startTime = null) {
+RoutePlanningGantt.prototype.moveAssignment = function(assignmentData) {
     var self = this;
 
     if (!self.options.moveAssignmentAPIUrl) {
@@ -669,9 +820,7 @@ RoutePlanningGantt.prototype.moveAssignment = function(assignmentId, tailNumber,
         url: self.options.moveAssignmentAPIUrl,
         data: {
             csrfmiddlewaretoken: self.options.csrfToken,
-            assignment_id: assignmentId,
-            tail: tailNumber,
-            start_time: startTime ? startTime.toISOString() : '',
+            assignment_data: JSON.stringify(assignmentData),
         },
     });
 }
