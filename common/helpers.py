@@ -1,7 +1,5 @@
 from datetime import tzinfo, timedelta, datetime
 
-from home.models import *
-
 
 ZERO = timedelta(0)
 
@@ -38,28 +36,24 @@ def format_to_2_digits(num):
 
 def can_read_inspection(user):
     try:
-        profile = UserProfile.objects.select_related('role').get(user=user)
-        return profile.role.can_read_inspection
+        return user.userprofile.role.can_read_inspection
     except:
         return False
 
 def can_write_inspection(user):
     try:
-        profile = UserProfile.objects.select_related('role').get(user=user)
-        return profile.role.can_write_inspection
+        return user.userprofile.role.can_write_inspection
     except:
         return False
 
 def can_read_gantt(user):
     try:
-        profile = UserProfile.objects.select_related('role').get(user=user)
-        return profile.role.can_read_gantt
+        return user.userprofile.role.can_read_gantt
     except:
         return False
 
 def can_write_gantt(user):
     try:
-        profile = UserProfile.objects.select_related('role').get(user=user)
-        return profile.role.can_write_gantt
+        return user.userprofile.role.can_write_gantt
     except:
         return False

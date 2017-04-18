@@ -4,7 +4,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from datetime import datetime, timedelta
 
-from home.helpers import datetime_now_utc
+from common.helpers import datetime_now_utc
 from inspection.models import *
 
 
