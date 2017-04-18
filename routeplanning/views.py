@@ -38,17 +38,16 @@ def index(request):
     hours = hours_options[mode]
     units_per_hour = units_per_hour_options[mode]
 
-    if start_tmstmp:
-        start_time = datetime.fromtimestamp(float(start_tmstmp), tz=utc)
-    else:
+    if not start_tmstmp:
         start_time = datetime_now_utc()
         start_time = start_time.replace(hour=0, minute=0, second=0, microsecond=0)
         start_tmstmp = totimestamp(start_time)
 
     big_unit_colspan = units_per_hour * hours if units_per_hour > 1 else hours
-    big_units = range(0, days)
-    small_units = range(0, big_unit_colspan * days)
-    table_length_in_secs = days * 24 * 3600 if days > 1 else hours * 3600
+    big_unit_count = 14 * (24 / hours) if days == 1 else 14
+    big_units = range(0, big_unit_count)
+    small_units = range(0, big_unit_colspan * big_unit_count)
+    table_length_in_secs = 14 * 24 * 3600
 
     context = {
         'tails': tails,

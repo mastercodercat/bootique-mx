@@ -214,24 +214,24 @@
         /* Calculate start date */
 
         var startDate = new Date({{ start_tmstmp }} * 1000);
+        startDate.setHours(0);
         startDate.setMinutes(0);
         startDate.setSeconds(0);
         startDate.setMilliseconds(0);
-        if (days > 1) {
-            startDate.setHours(0);
-        }
 
         /* Calculate end date */
 
         var endDate = new Date(startDate.getTime() - 1000);
-        if (days > 1) {
-            endDate.setHours(endDate.getHours() + 24 * days);
-        } else {
-            endDate.setHours(endDate.getHours() + hours);
-        }
+        // if (days > 1) {
+        //     endDate.setHours(endDate.getHours() + 24 * days);
+        // } else {
+        //     endDate.setHours(endDate.getHours() + hours);
+        // }
+        endDate.setDate(endDate.getDate() + 14);
 
         /* Fill table date/time labels */
 
+        var oneUnit = days > 1 ? 24 : hours;
         $('.days').each(function() {
             var $tr = $(this);
             var date = new Date(startDate.getTime());
@@ -240,7 +240,7 @@
                     (date.getMonth() + 1) + '/' +
                     date.getDate() + '/' +
                     date.getFullYear());
-                date.setDate(date.getDate() + 1);
+                date.setSeconds(date.getSeconds() + oneUnit * 3600);
             });
         });
 
@@ -281,6 +281,12 @@
             var days = parseInt((endDate - startDate) / 86400000) + 1;
             $('#days').val(days);
         });
+
+        /* Set table size */
+
+        var $cover = $('.cover');
+        var $coverInner = $cover.children('.cover-inner');
+        $coverInner.css('width', (parseInt($cover.css('width').replace('px', '')) - 90) * (days > 1 ? 14 : 14 * (24 / hours)));
 
         /* Gantt table init */
 

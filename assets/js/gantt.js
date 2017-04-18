@@ -538,9 +538,7 @@ RoutePlanningGantt.prototype.loadData = function() {
         self.refreshAssignmentTable();
 
         var $cover = $(self.options.tablesWrapperSelector);
-        var $coverInner = $cover.children('.cover-inner');
         $cover.removeClass('loading');
-        $coverInner.css('width', $coverInner.css('width'));
     });
 }
 
