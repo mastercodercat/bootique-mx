@@ -75,6 +75,9 @@ $popover-text-color: #333;
         &.assigned {
             background-color: #999;
         }
+        &.selected {
+            border: 1px solid $red;
+        }
         &.drag-clone {
             opacity: 0.8;
         }

@@ -332,7 +332,8 @@ RoutePlanningGantt.prototype.initInteractables = function() {
             if ($bar.data('assignment-id')) {
                 var assignmentId = $bar.data('assignment-id');
                 var $td = $(event.target);
-                var tdWidth = parseFloat($td.css('width').replace('px', ''));
+                var $tdFirst = self.options.flightAssignmentTable.find('tr:not(.head) td:not(:first-child)');
+                var tdWidth = parseFloat($tdFirst.css('width').replace('px', ''));
                 var $tr = $td.closest('tr');
                 var tdIndex = $td.index();
                 var tailNumber = $tr.data('tail-number');
@@ -350,9 +351,9 @@ RoutePlanningGantt.prototype.initInteractables = function() {
                     .then(function(response) {
                         if (response.success) {
                             tdIndex = self.getTdIndex(startTime);
-                            var tdPos = self.getTdPosition(startTime);
+                            var $newTd = $tr.children('td').eq(tdIndex + 1);
                             var length = (new Date(response.end_time) - new Date(response.start_time)) / 1000 / self.options.unit;
-                            self.placeStatusBar($bar, $td, length, response);
+                            self.placeStatusBar($bar, $newTd, length, response);
                         }
                     });
             } else if ($bar.data('status') > 0) {
@@ -468,6 +469,29 @@ RoutePlanningGantt.prototype.initInteractables = function() {
 
         if ($selectionMarker.hasClass('active')) {
             event.preventDefault();
+
+            // Select items
+            var sx = $selectionMarker.offset().left;
+            var sy = $selectionMarker.offset().top;
+            var sxe = sx + parseInt($selectionMarker.css('width').replace('px', ''));
+            var sye = sy + parseInt($selectionMarker.css('height').replace('px', ''));
+            var $bars = $tableWrapper.find('.bar');
+            $bars.removeClass('selected').each(function() {
+                var $bar = $(this);
+                var bx = $bar.offset().left;
+                var by = $bar.offset().top;
+                var bxe = bx + parseInt($bar.css('width').replace('px', ''));
+                var bye = by + parseInt($bar.css('height').replace('px', ''));
+
+                if (
+                    ((bx >= sx && bx <= sxe) || (bxe >= sx && bxe <= sxe) || (bx <= sx && bxe >= sxe))
+                    && ((by >= sy && by <= sye) || (bye >= sy && bye <= sye) || (by <= sy && bye >= sye))
+                ) {
+                    $bar.addClass('selected');
+                }
+            });
+
+            // Hide select rectangle
             $selectionMarker.removeClass('active');
         }
     });
