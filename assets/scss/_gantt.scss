@@ -387,6 +387,9 @@ $popover-text-color: #333;
             a:not(.btn) {
                 color: inherit;
             }
+            .shadow {
+                display: block;
+            }
         }
         .bar[data-status] {
             /*&:before,

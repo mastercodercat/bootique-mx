@@ -72,7 +72,6 @@ RoutePlanningGantt.prototype.getUnitWidth = function($row) {
 
 RoutePlanningGantt.prototype.placeBar = function($row, pos, length, object) {
     /*
-     * length := bar-width / td-width
      * object can be flight (from template table) or assignment (from assignment table)
      */
     var self = this;
@@ -299,12 +298,15 @@ RoutePlanningGantt.prototype.initInteractables = function() {
         });
     });
 
-    // Drop into assignment table row (only accept bars from template table)
+    // Drop into assignment table row (flight/status bar assign and move)
 
     interact(assignmentTableRowSelector).dropzone({
-        accept: ganttTableBarSelector,
+        accept: [ganttTableBarSelector, assignmentTableRowSelector + ' .bar[data-status]', statusBarPrototypeSelector].join(','),
         ondragenter: function (event) {
             var $bar = $(event.relatedTarget);
+            if ($bar.data('status')) {
+                return;
+            }
             var $hoveringRow = $(event.target);
             var hoveringRowIndex = parseInt($hoveringRow.data('index'));
             var primaryRowIndex = parseInt($bar.closest('.row-line').data('index'));
@@ -317,198 +319,183 @@ RoutePlanningGantt.prototype.initInteractables = function() {
 
             $selected.each(function() {
                 var $selectedBar = $(this);
-                var originalTrIndex = parseInt($selectedBar.closest('.row-line').data('index'));
-                if (primaryRowIndex == originalTrIndex) {
+                var originalRowIndex = parseInt($selectedBar.closest('.row-line').data('index'));
+                if (primaryRowIndex == originalRowIndex) {
                     var $row = $hoveringRow;
                 } else {
-                    var newTrIndex = hoveringRowIndex - primaryRowIndex + originalTrIndex;
-                    var $row = $hoveringRow.siblings('.row-line[data-index="' + newTrIndex + '"]');
+                    var newRowIndex = hoveringRowIndex - primaryRowIndex + originalRowIndex;
+                    var $row = $hoveringRow.siblings('.row-line[data-index="' + newRowIndex + '"]');
                 }
-                if ($row.length > 0) {
-                    ///
-                    // var tdIndex = $selectedBar.data('td-index');
-                    // var $td = $row.children('td').eq(tdIndex + 1);
-                    // $td.addClass('dragging-over');
-                }
-            });
-        },
-        ondragleave: function (event) {
-            var $bar = $(event.relatedTarget);
-            var $hoveringRow = $(event.target);
-            var hoveringRowIndex = parseInt($hoveringRow.data('index'));
-            var primaryRowIndex = parseInt($bar.closest('.row-line').data('index'));
-
-            if ($bar.hasClass('selected')) {
-                var $selected = $bar.closest('.gantt-table').find('.bar.selected');
-            } else {
-                var $selected = $bar;
-            }
-
-            $selected.each(function() {
-                var $selectedBar = $(this);
-                var originalTrIndex = parseInt($selectedBar.closest('.row-line').data('index'));
-                if (primaryRowIndex == originalTrIndex) {
-                    var $row = $hoveringRow;
-                } else {
-                    var newTrIndex = hoveringRowIndex - primaryRowIndex + originalTrIndex;
-                    var $row = $hoveringRow.siblings('.row-line[data-index="' + newTrIndex + '"]');
-                }
-                if ($row.length > 0) {
-                    ///
-                    // var tdIndex = $selectedBar.data('td-index');
-                    // var $td = $row.children('td').eq(tdIndex + 1);
-                    // $td.removeClass('dragging-over');
-                }
-            });
-        },
-        ondrop: function (event) {
-            var $bar = $(event.relatedTarget);
-            var $hoveringRow = $(event.target);
-            var hoveringRowIndex = parseInt($hoveringRow.data('index'));
-            var primaryRowIndex = parseInt($bar.closest('.row-line').data('index'));
-
-            if ($bar.hasClass('selected')) {
-                var $selected = $bar.closest('.gantt-table').find('.bar.selected');
-            } else {
-                var $selected = $bar;
-            }
-
-            var assignmentData = [];
-            var elementMoveData = [];
-            var assigning = true;
-
-            $selected.each(function() {
-                var $selectedBar = $(this);
-                var originalTrIndex = parseInt($selectedBar.closest('.row-line').data('index'));
-                if (primaryRowIndex == originalTrIndex) {
-                    var $row = $hoveringRow;
-                } else {
-                    var newTrIndex = hoveringRowIndex - primaryRowIndex + originalTrIndex;
-                    var $row = $hoveringRow.siblings('.row-line[data-index="' + newTrIndex + '"]');
-                }
-                if ($row.length > 0) {
-                    var tailNumber = $row.data('tail-number');
-
-                    /// $td.removeClass('dragging-over');
-
-                    if ($selectedBar.data('assignment-id')) {
-                        var assignmentId = $selectedBar.data('assignment-id');
-                        assigning = false;
-                        assignmentData.push({
-                            assignment_id: assignmentId,
-                            tail: tailNumber,
-                        });
-                        elementMoveData.push({
-                            assignmentId: assignmentId,
-                            bar: $selectedBar,
-                            row: $row,
-                        });
+                var flightNumber = $selectedBar.data('number');
+                if (flightNumber) {
+                    var $shadow = $('#shadow' + flightNumber);
+                    if (!$shadow.length) {
+                        $shadow = $('.shadow.prototype').clone()
+                            .removeClass('prototype')
+                            .attr('id', 'shadow' + flightNumber)
+                            .css({
+                                left: $selectedBar.css('left'),
+                                width: $selectedBar.css('width'),
+                            });
+                    }
+                    if ($row.length > 0) {
+                        $row.append($shadow);
                     } else {
-                        var flightId = $selectedBar.data('flight-id');
-                        assignmentData.push({
-                            flight: flightId,
-                            tail: tailNumber,
-                        });
-                        elementMoveData.push({
-                            flightId: flightId,
-                            bar: $selectedBar,
-                            row: $row,
-                        });
+                        $('#reserves').append($shadow);
                     }
                 }
             });
-
-            if (assigning) {
-                self.assignFlight(assignmentData)
-                    .then(function(elementMoveData, response) {
-                        if (response.success) {
-                            var assignedFlights = response.assigned_flights; /* { flightId: assignmentId, ... } */
-                            elementMoveData.forEach(function(data) {
-                                if (data.flightId in assignedFlights) {
-                                    var $newBar = data.bar.clone().attr('enabled', true);
-                                    $newBar.attr('data-assignment-id', assignedFlights[data.flightId])
-                                        .appendTo(data.row);
-                                    data.bar.addClass('assigned')
-                                        .attr('enabled', false);
-                                }
-                            });
-                        }
-                    }.bind(this, elementMoveData));
-            } else {
-                self.moveAssignment(assignmentData)
-                    .then(function(elementMoveData, response) {
-                        if (response.success) {
-                            var assignments = response.assignments; /* { assignment_id: { start_time, end_time }, ... } */
-                            elementMoveData.forEach(function(data) {
-                                if (data.assignmentId in assignments) {
-                                    data.bar.appendTo(data.row);
-                                }
-                            });
-                        }
-                    }.bind(this, elementMoveData));
-            }
-        },
-    });
-
-    // Drop into assignment table cell (status bar placement, status assignment move)
-
-    interact(assignmentTableRowSelector).dropzone({
-        accept: assignmentTableRowSelector + ' .bar[data-status], ' + statusBarPrototypeSelector,
-        ondragenter: function (event) {
         },
         ondragleave: function (event) {
         },
         ondrop: function (event) {
             var $bar = $(event.relatedTarget);
 
-            if ($bar.data('assignment-id')) {
-                var assignmentId = $bar.data('assignment-id');
-                var $row = $(event.target);
-                var tailNumber = $row.data('tail-number');
-                var startDiffSeconds = parseFloat($bar.css('left')) / $row.width() * ganttLengthSeconds;
-                startDiffSeconds = Math.round(startDiffSeconds / 300) * 300;
-                var diffSeconds = ganttLengthSeconds / $row.width() * event.dragEvent.dx;
-                diffSeconds = Math.round(diffSeconds / 300) * 300;
-                var startTime = new Date(self.options.startDate.getTime() + startDiffSeconds * 1000 + diffSeconds * 1000);
+            if ($bar.data('status')) {
 
-                var assignmentData = [{
-                    assignment_id: assignmentId,
-                    tail: tailNumber,
-                    start_time: startTime,
-                }];
-                self.moveAssignment(assignmentData)
-                    .then(function(response) {
-                        if (response.success) {
-                            var assignments = response.assignments; /* { assignment_id: { start_time, end_time }, ... } */
-                            if (assignmentId in assignments) {
-                                var assignmentData = assignments[assignmentId];
-                                self.placeStatusBar($bar, $row, assignmentData);
+                /* Status assignment or move */
+
+                if ($bar.data('assignment-id')) {
+                    var assignmentId = $bar.data('assignment-id');
+                    var $row = $(event.target);
+                    var tailNumber = $row.data('tail-number');
+                    var startDiffSeconds = parseFloat($bar.css('left')) / $row.width() * ganttLengthSeconds;
+                    startDiffSeconds = Math.round(startDiffSeconds / 300) * 300;
+                    var diffSeconds = ganttLengthSeconds / $row.width() * event.dragEvent.dx;
+                    diffSeconds = Math.round(diffSeconds / 300) * 300;
+                    var startTime = new Date(self.options.startDate.getTime() + startDiffSeconds * 1000 + diffSeconds * 1000);
+
+                    var assignmentData = [{
+                        assignment_id: assignmentId,
+                        tail: tailNumber,
+                        start_time: startTime,
+                    }];
+                    self.moveAssignment(assignmentData)
+                        .then(function(response) {
+                            if (response.success) {
+                                var assignments = response.assignments; /* { assignment_id: { start_time, end_time }, ... } */
+                                if (assignmentId in assignments) {
+                                    var assignmentData = assignments[assignmentId];
+                                    self.placeStatusBar($bar, $row, assignmentData);
+                                }
                             }
-                        }
-                    });
-            } else if ($bar.data('status') > 0) {
-                var $row = $(event.target);
-                var x = event.dragEvent.clientX - $row.offset().left;
-                var diffSeconds = ganttLengthSeconds / $row.width() * x;
-                diffSeconds = Math.round(diffSeconds / 300) * 300;
-                var tailNumber = $row.data('tail-number');
-                var startTime = new Date(self.options.startDate);
-                startTime.setSeconds(startTime.getSeconds() + diffSeconds);
-                startTime.setMinutes(0);
-                startTime.setSeconds(0);
-                var endTime = new Date(startTime.getTime() + 3600000);
+                        });
+                } else if ($bar.data('status') > 0) {
+                    var $row = $(event.target);
+                    var x = event.dragEvent.clientX - $row.offset().left;
+                    var diffSeconds = ganttLengthSeconds / $row.width() * x;
+                    diffSeconds = Math.round(diffSeconds / 300) * 300;
+                    var tailNumber = $row.data('tail-number');
+                    var startTime = new Date(self.options.startDate);
+                    startTime.setSeconds(startTime.getSeconds() + diffSeconds);
+                    startTime.setMinutes(0);
+                    startTime.setSeconds(0);
+                    var endTime = new Date(startTime.getTime() + 3600000);
 
-                self.assignStatus(tailNumber, $bar.data('status'), startTime, endTime)
-                    .then(function(response) {
-                        if (response.success) {
-                            var $newBar = $bar.clone();
-                            self.placeStatusBar($newBar, $row, {
-                                start_time: startTime,
-                                end_time: endTime,
+                    self.assignStatus(tailNumber, $bar.data('status'), startTime, endTime)
+                        .then(function(response) {
+                            if (response.success) {
+                                var $newBar = $bar.clone();
+                                self.placeStatusBar($newBar, $row, {
+                                    start_time: startTime,
+                                    end_time: endTime,
+                                });
+                                $newBar.attr('data-assignment-id', response.id);
+                            }
+                        });
+                }
+
+            } else {
+
+                /* Flight assignment mass assign/move */
+
+                var $hoveringRow = $(event.target);
+                var hoveringRowIndex = parseInt($hoveringRow.data('index'));
+                var primaryRowIndex = parseInt($bar.closest('.row-line').data('index'));
+
+                if ($bar.hasClass('selected')) {
+                    var $selected = $bar.closest('.gantt-table').find('.bar.selected');
+                } else {
+                    var $selected = $bar;
+                }
+
+                var assignmentData = [];
+                var elementMoveData = [];
+                var assigning = true;
+
+                $selected.each(function() {
+                    var $selectedBar = $(this);
+                    var originalRowIndex = parseInt($selectedBar.closest('.row-line').data('index'));
+                    if (primaryRowIndex == originalRowIndex) {
+                        var $row = $hoveringRow;
+                    } else {
+                        var newRowIndex = hoveringRowIndex - primaryRowIndex + originalRowIndex;
+                        var $row = $hoveringRow.siblings('.row-line[data-index="' + newRowIndex + '"]');
+                    }
+
+                    var flightNumber = $selectedBar.data('number');
+                    var $shadow = $('#shadow' + flightNumber);
+                    $shadow.remove();
+
+                    if ($row.length > 0) {
+                        var tailNumber = $row.data('tail-number');
+
+                        if ($selectedBar.data('assignment-id')) {
+                            var assignmentId = $selectedBar.data('assignment-id');
+                            assigning = false;
+                            assignmentData.push({
+                                assignment_id: assignmentId,
+                                tail: tailNumber,
                             });
-                            $newBar.attr('data-assignment-id', response.id);
+                            elementMoveData.push({
+                                assignmentId: assignmentId,
+                                bar: $selectedBar,
+                                row: $row,
+                            });
+                        } else {
+                            var flightId = $selectedBar.data('flight-id');
+                            assignmentData.push({
+                                flight: flightId,
+                                tail: tailNumber,
+                            });
+                            elementMoveData.push({
+                                flightId: flightId,
+                                bar: $selectedBar,
+                                row: $row,
+                            });
                         }
-                    });
+                    }
+                });
+
+                if (assigning) {
+                    self.assignFlight(assignmentData)
+                        .then(function(elementMoveData, response) {
+                            if (response.success) {
+                                var assignedFlights = response.assigned_flights; /* { flightId: assignmentId, ... } */
+                                elementMoveData.forEach(function(data) {
+                                    if (data.flightId in assignedFlights) {
+                                        var $newBar = data.bar.clone().attr('enabled', true);
+                                        $newBar.attr('data-assignment-id', assignedFlights[data.flightId])
+                                            .appendTo(data.row);
+                                        data.bar.addClass('assigned')
+                                            .attr('enabled', false);
+                                    }
+                                });
+                            }
+                        }.bind(this, elementMoveData));
+                } else {
+                    self.moveAssignment(assignmentData)
+                        .then(function(elementMoveData, response) {
+                            if (response.success) {
+                                var assignments = response.assignments; /* { assignment_id: { start_time, end_time }, ... } */
+                                elementMoveData.forEach(function(data) {
+                                    if (data.assignmentId in assignments) {
+                                        data.bar.appendTo(data.row);
+                                    }
+                                });
+                            }
+                        }.bind(this, elementMoveData));
+                }
             }
         },
     });
@@ -547,6 +534,9 @@ RoutePlanningGantt.prototype.initInteractables = function() {
                         bar: $selectedBar,
                     });
                 }
+                var flightNumber = $selectedBar.data('number');
+                var $shadow = $('#shadow' + flightNumber);
+                $shadow.remove();
             });
 
             if (assignmentIdsToRemove.length > 0) {
@@ -556,10 +546,9 @@ RoutePlanningGantt.prototype.initInteractables = function() {
                             var removedAssignments = response.removed_assignments; /* [ assignment_ids ] */
                             elementRemoveData.forEach(function(data) {
                                 if (removedAssignments.indexOf(data.assignmentId) >= 0) {
-                                    var tdIndex = data.bar.closest('td').index();
                                     var flightNumber = data.bar.data('number');
                                     data.bar.remove();
-                                    self.options.flightTemplateTable.find('td:nth-child(' + (tdIndex + 1) + ') .bar.assigned[data-number="' + flightNumber + '"]').removeClass('assigned');
+                                    self.options.flightTemplateTable.find('.bar.assigned[data-number="' + flightNumber + '"]').removeClass('assigned');
                                 }
                             });
                         }
@@ -702,7 +691,7 @@ RoutePlanningGantt.prototype.loadData = function() {
 
 RoutePlanningGantt.prototype.refreshTemplateTable = function() {
     var self = this;
-    var templates, template, length, tdIndex, tdPos;
+    var templates, template, length;
     var $bar;
     var departureDateTime, arrivalDateTime;
 
