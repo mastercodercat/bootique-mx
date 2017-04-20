@@ -279,9 +279,10 @@ $popover-text-color: #333;
     .now-indicator {
         display: block;
         position: absolute;
-        top: 63px;
+        top: 60px;
         bottom: 0;
         border-left: 1px solid $red;
+        z-index: 100;
         &.hidden {
             display: none;
         }
@@ -337,7 +338,7 @@ $popover-text-color: #333;
             white-space: nowrap;
             font-size: 14px;
             font-weight: 600;
-            z-index: 1;
+            z-index: 2;
         }
         .axis-cell {
             text-align: left;

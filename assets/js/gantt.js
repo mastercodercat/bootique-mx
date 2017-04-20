@@ -1,5 +1,7 @@
 "use strict";
 
+var ganttLengthSeconds = 14 * 24 * 3600;
+
 /* helper functions */
 
 function formatTo2Digits(number) {
@@ -53,28 +55,22 @@ function RoutePlanningGantt(options) {
 
 /* class methods */
 
-RoutePlanningGantt.prototype.getTdWidth = function($td) {
-    return parseFloat($td.css('width').replace('px', ''));
-}
-
-RoutePlanningGantt.prototype.getTdIndex = function(date) {
+RoutePlanningGantt.prototype.getPosition = function(date) {
     var self = this;
 
     var diffFromStart = (date - self.options.startDate) / 1000;
-    var index = parseInt(diffFromStart / self.options.unit);
-    return index > 0 ? index : 0;
+    return diffFromStart / ganttLengthSeconds * 100;
 }
 
-RoutePlanningGantt.prototype.getTdPosition = function(date) {
-    var self = this;
-
-    var secondsDiff = parseInt((date - self.options.startDate) / 1000);
-    var unit = parseInt(self.options.unit);
-    var signalModifier = secondsDiff >= 0 ? 0 : -1;
-    return parseFloat(secondsDiff % unit + signalModifier * unit) / parseFloat(self.options.unit);
+RoutePlanningGantt.prototype.getUnitWidthPercentage = function() {
+    return 100 / (ganttLengthSeconds / this.options.unit);
 }
 
-RoutePlanningGantt.prototype.placeBar = function($tr, tdIndex, length, object) {
+RoutePlanningGantt.prototype.getUnitWidth = function($row) {
+    return $row.width() / (ganttLengthSeconds / this.options.unit);
+}
+
+RoutePlanningGantt.prototype.placeBar = function($row, pos, length, object) {
     /*
      * length := bar-width / td-width
      * object can be flight (from template table) or assignment (from assignment table)
@@ -82,30 +78,35 @@ RoutePlanningGantt.prototype.placeBar = function($tr, tdIndex, length, object) {
     var self = this;
     var $bar = null;
     var date;
-    var $td = $tr.children('td').eq(tdIndex + 1);   // Index should be increased by 1 because first td is line/tail name cell
+    var unitWidth = self.getUnitWidthPercentage();
 
-    if ($td.length > 0) {
-        if (object.number > 0) {
-            $bar = $('.bar.prototype').clone().removeClass('prototype');
-            $bar
-                .css('width', $td.css('width').replace('px', '') * length);
-            $bar
-                .attr('data-td-index', tdIndex)
-                .attr('data-number', object.number);
-            $bar.find('.number').html(object.number);
-            $bar.find('.org').html(object.origin);
-            $bar.find('.dest').html(object.destination);
-            date = new Date(object.departure_datetime);
-            $bar.find('.departure').html(formatDate(date));
-            date = new Date(object.arrival_datetime);
-            $bar.find('.arrival').html(formatDate(date));
+    if (object.number > 0) {
+        $bar = $('.bar.prototype').clone().removeClass('prototype');
+        $bar
+            .css({
+                width: unitWidth * length + '%',
+                left: pos + '%',
+            })
+            .attr('data-number', object.number);
+        $bar.find('.number').html(object.number);
+        $bar.find('.org').html(object.origin);
+        $bar.find('.dest').html(object.destination);
+        date = new Date(object.departure_datetime);
+        $bar.find('.departure').html(formatDate(date));
+        date = new Date(object.arrival_datetime);
+        $bar.find('.arrival').html(formatDate(date));
 
-            $td.append($bar);
-        } else {
-            var status = object.status;
-            $bar = $('.status-prototype[data-status="' + status + '"]').clone();
-            self.placeStatusBar($bar, $td, length, object);
-        }
+        $row.append($bar);
+    } else {
+        var status = object.status;
+        $bar = $('.status-prototype[data-status="' + status + '"]').clone().removeClass('status-prototype');
+        $bar
+            .css({
+                width: unitWidth * length + '%',
+                left: pos + '%',
+            });
+        self.setStatusBarInfo($bar, object);
+        $row.append($bar);
     }
     return $bar;
 }
@@ -118,19 +119,40 @@ RoutePlanningGantt.prototype.setStatusBarInfo = function($bar, object) {
     $info.find('.end').html(formatDate(date));
 }
 
-RoutePlanningGantt.prototype.placeStatusBar = function($bar, $td, length, object) {
+RoutePlanningGantt.prototype.placeStatusBar = function($bar, $row, object) {
     var self = this;
-    var tdPos = self.getTdPosition(new Date(object.start_time));
+    var startTime = new Date(object.start_time);
+    var endTime = new Date(object.end_time);
+    var pos = self.getPosition(startTime);
+    var length = (endTime - startTime) / 1000 / self.options.unit;
+    var unitWidth = self.getUnitWidthPercentage();
 
     $bar
         .removeClass('status-prototype')
-        .css('left', tdPos * 100 + '%')
-        .css('width', $td.css('width').replace('px', '') * length)
-        .css('height', $td.css('height').replace('px', ''));
+        .css('left', pos + '%')
+        .css('width', unitWidth * length + '%');
 
     self.setStatusBarInfo($bar, object);
 
-    $td.append($bar);
+    $row.append($bar);
+
+    return $bar;
+}
+
+RoutePlanningGantt.prototype.resizeStatusBar = function($bar, startTime, endTime) {
+    var self = this;
+    var pos = self.getPosition(startTime);
+    var length = (endTime - startTime) / 1000 / self.options.unit;
+    var unitWidth = self.getUnitWidthPercentage();
+
+    $bar
+        .css('left', pos + '%')
+        .css('width', unitWidth * length + '%');
+
+    self.setStatusBarInfo($bar, {
+        start_time: startTime.toISOString(),
+        end_time: endTime.toISOString(),
+    });
 
     return $bar;
 }
@@ -139,25 +161,24 @@ RoutePlanningGantt.prototype.displayNowIndicator = function($table) {
     var self = this;
     var now = new Date();
     if (now >= self.options.startDate && now <= self.options.endDate) {
-        var firstColumnWidth = parseFloat($table.find('td:first-child').css('width').replace('px', ''));
-        var normalCellWidth = parseFloat($table.find('tr:not(.head) td:nth-child(3)').css('width').replace('px', ''));
-        var left = firstColumnWidth + normalCellWidth * (now - self.options.startDate) / 1000 / self.options.unit;
-        $table.closest('.table-wrapper').find('.now-indicator').css('left', left).removeClass('hidden');
+        var parentWidth = $table.width() - 90;
+        var left = (now - self.options.startDate) / 1000 / ganttLengthSeconds;
+        $table.closest('.table-wrapper').find('.now-indicator').css('left', parentWidth * left + 90).removeClass('hidden');
     }
 }
 
 RoutePlanningGantt.prototype.initInteractables = function() {
     var self = this;
     var assignmentTableId = self.options.flightAssignmentTable.attr('id');
-    var assignmentTableTrSelector = '#' + assignmentTableId + ' tr:not(.head)';
-    var ganttTableBarSelector = '.gantt-table tr:not(.head) > td > .bar:not(.assigned)';
+    var assignmentTableRowSelector = '#' + assignmentTableId + ' > .row-line';
+    var ganttTableBarSelector = '.gantt-table > .row-line .bar:not(.assigned)';
     var statusBarPrototypeSelector = '.status-bars .bar';
     var draggables = [ganttTableBarSelector, statusBarPrototypeSelector];
     var removeAreaSelector = '#drop-to-remove-area';
 
     // Resizeable status assignment bar
 
-    interact(assignmentTableTrSelector + ' .bar[data-status]').resizable({
+    interact(assignmentTableRowSelector + ' .bar[data-status]').resizable({
         edges: { left: true, right: true }
     })
     .on('resizestart', function(event) {
@@ -168,7 +189,9 @@ RoutePlanningGantt.prototype.initInteractables = function() {
     })
     .on('resizemove', function(event) {
         var $bar = $(event.target);
-        var resizeUnit = parseFloat(self.getTdWidth($bar.closest('td')) * 300 / self.options.unit);  // Resize unit will be per 5 mins
+        var $row = $bar.closest('.row-line');
+        var unitWidth = self.getUnitWidth($row);
+        var resizeUnit = parseFloat(unitWidth * 300 / self.options.unit);  // Resize unit will be per 5 mins
 
         var ow = parseFloat($bar.attr('data-org-width'));
         var w = Math.round(parseFloat(event.rect.width) / resizeUnit) * resizeUnit;
@@ -183,10 +206,12 @@ RoutePlanningGantt.prototype.initInteractables = function() {
     })
     .on('resizeend', function(event) {
         var $bar = $(event.target);
+        var $row = $bar.closest('.row-line');
+        var unitWidth = self.getUnitWidth($row);
         var dw = $bar.attr('data-dw');
         var pos = $bar.attr('data-pos');
 
-        var dt = parseFloat(dw) / self.getTdWidth($bar.closest('td')) * self.options.unit;
+        var dt = parseFloat(dw) / unitWidth * self.options.unit;
         var assignmentId = $bar.data('assignment-id');
         if (!assignmentId) {
             console.log('No assignment Id on resizing status bar');
@@ -210,14 +235,8 @@ RoutePlanningGantt.prototype.initInteractables = function() {
                 if (response.success) {
                     var startTime = new Date(response.start_time);
                     var endTime = new Date(response.end_time);
-                    var tdIndex = self.getTdIndex(startTime);
 
-                    self.placeStatusBar(
-                        $bar,
-                        $bar.closest('tr').children('td').eq(tdIndex + 1),
-                        (endTime - startTime) / 1000 / self.options.unit,
-                        response
-                    );
+                    self.resizeStatusBar($bar, startTime, endTime);
                 }
             },
             function() {
@@ -282,13 +301,13 @@ RoutePlanningGantt.prototype.initInteractables = function() {
 
     // Drop into assignment table row (only accept bars from template table)
 
-    interact(assignmentTableTrSelector).dropzone({
+    interact(assignmentTableRowSelector).dropzone({
         accept: ganttTableBarSelector,
         ondragenter: function (event) {
             var $bar = $(event.relatedTarget);
-            var $hoveringTr = $(event.target);
-            var hoveringTrIndex = parseInt($hoveringTr.data('index'));
-            var primaryTrIndex = parseInt($bar.closest('tr').data('index'));
+            var $hoveringRow = $(event.target);
+            var hoveringRowIndex = parseInt($hoveringRow.data('index'));
+            var primaryRowIndex = parseInt($bar.closest('.row-line').data('index'));
 
             if ($bar.hasClass('selected')) {
                 var $selected = $bar.closest('.gantt-table').find('.bar.selected');
@@ -298,26 +317,26 @@ RoutePlanningGantt.prototype.initInteractables = function() {
 
             $selected.each(function() {
                 var $selectedBar = $(this);
-                var originalTrIndex = parseInt($selectedBar.closest('tr').data('index'));
-                if (primaryTrIndex == originalTrIndex) {
-                    var $tr = $hoveringTr;
+                var originalTrIndex = parseInt($selectedBar.closest('.row-line').data('index'));
+                if (primaryRowIndex == originalTrIndex) {
+                    var $row = $hoveringRow;
                 } else {
-                    var newTrIndex = hoveringTrIndex - primaryTrIndex + originalTrIndex;
-                    var $tr = $hoveringTr.siblings('tr[data-index="' + newTrIndex + '"]');
+                    var newTrIndex = hoveringRowIndex - primaryRowIndex + originalTrIndex;
+                    var $row = $hoveringRow.siblings('.row-line[data-index="' + newTrIndex + '"]');
                 }
-                if ($tr.length > 0) {
-                    var tdIndex = $selectedBar.data('td-index');
-                    var $td = $tr.children('td').eq(tdIndex + 1);
-
-                    $td.addClass('dragging-over');
+                if ($row.length > 0) {
+                    ///
+                    // var tdIndex = $selectedBar.data('td-index');
+                    // var $td = $row.children('td').eq(tdIndex + 1);
+                    // $td.addClass('dragging-over');
                 }
             });
         },
         ondragleave: function (event) {
             var $bar = $(event.relatedTarget);
-            var $hoveringTr = $(event.target);
-            var hoveringTrIndex = parseInt($hoveringTr.data('index'));
-            var primaryTrIndex = parseInt($bar.closest('tr').data('index'));
+            var $hoveringRow = $(event.target);
+            var hoveringRowIndex = parseInt($hoveringRow.data('index'));
+            var primaryRowIndex = parseInt($bar.closest('.row-line').data('index'));
 
             if ($bar.hasClass('selected')) {
                 var $selected = $bar.closest('.gantt-table').find('.bar.selected');
@@ -327,26 +346,26 @@ RoutePlanningGantt.prototype.initInteractables = function() {
 
             $selected.each(function() {
                 var $selectedBar = $(this);
-                var originalTrIndex = parseInt($selectedBar.closest('tr').data('index'));
-                if (primaryTrIndex == originalTrIndex) {
-                    var $tr = $hoveringTr;
+                var originalTrIndex = parseInt($selectedBar.closest('.row-line').data('index'));
+                if (primaryRowIndex == originalTrIndex) {
+                    var $row = $hoveringRow;
                 } else {
-                    var newTrIndex = hoveringTrIndex - primaryTrIndex + originalTrIndex;
-                    var $tr = $hoveringTr.siblings('tr[data-index="' + newTrIndex + '"]');
+                    var newTrIndex = hoveringRowIndex - primaryRowIndex + originalTrIndex;
+                    var $row = $hoveringRow.siblings('.row-line[data-index="' + newTrIndex + '"]');
                 }
-                if ($tr.length > 0) {
-                    var tdIndex = $selectedBar.data('td-index');
-                    var $td = $tr.children('td').eq(tdIndex + 1);
-
-                    $td.removeClass('dragging-over');
+                if ($row.length > 0) {
+                    ///
+                    // var tdIndex = $selectedBar.data('td-index');
+                    // var $td = $row.children('td').eq(tdIndex + 1);
+                    // $td.removeClass('dragging-over');
                 }
             });
         },
         ondrop: function (event) {
             var $bar = $(event.relatedTarget);
-            var $hoveringTr = $(event.target);
-            var hoveringTrIndex = parseInt($hoveringTr.data('index'));
-            var primaryTrIndex = parseInt($bar.closest('tr').data('index'));
+            var $hoveringRow = $(event.target);
+            var hoveringRowIndex = parseInt($hoveringRow.data('index'));
+            var primaryRowIndex = parseInt($bar.closest('.row-line').data('index'));
 
             if ($bar.hasClass('selected')) {
                 var $selected = $bar.closest('.gantt-table').find('.bar.selected');
@@ -360,19 +379,17 @@ RoutePlanningGantt.prototype.initInteractables = function() {
 
             $selected.each(function() {
                 var $selectedBar = $(this);
-                var originalTrIndex = parseInt($selectedBar.closest('tr').data('index'));
-                if (primaryTrIndex == originalTrIndex) {
-                    var $tr = $hoveringTr;
+                var originalTrIndex = parseInt($selectedBar.closest('.row-line').data('index'));
+                if (primaryRowIndex == originalTrIndex) {
+                    var $row = $hoveringRow;
                 } else {
-                    var newTrIndex = hoveringTrIndex - primaryTrIndex + originalTrIndex;
-                    var $tr = $hoveringTr.siblings('tr[data-index="' + newTrIndex + '"]');
+                    var newTrIndex = hoveringRowIndex - primaryRowIndex + originalTrIndex;
+                    var $row = $hoveringRow.siblings('.row-line[data-index="' + newTrIndex + '"]');
                 }
-                if ($tr.length > 0) {
-                    var tdIndex = $selectedBar.data('td-index');
-                    var $td = $tr.children('td').eq(tdIndex + 1);
-                    var tailNumber = $tr.data('tail-number');
+                if ($row.length > 0) {
+                    var tailNumber = $row.data('tail-number');
 
-                    $td.removeClass('dragging-over');
+                    /// $td.removeClass('dragging-over');
 
                     if ($selectedBar.data('assignment-id')) {
                         var assignmentId = $selectedBar.data('assignment-id');
@@ -384,7 +401,7 @@ RoutePlanningGantt.prototype.initInteractables = function() {
                         elementMoveData.push({
                             assignmentId: assignmentId,
                             bar: $selectedBar,
-                            td: $td,
+                            row: $row,
                         });
                     } else {
                         var flightId = $selectedBar.data('flight-id');
@@ -395,7 +412,7 @@ RoutePlanningGantt.prototype.initInteractables = function() {
                         elementMoveData.push({
                             flightId: flightId,
                             bar: $selectedBar,
-                            td: $td,
+                            row: $row,
                         });
                     }
                 }
@@ -409,8 +426,8 @@ RoutePlanningGantt.prototype.initInteractables = function() {
                             elementMoveData.forEach(function(data) {
                                 if (data.flightId in assignedFlights) {
                                     var $newBar = data.bar.clone().attr('enabled', true);
-                                    $newBar.attr('data-assignment-id', assignedFlights[data.flightId]);
-                                    data.td.append($newBar);
+                                    $newBar.attr('data-assignment-id', assignedFlights[data.flightId])
+                                        .appendTo(data.row);
                                     data.bar.addClass('assigned')
                                         .attr('enabled', false);
                                 }
@@ -424,7 +441,7 @@ RoutePlanningGantt.prototype.initInteractables = function() {
                             var assignments = response.assignments; /* { assignment_id: { start_time, end_time }, ... } */
                             elementMoveData.forEach(function(data) {
                                 if (data.assignmentId in assignments) {
-                                    data.bar.appendTo(data.td);
+                                    data.bar.appendTo(data.row);
                                 }
                             });
                         }
@@ -435,8 +452,8 @@ RoutePlanningGantt.prototype.initInteractables = function() {
 
     // Drop into assignment table cell (status bar placement, status assignment move)
 
-    interact(assignmentTableTrSelector + ' td').dropzone({
-        accept: assignmentTableTrSelector + ' .bar[data-status], ' + statusBarPrototypeSelector,
+    interact(assignmentTableRowSelector).dropzone({
+        accept: assignmentTableRowSelector + ' .bar[data-status], ' + statusBarPrototypeSelector,
         ondragenter: function (event) {
         },
         ondragleave: function (event) {
@@ -446,21 +463,13 @@ RoutePlanningGantt.prototype.initInteractables = function() {
 
             if ($bar.data('assignment-id')) {
                 var assignmentId = $bar.data('assignment-id');
-                var $td = $(event.target);
-                var $tdFirst = self.options.flightAssignmentTable.find('tr:not(.head) td:not(:first-child)');
-                var tdWidth = parseFloat($tdFirst.css('width').replace('px', ''));
-                var $tr = $td.closest('tr');
-                var tdIndex = $td.index();
-                var tailNumber = $tr.data('tail-number');
-
-                var $originalTd = $bar.closest('td');
-                var oldStartTime = new Date(self.options.startDate.getTime()
-                    + self.options.unit * ($originalTd.index() - 1) * 1000
-                    + self.options.unit * 1000 * parseFloat($bar.css('left').replace('px', '')) / tdWidth);
-
-                var diffSeconds = event.dragEvent.dx / tdWidth * self.options.unit;
-                var seconds = oldStartTime.getTime() / 1000 + diffSeconds;
-                var startTime = new Date(Math.round(seconds / 300) * 300 * 1000);
+                var $row = $(event.target);
+                var tailNumber = $row.data('tail-number');
+                var startDiffSeconds = parseFloat($bar.css('left')) / $row.width() * ganttLengthSeconds;
+                startDiffSeconds = Math.round(startDiffSeconds / 300) * 300;
+                var diffSeconds = ganttLengthSeconds / $row.width() * event.dragEvent.dx;
+                diffSeconds = Math.round(diffSeconds / 300) * 300;
+                var startTime = new Date(self.options.startDate.getTime() + startDiffSeconds * 1000 + diffSeconds * 1000);
 
                 var assignmentData = [{
                     assignment_id: assignmentId,
@@ -473,28 +482,27 @@ RoutePlanningGantt.prototype.initInteractables = function() {
                             var assignments = response.assignments; /* { assignment_id: { start_time, end_time }, ... } */
                             if (assignmentId in assignments) {
                                 var assignmentData = assignments[assignmentId];
-                                tdIndex = self.getTdIndex(startTime);
-                                var $newTd = $tr.children('td').eq(tdIndex + 1);
-                                var length = (new Date(assignmentData.end_time) - new Date(assignmentData.start_time)) / 1000 / self.options.unit;
-                                self.placeStatusBar($bar, $newTd, length, assignmentData);
+                                self.placeStatusBar($bar, $row, assignmentData);
                             }
                         }
                     });
             } else if ($bar.data('status') > 0) {
-                var $td = $(event.target);
-                var $tr = $td.closest('tr');
-                var tailNumber = $tr.data('tail-number');
-                var tdIndex = $td.index();
-
+                var $row = $(event.target);
+                var x = event.dragEvent.clientX - $row.offset().left;
+                var diffSeconds = ganttLengthSeconds / $row.width() * x;
+                diffSeconds = Math.round(diffSeconds / 300) * 300;
+                var tailNumber = $row.data('tail-number');
                 var startTime = new Date(self.options.startDate);
-                startTime.setSeconds(startTime.getSeconds() + self.options.unit * (tdIndex - 1));
+                startTime.setSeconds(startTime.getSeconds() + diffSeconds);
+                startTime.setMinutes(0);
+                startTime.setSeconds(0);
                 var endTime = new Date(startTime.getTime() + 3600000);
 
                 self.assignStatus(tailNumber, $bar.data('status'), startTime, endTime)
                     .then(function(response) {
                         if (response.success) {
                             var $newBar = $bar.clone();
-                            self.placeStatusBar($newBar, $td, 3600 / self.options.unit, {
+                            self.placeStatusBar($newBar, $row, {
                                 start_time: startTime,
                                 end_time: endTime,
                             });
@@ -508,7 +516,7 @@ RoutePlanningGantt.prototype.initInteractables = function() {
     // Drop into Remove area
 
     interact(removeAreaSelector).dropzone({
-        accept: assignmentTableTrSelector + ' .bar',
+        accept: assignmentTableRowSelector + ' .bar',
         ondragenter: function (event) {
             $(event.target).addClass('dragging-over');
         },
@@ -551,8 +559,6 @@ RoutePlanningGantt.prototype.initInteractables = function() {
                                     var tdIndex = data.bar.closest('td').index();
                                     var flightNumber = data.bar.data('number');
                                     data.bar.remove();
-                                    console.log(flightNumber)///
-                                    console.log(self.options.flightTemplateTable.find('td:nth-child(' + (tdIndex + 1) + ') .bar.assigned[data-number="' + flightNumber + '"]'))///
                                     self.options.flightTemplateTable.find('td:nth-child(' + (tdIndex + 1) + ') .bar.assigned[data-number="' + flightNumber + '"]').removeClass('assigned');
                                 }
                             });
@@ -706,18 +712,16 @@ RoutePlanningGantt.prototype.refreshTemplateTable = function() {
             template = templates[index];
             arrivalDateTime = new Date(template.arrival_datetime);
             departureDateTime = new Date(template.departure_datetime);
-            length = (arrivalDateTime - departureDateTime) / 1000 / self.options.unit;
 
             var date = new Date(self.options.startDate.getTime());
-            var $tr = self.options.flightTemplateTable.find('tr[data-line=' + template.line_id + ']');
-            tdIndex = self.getTdIndex(departureDateTime);
-            tdPos = self.getTdPosition(departureDateTime);
-            $bar = self.placeBar($tr, tdIndex, length, template);
+            var $row = self.options.flightTemplateTable.find('.row-line[data-line=' + template.line_id + ']');
+            pos = self.getPosition(departureDateTime);
+            length = (arrivalDateTime - departureDateTime) / 1000 / self.options.unit;
+            $bar = self.placeBar($row, pos, length, template);
             if ($bar) {
                 $bar
                     .attr('data-departure-time', departureDateTime.toISOString())
-                    .attr('data-flight-id', template.id)
-                    .css('left', tdPos * 100 + '%');
+                    .attr('data-flight-id', template.id);
                 if (self.checkIfAssigned(template.number, departureDateTime)) {
                     $bar.addClass('assigned');
                 } else {
@@ -734,17 +738,14 @@ RoutePlanningGantt.prototype.refreshAssignmentTable = function() {
     var asgnCount = self.assignments.length;
     for (var i = 0; i < asgnCount; i++) {
         var assignment = self.assignments[i];
-        var $tr = self.options.flightAssignmentTable.find('tr[data-tail-number="' + assignment.tail + '"]');
+        var $row = self.options.flightAssignmentTable.find('.row-line[data-tail-number="' + assignment.tail + '"]');
         var startTime = new Date(assignment.start_time);
         var endTime = new Date(assignment.end_time);
-        var tdIndex = self.getTdIndex(startTime);
         var length = (endTime - startTime) / 1000 / self.options.unit;
-        var tdPos = self.getTdPosition(startTime);
-        var $bar = self.placeBar($tr, tdIndex, length, assignment);
+        var pos = self.getPosition(startTime);
+        var $bar = self.placeBar($row, pos, length, assignment);
         if ($bar) {
-            $bar
-                .css('left', tdPos * 100 + '%')
-                .attr('data-assignment-id', assignment.id)
+            $bar.attr('data-assignment-id', assignment.id)
                 .attr('enabled', true);
         }
     }
