@@ -113,86 +113,89 @@
                 <div class="field">Sched. Arrival Time: <span class="arrival"></span></div>
             </div>
         </div>
-        <div class="cover loading">
-            <div class="cover-inner pull-left">
+        <div class="cover loading123">
+            <div class="cover-inner">
                 <!-- Tails table -->
-                <div class="table-wrapper pull-left">
+                <div class="table-wrapper">
                     <div class="now-indicator hidden"></div>
                     <div class="selection-area-indicator"></div>
-                    <table id="flight-assignment-table" class="table gantt-table m-b-none">
-                        <tbody>
-                            <tr class="head days">
-                                <td class="label-cell" rowspan="2">
-                                    {% if request.user|can_write_gantt %}
-                                        <a href="{% url 'routeplanning:add_tail' %}" class="btn btn-primary btn-circle-xs" type="button">
-                                            <i class="fa fa-plus"></i>
-                                        </a>
-                                    {% endif %}
-                                    Tails
-                                </td>
+                    <div id="flight-assignment-table" class="gantt-table m-b-none">
+                        <div class="head">
+                            <div class="label-cell" rowspan="2">
+                                {% if request.user|can_write_gantt %}
+                                    <a href="{% url 'routeplanning:add_tail' %}" class="btn btn-primary btn-circle-xs" type="button">
+                                        <i class="fa fa-plus"></i>
+                                    </a>
+                                {% endif %}
+                                Tails
+                            </div>
+                            <div class="row-line units big-units">
                                 {% for big_unit in big_units %}
-                                    <td class="unit border-right" colspan="{{ big_unit_colspan }}">
+                                    <div class="unit border-right">
                                         &nbsp;
-                                    </td>
+                                    </div>
                                 {% endfor %}
-                            </tr>
-                            <tr class="head units">
+                            </div>
+                            <div class="row-line units small-units">
                                 {% for small_unit in small_units %}
-                                    <td class="unit{% if days > 1 and forloop.counter|divisibleby:hours %} border-right{% endif %}">&nbsp;</td>
+                                    <div class="unit{% if days > 1 and forloop.counter|divisibleby:hours %} border-right{% endif %}">&nbsp;</div>
                                 {% endfor %}
-                            </tr>
-                            {% for tail in tails %}
-                                <tr data-tail-number="{{ tail.number }}" data-index="{{ forloop.counter|add:-1 }}">
-                                    <td class="axis-cell tail">
-                                        <a href="{% url 'routeplanning:edit_tail' tail_id=tail.id %}">{{ tail.number }}</a>
-                                    </td>
-                                    {% for small_unit in small_units %}
-                                        <td{% if days > 1 and forloop.counter|divisibleby:hours %} class="border-right"{% endif %}>
-                                        </td>
-                                    {% endfor %}
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+                            </div>
+                        </div>
+                        {% for tail in tails %}
+                            <div class="row-line" data-tail-number="{{ tail.number }}" data-index="{{ forloop.counter|add:-1 }}">
+                                <div class="axis-cell tail">
+                                    <a href="{% url 'routeplanning:edit_tail' tail_id=tail.id %}">{{ tail.number }}</a>
+                                </div>
+                                {% comment %}
+                                {% for small_unit in small_units %}
+                                    <td{% if days > 1 and forloop.counter|divisibleby:hours %} class="border-right"{% endif %}></td>
+                                {% endfor %}
+                                {% endcomment %}
+                            </div>
+                        {% endfor %}
+                    </div>
                 </div>
                 <!-- Lines table -->
-                <div class="table-wrapper pull-left">
+                <div class="table-wrapper">
                     <div class="now-indicator hidden"></div>
                     <div class="selection-area-indicator"></div>
-                    <table id="flight-template-table" class="table gantt-table m-b-none">
-                        <tbody>
-                            <tr class="head days">
-                                <td class="label-cell" rowspan="2">
-                                    {% if request.user|can_write_gantt %}
-                                        <a href="{% url 'routeplanning:add_line' %}" class="btn btn-primary btn-circle-xs" type="button">
-                                            <i class="fa fa-plus"></i>
-                                        </a>
-                                    {% endif %}
-                                    Lines
-                                </td>
+                    <div id="flight-template-table" class="gantt-table m-b-none">
+                        <div class="head">
+                            <div class="label-cell" rowspan="2">
+                                {% if request.user|can_write_gantt %}
+                                    <a href="{% url 'routeplanning:add_line' %}" class="btn btn-primary btn-circle-xs" type="button">
+                                        <i class="fa fa-plus"></i>
+                                    </a>
+                                {% endif %}
+                                Lines
+                            </div>
+                            <div class="row-line units big-units">
                                 {% for big_unit in big_units %}
-                                    <td class="unit border-right" colspan="{{ big_unit_colspan }}">
+                                    <div class="unit border-right" colspan="{{ big_unit_colspan }}">
                                         &nbsp;
-                                    </td>
+                                    </div>
                                 {% endfor %}
-                            </tr>
-                            <tr class="head units">
+                            </div>
+                            <div class="row-line units small-units">
                                 {% for small_unit in small_units %}
-                                    <td class="unit{% if days > 1 and forloop.counter|divisibleby:hours %} border-right{% endif %}">&nbsp;</td>
+                                    <div class="unit{% if days > 1 and forloop.counter|divisibleby:hours %} border-right{% endif %}">&nbsp;</div>
                                 {% endfor %}
-                            </tr>
-                            {% for line in lines %}
-                                <tr data-line="{{ line.id }}" data-index="{{ forloop.counter|add:-1 }}">
-                                    <td class="axis-cell line">
-                                        <a href="{% url 'routeplanning:edit_line' line_id=line.id %}">{{ line.name }}</a>
-                                    </td>
-                                    {% for small_unit in small_units %}
-                                        <td{% if days > 1 and forloop.counter|divisibleby:hours %} class="border-right"{% endif %}></td>
-                                    {% endfor %}
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+                            </div>
+                        </div>
+                        {% for line in lines %}
+                            <div class="row-line" data-line="{{ line.id }}" data-index="{{ forloop.counter|add:-1 }}">
+                                <div class="axis-cell line">
+                                    <a href="{% url 'routeplanning:edit_line' line_id=line.id %}">{{ line.name }}</a>
+                                </div>
+                                {% comment %}
+                                {% for small_unit in small_units %}
+                                    <td{% if days > 1 and forloop.counter|divisibleby:hours %} class="border-right"{% endif %}></td>
+                                {% endfor %}
+                                {% endcomment %}
+                            </div>
+                        {% endfor %}
+                    </div>
                 </div>
             </div>
         </div>
@@ -221,38 +224,33 @@
         /* Calculate end date */
 
         var endDate = new Date(startDate.getTime() - 1000);
-        // if (days > 1) {
-        //     endDate.setHours(endDate.getHours() + 24 * days);
-        // } else {
-        //     endDate.setHours(endDate.getHours() + hours);
-        // }
         endDate.setDate(endDate.getDate() + 14);
 
         /* Fill table date/time labels */
 
         var oneUnit = days > 1 ? 24 : hours;
-        $('.days').each(function() {
-            var $tr = $(this);
+        $('.head').each(function() {
+            // Big units
+            var $rowBigUnits = $(this).find('.row-line.big-units');
             var date = new Date(startDate.getTime());
-            $tr.children('.unit').each(function() {
+            $rowBigUnits.children('.unit').each(function() {
                 $(this).html(weekDayString(date.getDay()).substr(0, 3) + ' ' +
                     (date.getMonth() + 1) + '/' +
                     date.getDate() + '/' +
                     date.getFullYear());
                 date.setSeconds(date.getSeconds() + oneUnit * 3600);
             });
-        });
 
-        $('.units').each(function() {
-            var $tr = $(this);
+            // Small units
+            var $row = $(this).find('.row-line.small-units');
             var date = new Date(startDate.getTime());
             if (days > 1 || hours >= 12) {
-                $tr.children('.unit').each(function() {
+                $row.children('.unit').each(function() {
                     $(this).html(formatTo2Digits(date.getHours()));
                     date.setSeconds(date.getSeconds() + unit);
                 });
             } else {
-                $tr.children('.unit').each(function() {
+                $row.children('.unit').each(function() {
                     $(this).html(formatTo2Digits(date.getHours()) + ':' + formatTo2Digits(date.getMinutes()));
                     date.setSeconds(date.getSeconds() + unit);
                 });
@@ -285,25 +283,25 @@
 
         var $cover = $('.cover');
         var $coverInner = $cover.children('.cover-inner');
-        $coverInner.css('width', (parseInt($cover.css('width').replace('px', '')) - 90) * (days > 1 ? 14 / days : 14 * (24 / hours)));
+        $coverInner.css('width', 90 + (parseFloat($cover.css('width').replace('px', '')) - 90) * (days > 1 ? 14 / days : 14 * (24 / hours)));
 
         /* Gantt table init */
 
-        var gantt = new RoutePlanningGantt({
-            flightAssignmentTable: $('#flight-assignment-table'),
-            flightTemplateTable: $('#flight-template-table'),
-            loadDataAPIUrl: "{% url 'routeplanning:api_load_data' %}",
-            assignFlightAPIUrl: "{% url 'routeplanning:api_assign_flight' %}",
-            assignStatusAPIUrl: "{% url 'routeplanning:api_assign_status' %}",
-            moveAssignmentAPIUrl: "{% url 'routeplanning:api_move_assignment' %}",
-            removeAssignmentAPIUrl: "{% url 'routeplanning:api_remove_assignment' %}",
-            resizeAssignmentAPIUrl: "{% url 'routeplanning:api_resize_assignment' %}",
-            startDate: startDate,
-            endDate: endDate,
-            unit: unit,
-            readOnly: readOnly,
-            tablesWrapperSelector: '.cover',
-            csrfToken: "{{ csrf_token }}",
-        });
+        // var gantt = new RoutePlanningGantt({
+        //     flightAssignmentTable: $('#flight-assignment-table'),
+        //     flightTemplateTable: $('#flight-template-table'),
+        //     loadDataAPIUrl: "{% url 'routeplanning:api_load_data' %}",
+        //     assignFlightAPIUrl: "{% url 'routeplanning:api_assign_flight' %}",
+        //     assignStatusAPIUrl: "{% url 'routeplanning:api_assign_status' %}",
+        //     moveAssignmentAPIUrl: "{% url 'routeplanning:api_move_assignment' %}",
+        //     removeAssignmentAPIUrl: "{% url 'routeplanning:api_remove_assignment' %}",
+        //     resizeAssignmentAPIUrl: "{% url 'routeplanning:api_resize_assignment' %}",
+        //     startDate: startDate,
+        //     endDate: endDate,
+        //     unit: unit,
+        //     readOnly: readOnly,
+        //     tablesWrapperSelector: '.cover',
+        //     csrfToken: "{{ csrf_token }}",
+        // });
     </script>
 {% endblock %}

@@ -1,5 +1,5 @@
 $label-cell-width: 90px;
-$cell-width: 20px;
+$row-height: 30px;
 $popover-bg-color: #e0e0e1;
 $popover-text-color: #333;
 
@@ -298,80 +298,89 @@ $popover-text-color: #333;
     }
     .gantt-table {
         width: 100%;
-        max-width: none;
         background-color: #fff;
 
-        tr.head td {
-            border-top: 0;
-            vertical-align: middle;
-            text-align: center;
-        }
-        tr.head.units td {
-            padding: 5px 0 !important;
-            min-width: $cell-width;
-        }
-        td {
-            text-align: center;
-            border-top: 1px solid $border-color;
-            border-bottom: 1px solid $border-color;
-            padding: 8px 10px;
+        .head {
             position: relative;
+        }
+        .units {
+            display: flex;
+            .unit {
+                flex-grow: 1;
+                flex-basis: 0;
+            }
+        }
+        .unit {
+            border-top: 0;
+            text-align: center;
+            line-height: $row-height;
             &.border-right {
                 &:not(:last-child) {
                     border-right: 1px solid $border-color;
                 }
             }
-            &.label-cell {
-                border-right: 1px solid $border-color;
-            }
-            &.label-cell,
-            &.axis-cell {
-                text-align: left;
-                width: $label-cell-width;
-                min-width: $label-cell-width;
-                white-space: nowrap;
-                padding: 0;
-                font-size: 14px;
-                font-weight: 600;
-            }
-            &.axis-cell > a {
-                padding: 5px 5px 5px 12px;
+        }
+        .label-cell {
+            border-right: 1px solid $border-color;
+            min-width: $label-cell-width;
+            background-color: #fff;
+            text-align: center;
+            padding-top: 17px;
+        }
+        .label-cell,
+        .axis-cell {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: $label-cell-width;
+            height: 100%;
+            white-space: nowrap;
+            font-size: 14px;
+            font-weight: 600;
+            z-index: 1;
+        }
+        .axis-cell {
+            text-align: left;
+            & > a {
+                padding: 5px 5px 4px 12px;
                 display: block;
                 position: relative;
                 width: 100%;
                 z-index: 2;
             }
-            &.axis-cell.tail {
-                & > a {
-                    background: $nav-bg;
-                    color: #fff;
-                    &:hover {
-                        background: lighten($nav-bg, 10%);
-                    }
+            &.tail > a {
+                background: $nav-bg;
+                color: #fff !important;
+                &:hover {
+                    background: lighten($nav-bg, 10%);
                 }
             }
-            &.axis-cell.line {
+            &.line {
                 border-top-color: $dark-gray;
                 & > a {
                     background: $dark-gray;
-                    color: $label-badget-color;
+                    color: $label-badget-color !important;
                     &:hover {
                         background: lighten($dark-gray, 10%);
                     }
                 }
             }
-            .shadow {
-                position: absolute;
-                left: 0;
-                top: 0;
-                width: 0;
-                height: 100%;
-                background: #f0f0f1;
-                display: none;
-            }
-            &.dragging-over {
-                background: #f0f0f1;
-            }
+        }
+        .shadow {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 0;
+            height: 100%;
+            background: #f0f0f1;
+            display: none;
+        }
+        .row-line {
+            position: relative;
+            height: $row-height;
+            padding-left: $label-cell-width;
+            text-align: center;
+            border-bottom: 1px solid $border-color;
             a:not(.btn) {
                 color: inherit;
             }
