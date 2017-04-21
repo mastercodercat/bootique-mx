@@ -282,7 +282,7 @@ $popover-text-color: #333;
         top: 60px;
         bottom: 0;
         border-left: 1px solid $red;
-        z-index: 100;
+        z-index: 1;
         &.hidden {
             display: none;
         }
