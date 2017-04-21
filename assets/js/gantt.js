@@ -625,7 +625,12 @@ RoutePlanningGantt.prototype.initInteractables = function() {
             var sxe = sx + parseInt($selectionMarker.css('width').replace('px', ''));
             var sye = sy + parseInt($selectionMarker.css('height').replace('px', ''));
             var $bars = $tableWrapper.find('.bar');
-            $bars.removeClass('selected').each(function() {
+
+            if (!event.originalEvent.shiftKey && !event.originalEvent.altKey) {
+                $bars.removeClass('selected');
+            }
+
+            $bars.each(function() {
                 var $bar = $(this);
                 var bx = $bar.offset().left;
                 var by = $bar.offset().top;
@@ -635,9 +640,12 @@ RoutePlanningGantt.prototype.initInteractables = function() {
                 if (
                     ((bx >= sx && bx <= sxe) || (bxe >= sx && bxe <= sxe) || (bx <= sx && bxe >= sxe))
                     && ((by >= sy && by <= sye) || (bye >= sy && bye <= sye) || (by <= sy && bye >= sye))
-                    && !$bar.hasClass('assigned')
                 ) {
-                    $bar.addClass('selected');
+                    if (event.originalEvent.altKey) {
+                        $bar.removeClass('selected');
+                    } else {
+                        $bar.addClass('selected');
+                    }
                 }
             });
 
