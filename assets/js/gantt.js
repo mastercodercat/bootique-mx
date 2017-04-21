@@ -549,7 +549,6 @@ RoutePlanningGantt.prototype.initInteractables = function() {
                                 if (removedAssignments.indexOf(data.assignmentId) >= 0) {
                                     var flightId = data.bar.data('flight-id');
                                     data.bar.remove();
-                                    console.log(flightId)///
                                     self.options.flightTemplateTable.find('.bar.assigned[data-flight-id="' + flightId + '"]').removeClass('assigned');
                                 }
                             });
