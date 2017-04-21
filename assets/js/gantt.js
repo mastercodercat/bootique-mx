@@ -359,27 +359,61 @@ RoutePlanningGantt.prototype.initInteractables = function() {
                 /* Status assignment or move */
 
                 if ($bar.data('assignment-id')) {
-                    var assignmentId = $bar.data('assignment-id');
-                    var $row = $(event.target);
-                    var tailNumber = $row.data('tail-number');
-                    var startDiffSeconds = parseFloat($bar.css('left')) / $row.width() * ganttLengthSeconds;
-                    startDiffSeconds = Math.round(startDiffSeconds / 300) * 300;
-                    var diffSeconds = ganttLengthSeconds / $row.width() * event.dragEvent.dx;
-                    diffSeconds = Math.round(diffSeconds / 300) * 300;
-                    var startTime = new Date(self.options.startDate.getTime() + startDiffSeconds * 1000 + diffSeconds * 1000);
+                    var $hoveringRow = $(event.target);
+                    var hoveringRowIndex = parseInt($hoveringRow.data('index'));
+                    var primaryRowIndex = parseInt($bar.closest('.row-line').data('index'));
 
-                    var assignmentData = [{
-                        assignment_id: assignmentId,
-                        tail: tailNumber,
-                        start_time: startTime,
-                    }];
+                    if ($bar.hasClass('selected')) {
+                        var $selected = $bar.closest('.gantt-table').find('.bar.selected');
+                    } else {
+                        var $selected = $bar;
+                    }
+
+                    var assignmentData = [];
+                    var elementMoveData = {};
+
+                    $selected.each(function() {
+                        var $selectedBar = $(this);
+                        var originalRowIndex = parseInt($selectedBar.closest('.row-line').data('index'));
+                        if (primaryRowIndex == originalRowIndex) {
+                            var $row = $hoveringRow;
+                        } else {
+                            var newRowIndex = hoveringRowIndex - primaryRowIndex + originalRowIndex;
+                            var $row = $hoveringRow.siblings('.row-line[data-index="' + newRowIndex + '"]');
+                        }
+                        if ($row.length > 0) {
+                            var assignmentId = $selectedBar.data('assignment-id');
+                            var tailNumber = $row.data('tail-number');
+                            var startDiffSeconds = parseFloat($selectedBar.css('left')) / $row.width() * ganttLengthSeconds;
+                            startDiffSeconds = Math.round(startDiffSeconds / 300) * 300;
+                            var diffSeconds = ganttLengthSeconds / $row.width() * event.dragEvent.dx;
+                            diffSeconds = Math.round(diffSeconds / 300) * 300;
+                            var startTime = new Date(self.options.startDate.getTime() + startDiffSeconds * 1000 + diffSeconds * 1000);
+
+                            assignmentData.push({
+                                assignment_id: assignmentId,
+                                tail: tailNumber,
+                                start_time: startTime,
+                            });
+                            elementMoveData[assignmentId] = {
+                                row: $row,
+                                bar: $selectedBar,
+                            };
+                        }
+                    });
+
                     self.moveAssignment(assignmentData)
                         .then(function(response) {
                             if (response.success) {
                                 var assignments = response.assignments; /* { assignment_id: { start_time, end_time }, ... } */
-                                if (assignmentId in assignments) {
-                                    var assignmentData = assignments[assignmentId];
-                                    self.placeStatusBar($bar, $row, assignmentData);
+                                for (assignmentId in assignments) {
+                                    if (assignmentId in elementMoveData) {
+                                        self.placeStatusBar(
+                                            elementMoveData[assignmentId].bar,
+                                            elementMoveData[assignmentId].row,
+                                            assignments[assignmentId]
+                                        );
+                                    }
                                 }
                             }
                         });
