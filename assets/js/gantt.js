@@ -85,8 +85,7 @@ RoutePlanningGantt.prototype.placeBar = function($row, pos, length, object) {
             .css({
                 width: unitWidth * length + '%',
                 left: pos + '%',
-            })
-            .attr('data-number', object.number);
+            });
         $bar.find('.number').html(object.number);
         $bar.find('.org').html(object.origin);
         $bar.find('.dest').html(object.destination);
@@ -293,6 +292,10 @@ RoutePlanningGantt.prototype.initInteractables = function() {
                 $selected.each(function() {
                     var $selectedBar = $(this);
                     $selectedBar.removeClass('selected').next('.drag-clone').remove();
+                    var flightId = $selectedBar.data('flight-id');
+                    if (flightId) {
+                        $('#shadow' + flightId).remove();
+                    }
                 });
             },
         });
@@ -326,13 +329,13 @@ RoutePlanningGantt.prototype.initInteractables = function() {
                     var newRowIndex = hoveringRowIndex - primaryRowIndex + originalRowIndex;
                     var $row = $hoveringRow.siblings('.row-line[data-index="' + newRowIndex + '"]');
                 }
-                var flightNumber = $selectedBar.data('number');
-                if (flightNumber) {
-                    var $shadow = $('#shadow' + flightNumber);
+                var flightId = $selectedBar.data('flight-id');
+                if (flightId) {
+                    var $shadow = $('#shadow' + flightId);
                     if (!$shadow.length) {
                         $shadow = $('.shadow.prototype').clone()
                             .removeClass('prototype')
-                            .attr('id', 'shadow' + flightNumber)
+                            .attr('id', 'shadow' + flightId)
                             .css({
                                 left: $selectedBar.css('left'),
                                 width: $selectedBar.css('width'),
@@ -433,9 +436,8 @@ RoutePlanningGantt.prototype.initInteractables = function() {
                         var $row = $hoveringRow.siblings('.row-line[data-index="' + newRowIndex + '"]');
                     }
 
-                    var flightNumber = $selectedBar.data('number');
-                    var $shadow = $('#shadow' + flightNumber);
-                    $shadow.remove();
+                    var flightId = $selectedBar.data('flight-id');
+                    $('#shadow' + flightId).remove();
 
                     if ($row.length > 0) {
                         var tailNumber = $row.data('tail-number');
@@ -534,9 +536,8 @@ RoutePlanningGantt.prototype.initInteractables = function() {
                         bar: $selectedBar,
                     });
                 }
-                var flightNumber = $selectedBar.data('number');
-                var $shadow = $('#shadow' + flightNumber);
-                $shadow.remove();
+                var flightId = $selectedBar.data('flight-id');
+                $('#shadow' + flightId).remove();
             });
 
             if (assignmentIdsToRemove.length > 0) {
@@ -546,9 +547,9 @@ RoutePlanningGantt.prototype.initInteractables = function() {
                             var removedAssignments = response.removed_assignments; /* [ assignment_ids ] */
                             elementRemoveData.forEach(function(data) {
                                 if (removedAssignments.indexOf(data.assignmentId) >= 0) {
-                                    var flightNumber = data.bar.data('number');
+                                    var flightId = data.bar.data('flight-id');
                                     data.bar.remove();
-                                    self.options.flightTemplateTable.find('.bar.assigned[data-number="' + flightNumber + '"]').removeClass('assigned');
+                                    self.options.flightTemplateTable.find('.bar.assigned[data-flight-id="' + flightId + '"]').removeClass('assigned');
                                 }
                             });
                         }
