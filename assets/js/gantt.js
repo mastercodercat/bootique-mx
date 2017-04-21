@@ -549,6 +549,7 @@ RoutePlanningGantt.prototype.initInteractables = function() {
                                 if (removedAssignments.indexOf(data.assignmentId) >= 0) {
                                     var flightId = data.bar.data('flight-id');
                                     data.bar.remove();
+                                    console.log(flightId)///
                                     self.options.flightTemplateTable.find('.bar.assigned[data-flight-id="' + flightId + '"]').removeClass('assigned');
                                 }
                             });
@@ -645,13 +646,11 @@ RoutePlanningGantt.prototype.initInteractables = function() {
     });
 }
 
-RoutePlanningGantt.prototype.checkIfAssigned = function(flightNumber, departureDateTime) {
+RoutePlanningGantt.prototype.checkIfAssigned = function(flightId) {
     var assignmentCount = this.assignments.length;
     for (var i = 0; i < assignmentCount; i++) {
-        if (this.assignments[i].number == flightNumber) {
-            if (new Date(this.assignments[i].start_time).getTime() == departureDateTime.getTime()) {
-                return true;
-            }
+        if (this.assignments[i].flight_id == flightId) {
+            return true;
         }
     }
     return false;
@@ -712,7 +711,7 @@ RoutePlanningGantt.prototype.refreshTemplateTable = function() {
                 $bar
                     .attr('data-departure-time', departureDateTime.toISOString())
                     .attr('data-flight-id', template.id);
-                if (self.checkIfAssigned(template.number, departureDateTime)) {
+                if (self.checkIfAssigned(template.id)) {
                     $bar.addClass('assigned');
                 } else {
                     $bar.attr('enabled', true);

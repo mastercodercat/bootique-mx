@@ -319,6 +319,7 @@ def api_load_data(request):
             assignment_data['destination'] = assignment.flight.destination
             assignment_data['departure_datetime'] = assignment.flight.departure_datetime
             assignment_data['arrival_datetime'] = assignment.flight.arrival_datetime
+            assignment_data['flight_id'] = assignment.flight.id
         assignments_data.append(assignment_data)
 
     data = {
