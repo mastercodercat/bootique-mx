@@ -562,7 +562,9 @@ RoutePlanningGantt.prototype.initInteractables = function() {
 
     $(self.options.tablesWrapperSelector + ' .table-wrapper').on('mousedown', function(event) {
         var $target = $(event.target);
-        if ($target.hasClass('bar') || $target.closest('.bar').length > 0) {
+        if ($target.hasClass('bar') || $target.closest('.bar').length > 0
+             || $target.closest('.axis-cell').length > 0
+             || $target.closest('.label-cell').length > 0) {
             return;
         }
 
