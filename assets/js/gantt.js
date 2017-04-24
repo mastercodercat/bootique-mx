@@ -298,6 +298,25 @@ RoutePlanningGantt.prototype.initInteractables = function() {
                     }
                 });
             },
+        }).actionChecker(function (pointer, event, action) {
+            if (event.button !== 0) {
+                return null;
+            }
+            return action;
+        }).on('click', function(event) {
+            var $target = $(event.target);
+            var $bar = $target.hasClass('bar') || $target.closest('.bar');
+            var $ganttTable = $target.closest('.gantt-table');
+            if ($bar.length > 0 && $ganttTable.length > 0) {
+                if (event.shiftKey) {
+                    $bar.addClass('selected');
+                } else if (event.altKey) {
+                    $bar.removeClass('selected');
+                } else {
+                    $ganttTable.find('.bar.selected').removeClass('selected');
+                    $bar.addClass('selected');
+                }
+            }
         });
     });
 
