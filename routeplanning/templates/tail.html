@@ -35,7 +35,7 @@
                         <input type="hidden" id="action_after_save" name="action_after_save" value="save" />
                         {% for field in form %}
                             <div class="form-group">
-                                <label class="col-sm-4" for="{{ field.name }}">{{ field.label }}</label>
+                                <label class="col-sm-4 control-label" for="{{ field.name }}">{{ field.label }}</label>
                                 <div class="col-sm-8">
                                     {{ field.errors }}
                                     {{ field | addclass:'form-control' }}

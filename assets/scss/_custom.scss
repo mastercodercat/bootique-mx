@@ -131,6 +131,26 @@ button.btn-default.dim:active {
     }
 }
 
-.form-horizontal .form-group label {
-    margin-top: 7px;
+.bulk-action-form-wrapper {
+    display: inline-block;
+    max-width: 400px;
+    width: 100%;
+    padding-left: 40px;
+    vertical-align: top;
+}
+
+.bulk-action-form {
+    display: flex;
+    label, .btn {
+        flex-grow: 0;
+    }
+    label, select {
+        margin-right: 10px;
+    }
+    select {
+        flex-grow: 1;
+    }
+    label {
+        white-space: nowrap;
+    }
 }

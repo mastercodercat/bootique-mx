@@ -102,8 +102,6 @@
                             </ul>
                         </li>
                     {% endif %}
-                    <!-- 
-                    {% comment %}
                     <li{% if 'inspection' == request.resolver_match.namespace %} class="active"{% endif %}>
                         <a href="javascript:;">
                             <i class="fa fa-gears"></i> <span class="nav-label">Inspection Programs</span> <span class="fa arrow"></span>
@@ -114,8 +112,6 @@
                             </li>
                         </ul>
                     </li>
-                    {% endcomment %}
-                    -->
                     {% if request.user|can_read_gantt %}
                         <li{% if 'routeplanning' == request.resolver_match.namespace %} class="active"{% endif %}>
                             <a href="javascript:;">
