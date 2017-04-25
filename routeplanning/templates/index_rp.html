@@ -116,89 +116,88 @@
         <!-- Shadow prototype -->
         <div class="shadow prototype">
         </div>
-        <div class="cover loading">
-            <div class="cover-inner">
-                <!-- Tails table -->
-                <div class="table-wrapper">
-                    <div class="now-indicator hidden"></div>
-                    <div class="selection-area-indicator"></div>
-                    <div id="flight-assignment-table" class="gantt-table m-b-none">
-                        <div class="head">
-                            <div class="label-cell" rowspan="2">
-                                {% if request.user|can_write_gantt %}
-                                    <a href="{% url 'routeplanning:add_tail' %}" class="btn btn-primary btn-circle-xs" type="button">
-                                        <i class="fa fa-plus"></i>
-                                    </a>
-                                {% endif %}
-                                Tails
-                            </div>
-                            <div class="row-line units big-units">
-                                {% for big_unit in big_units %}
-                                    <div class="unit border-right">
-                                        &nbsp;
-                                    </div>
-                                {% endfor %}
-                            </div>
-                            <div class="row-line units small-units">
-                                {% for small_unit in small_units %}
-                                    <div class="unit{% if days > 1 and forloop.counter|divisibleby:hours %} border-right{% endif %}">&nbsp;</div>
-                                {% endfor %}
-                            </div>
-                        </div>
-                        {% for tail in tails %}
-                            <div class="row-line" data-tail-number="{{ tail.number }}" data-index="{{ forloop.counter|add:-1 }}">
-                                <div class="axis-cell tail">
-                                    <a href="{% url 'routeplanning:edit_tail' tail_id=tail.id %}">{{ tail.number }}</a>
-                                </div>
-                                {% comment %}
-                                {% for small_unit in small_units %}
-                                    <td{% if days > 1 and forloop.counter|divisibleby:hours %} class="border-right"{% endif %}></td>
-                                {% endfor %}
-                                {% endcomment %}
-                            </div>
-                        {% endfor %}
-                        <div id="reserves" class="hidden"></div>
-                    </div>
+
+        <div class="cover-wrapper">
+            <div class="gantt-labels">
+                <div class="label-cell">
+                    {% if request.user|can_write_gantt %}
+                        <a href="{% url 'routeplanning:add_tail' %}" class="btn btn-primary btn-circle-xs" type="button">
+                            <i class="fa fa-plus"></i>
+                        </a>
+                    {% endif %}
+                    Tails
                 </div>
-                <!-- Lines table -->
-                <div class="table-wrapper">
-                    <div class="now-indicator hidden"></div>
-                    <div class="selection-area-indicator"></div>
-                    <div id="flight-template-table" class="gantt-table m-b-none">
-                        <div class="head">
-                            <div class="label-cell" rowspan="2">
-                                {% if request.user|can_write_gantt %}
-                                    <a href="{% url 'routeplanning:add_line' %}" class="btn btn-primary btn-circle-xs" type="button">
-                                        <i class="fa fa-plus"></i>
-                                    </a>
-                                {% endif %}
-                                Lines
-                            </div>
-                            <div class="row-line units big-units">
-                                {% for big_unit in big_units %}
-                                    <div class="unit border-right" colspan="{{ big_unit_colspan }}">
-                                        &nbsp;
-                                    </div>
-                                {% endfor %}
-                            </div>
-                            <div class="row-line units small-units">
-                                {% for small_unit in small_units %}
-                                    <div class="unit{% if days > 1 and forloop.counter|divisibleby:hours %} border-right{% endif %}">&nbsp;</div>
-                                {% endfor %}
-                            </div>
-                        </div>
-                        {% for line in lines %}
-                            <div class="row-line" data-line="{{ line.id }}" data-index="{{ forloop.counter|add:-1 }}">
-                                <div class="axis-cell line">
-                                    <a href="{% url 'routeplanning:edit_line' line_id=line.id %}">{{ line.name }}</a>
+                {% for tail in tails %}
+                    <div class="axis-cell tail">
+                        <a href="{% url 'routeplanning:edit_tail' tail_id=tail.id %}">{{ tail.number }}</a>
+                    </div>
+                {% endfor %}
+                <div class="label-cell">
+                    {% if request.user|can_write_gantt %}
+                        <a href="{% url 'routeplanning:add_line' %}" class="btn btn-primary btn-circle-xs" type="button">
+                            <i class="fa fa-plus"></i>
+                        </a>
+                    {% endif %}
+                    Lines
+                </div>
+                {% for line in lines %}
+                    <div class="axis-cell line">
+                        <a href="{% url 'routeplanning:edit_line' line_id=line.id %}">{{ line.name }}</a>
+                    </div>
+                {% endfor %}
+            </div>
+            <div class="cover loading">
+                <div class="cover-inner">
+                    <!-- Tails table -->
+                    <div class="table-wrapper">
+                        <div class="now-indicator hidden"></div>
+                        <div class="selection-area-indicator"></div>
+                        <div id="flight-assignment-table" class="gantt-table m-b-none">
+                            <div class="head">
+                                <div class="row-line units big-units">
+                                    {% for big_unit in big_units %}
+                                        <div class="unit border-right">
+                                            &nbsp;
+                                        </div>
+                                    {% endfor %}
                                 </div>
-                                {% comment %}
-                                {% for small_unit in small_units %}
-                                    <td{% if days > 1 and forloop.counter|divisibleby:hours %} class="border-right"{% endif %}></td>
-                                {% endfor %}
-                                {% endcomment %}
+                                <div class="row-line units small-units">
+                                    {% for small_unit in small_units %}
+                                        <div class="unit{% if days > 1 and forloop.counter|divisibleby:hours %} border-right{% endif %}">&nbsp;</div>
+                                    {% endfor %}
+                                </div>
                             </div>
-                        {% endfor %}
+                            {% for tail in tails %}
+                                <div class="row-line" data-tail-number="{{ tail.number }}" data-index="{{ forloop.counter|add:-1 }}">
+                                </div>
+                            {% endfor %}
+                            <div id="reserves" class="hidden"></div>
+                        </div>
+                    </div>
+                    <!-- Lines table -->
+                    <div class="table-wrapper">
+                        <div class="now-indicator hidden"></div>
+                        <div class="selection-area-indicator"></div>
+                        <div id="flight-template-table" class="gantt-table m-b-none">
+                            <div class="head">
+                                <div class="row-line units big-units">
+                                    {% for big_unit in big_units %}
+                                        <div class="unit border-right" colspan="{{ big_unit_colspan }}">
+                                            &nbsp;
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                                <div class="row-line units small-units">
+                                    {% for small_unit in small_units %}
+                                        <div class="unit{% if days > 1 and forloop.counter|divisibleby:hours %} border-right{% endif %}">&nbsp;</div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% for line in lines %}
+                                <div class="row-line" data-line="{{ line.id }}" data-index="{{ forloop.counter|add:-1 }}">
+                                </div>
+                            {% endfor %}
+                        </div>
                     </div>
                 </div>
             </div>

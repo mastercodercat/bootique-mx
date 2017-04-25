@@ -13,8 +13,61 @@ $popover-text-color: #333;
 
 .gantt {
     min-width: 600px;
-    overflow-x: hidden;
+    overflow: visible;
 
+    .cover-wrapper {
+        position: relative;
+    }
+    .gantt-labels {
+        position: absolute;
+        left: 0;
+        top: 20px;
+        z-index: 200;
+        .label-cell,
+        .axis-cell {
+            width: $label-cell-width;
+            height: $row-height;
+            white-space: nowrap;
+            font-size: 14px;
+            font-weight: 600;
+            z-index: 2;
+        }
+        .label-cell {
+            border-right: 1px solid $border-color;
+            min-width: $label-cell-width;
+            background-color: #fff;
+            text-align: center;
+            padding-top: 17px;
+            height: $row-height * 2;
+        }
+        .axis-cell {
+            text-align: left;
+            & > a {
+                padding: 5px 5px 4px 12px;
+                display: block;
+                position: relative;
+                width: 100%;
+                z-index: 2;
+            }
+            &.tail > a {
+                background: $nav-bg;
+                color: #fff !important;
+                &:hover {
+                    background: lighten($nav-bg, 10%);
+                }
+            }
+            &.line {
+                border-top-color: $dark-gray;
+                & > a {
+                    background: $dark-gray;
+                    color: $label-badget-color !important;
+                    &:hover {
+                        background: lighten($dark-gray, 10%);
+                    }
+                }
+            }
+        }
+    }
     .cover {
         width: 100%;
         overflow-x: auto;
@@ -318,54 +371,6 @@ $popover-text-color: #333;
             &.border-right {
                 &:not(:last-child) {
                     border-right: 1px solid $border-color;
-                }
-            }
-        }
-        .label-cell {
-            border-right: 1px solid $border-color;
-            min-width: $label-cell-width;
-            background-color: #fff;
-            text-align: center;
-            padding-top: 17px;
-        }
-        .label-cell,
-        .axis-cell {
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: $label-cell-width;
-            height: 100%;
-            white-space: nowrap;
-            font-size: 14px;
-            font-weight: 600;
-            z-index: 2;
-        }
-        .axis-cell {
-            text-align: left;
-            left: auto;
-            right: 100%;
-            & > a {
-                padding: 5px 5px 4px 12px;
-                display: block;
-                position: relative;
-                width: 100%;
-                z-index: 2;
-            }
-            &.tail > a {
-                background: $nav-bg;
-                color: #fff !important;
-                &:hover {
-                    background: lighten($nav-bg, 10%);
-                }
-            }
-            &.line {
-                border-top-color: $dark-gray;
-                & > a {
-                    background: $dark-gray;
-                    color: $label-badget-color !important;
-                    &:hover {
-                        background: lighten($dark-gray, 10%);
-                    }
                 }
             }
         }
