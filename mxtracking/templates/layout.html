@@ -31,10 +31,12 @@
     <![endif]-->
     <link rel="stylesheet" type="text/css" href="{% static "css/animate.css" %}" />
     <link rel="stylesheet" type="text/css" href="{% static "css/plugins/datapicker/datepicker3.css" %}" />
-    <link href="{% static "css/plugins/clockpicker/clockpicker.css" %}" rel="stylesheet" />
+    <link rel="stylesheet" type="text/css" href="{% static "css/plugins/clockpicker/clockpicker.css" %}" />
     <link rel="stylesheet" type="text/css" href="{% static "css/plugins/dataTables/datatables.min.css" %}" />
-    <link rel="stylesheet" type="text/css"  href="{% static "css/plugins/daterangepicker/daterangepicker-bs3.css" %}" />
-    <link href="{% static "css/plugins/select2/select2.min.css" %}" rel="stylesheet" />
+    <link rel="stylesheet" type="text/css" href="{% static "css/plugins/daterangepicker/daterangepicker-bs3.css" %}" />
+    <link rel="stylesheet" type="text/css" href="{% static "css/plugins/select2/select2.min.css" %}" />
+    <link rel="stylesheet" type="text/css" href="{% static "css/plugins/jasny/jasny-bootstrap.min.css" %}" />
+    <link rel="stylesheet" type="text/css" href="{% static "css/plugins/clockpicker/clockpicker.css" %}" />
     {% compress css %}
         <link rel="stylesheet" type="text/x-scss" href="{% static "scss/style.scss" %}" />
     {% endcompress %}
@@ -180,32 +182,22 @@
     </div>
 
 
-    <!-- Mainly scripts -->
     <script src="{% static "js/plugins/metisMenu/jquery.metisMenu.js" %}"></script>
     <script src="{% static "js/plugins/slimscroll/jquery.slimscroll.min.js" %}"></script>
     <script src="{% static "js/plugins/pace/pace.min.js" %}"></script>
     <script src="{% static "js/plugins/bootbox/bootbox.min.js" %}"></script>
     <script src="{% static "js/plugins/bootstrap-notify.min.js" %}"></script>
-    <!-- Custom and plugin javascript -->
-    <script src="{% static "js/inspinia.js" %}"></script>
-
-    <!-- Data Tables -->
     <script src="{% static "js/plugins/dataTables/datatables.min.js" %}"></script>
-    <!-- Data picker -->
     <script src="{% static "js/plugins/datapicker/bootstrap-datepicker.js" %}"></script>
-    <!-- Select2 -->
+    <script src="{% static "js/plugins/clockpicker/clockpicker.js" %}"></script>
     <script src="{% static "js/plugins/select2/select2.full.min.js" %}"></script>
-    <!-- Input Mask-->
-    <!-- <script src="{% static "js/inputmask.min.js" %}"></script> -->
-    <!-- Moment.js -->
-    <!-- <script src="{% static "js/plugins/momentjs/moment.min.js" %}"></script> -->
-    <!-- DateRangePicker -->
-    <!-- <script src="{% static "js/plugins/daterangepicker/daterangepicker.js" %}"></script> -->
     <script src="{% static "js/plugins/bootstrap-notify.min.js" %}"></script>
+    <script src="{% static "js/plugins/jasny/jasny-bootstrap.min.js" %}"></script>
+    <!-- <script src="{% static "js/inputmask.min.js" %}"></script> -->
+    <!-- <script src="{% static "js/plugins/momentjs/moment.min.js" %}"></script> -->
+    <!-- <script src="{% static "js/plugins/daterangepicker/daterangepicker.js" %}"></script> -->
 
-    <!-- App scripts -->
-
-    <!-- Automatic initialization of datatables -->
+    <script src="{% static "js/inspinia.js" %}"></script>
     <script src="{% static "js/datatables.js" %}"></script>
 
     {% block pagejs %}{% endblock %}
