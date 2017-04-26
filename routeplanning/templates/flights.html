@@ -22,6 +22,15 @@
 {% endblock %}
 
 {% block content %}
+    <form method="POST" id="edit-form" class="hidden">
+        {% csrf_token %}
+        <input type="hidden" class="flight-ids" name="flight_ids" />
+        <!-- more params -->
+    </form>
+    <form method="POST" action="{% url 'routeplanning:delete_flights' %}" id="delete-form" class="hidden">
+        {% csrf_token %}
+        <input type="hidden" class="flight-ids" name="flight_ids" />
+    </form>
     <div class="ibox">
         <div class="ibox-title">
             <h3>Flights</h3>
@@ -31,9 +40,9 @@
                 <a href="{% url 'routeplanning:add_flight' %}" class="btn btn-w-m btn-primary">Create Flight</a>
                 <a href="javascript:;" class="btn btn-w-m btn-primary" data-toggle="modal" data-target="#upload-csv-modal">Upload CSV File</a>
                 <div class="bulk-action-form-wrapper">
-                    <form method="GET" class="bulk-action-form form-horizontal">
+                    <form id="action-form" class="bulk-action-form form-horizontal">
                         <label class="control-label">Bulk Change</label>
-                        <select class="form-control" name="action">
+                        <select class="form-control" id="select-action" name="action">
                             <option value="edit">Edit</option>
                             <option value="delete">Delete</option>
                         </select>
@@ -41,33 +50,40 @@
                     </form>
                 </div>
             </div>
-            <table id="flights-table" class="datatable table table-stripped toggle-arrow-tiny"
-                data-name="flights_table"
-                data-default-sort-column="1"
-                data-selectable="true">
-                <thead>
-                    <tr>
-                        <th data-sortable="false"><input type="checkbox" class="select-all"></th>
-                        <th>Number</th>
-                        <th>Origin</th>
-                        <th>Destination</th>
-                        <th>Departure Time</th>
-                        <th>Arrival Time</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for flight in flights %}
+            <div class="clearfix">
+                <table id="flights-table" class="datatable table table-stripped toggle-arrow-tiny"
+                    data-name="flights_table"
+                    data-default-sort-column="1"
+                    data-selectable="true">
+                    <thead>
                         <tr>
-                            <td></td>
-                            <td>{{ flight.number }}</td>
-                            <td>{{ flight.origin }}</td>
-                            <td>{{ flight.destination }}</td>
-                            <td>{{ flight.departure_datetime }}</td>
-                            <td>{{ flight.arrival_datetime }}</td>
+                            <th data-sortable="false"><input type="checkbox" class="select-all"></th>
+                            <th>Number</th>
+                            <th>Origin</th>
+                            <th>Destination</th>
+                            <th>Departure Time</th>
+                            <th>Arrival Time</th>
+                            <th data-sortable="false"></th>
                         </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        {% for flight in flights %}
+                            <tr>
+                                <td>{{ flight.id }}</td>
+                                <td>{{ flight.number }}</td>
+                                <td>{{ flight.origin }}</td>
+                                <td>{{ flight.destination }}</td>
+                                <td>{{ flight.departure_datetime }}</td>
+                                <td>{{ flight.arrival_datetime }}</td>
+                                <td>
+                                    <a href="{% url 'routeplanning:edit_flight' flight_id=flight.id %}" class="btn btn-primary btn-xs"><i class="fa fa-fw fa-edit"></i></a>
+                                    <a href="javascript:;" class="btn-delete-flight btn btn-danger btn-xs"><i class="fa fa-fw fa-trash"></i></a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
     <div class="modal inmodal fade" id="upload-csv-modal" tabindex="-1" role="dialog" aria-hidden="true">
@@ -136,5 +152,42 @@
         });
 
         $('.clockpicker').clockpicker();
+
+        $('#action-form').on('submit', function(e) {
+            e.preventDefault();
+            var flightsTable = window.datatables.get('flights_table');
+            var selectedData = flightsTable.rows('.selected').data();
+            if (selectedData.length > 0) {
+                var ids = '';
+                for(var i = 0; i < selectedData.length - 1; i++) {
+                    ids += selectedData[i][0] + ',';
+                }
+                ids += selectedData[selectedData.length - 1][0];
+
+                var action = $('#select-action').val();
+                if (action == 'edit') {
+                    var $form = $('#edit-form');
+                    $form.find('.flight-ids').val(ids);
+                    $form.submit();
+                } else if (action == 'delete') {
+                    var $form = $('#delete-form');
+                    $form.find('.flight-ids').val(ids);
+                    $form.submit();
+                }
+            }
+        });
+
+        $('.btn-delete-flight').on('click', function(e) {
+            e.stopPropagation();
+            var $row = $(this).closest('tr');
+            var flightsTable = window.datatables.get('flights_table');
+            var data = flightsTable.rows($row).data();
+            if (data.length > 0) {
+                var id = data[0][0];
+                var $form = $('#delete-form');
+                $form.find('.flight-ids').val(id);
+                $form.submit();
+            }
+        });
     </script>
 {% endblock %}

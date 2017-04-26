@@ -2,10 +2,10 @@
 {% load staticfiles %}
 {% load addclass %}
 
-{% block head_title %}Add Flight{% endblock %}
+{% block head_title %}{{ title }}{% endblock %}
 
 {% block page_title %}
-    Add Flight
+    {{ title }}
 {% endblock %}
 
 {% block breadcrumb %}
@@ -15,8 +15,13 @@
                 Route Planning Gantt
             </a>
         </li>
+        <li>
+            <a href="{% url 'routeplanning:flights' %}">
+                Flights
+            </a>
+        </li>
         <li class="active">
-            <strong>Add Flight</strong>
+            <strong>{{ title }}</strong>
         </li>
     </ol>
 {% endblock %}
@@ -24,7 +29,7 @@
 {% block content %}
     <div class="ibox">
         <div class="ibox-title">
-            <h3>Add Flight</h3>
+            <h3>{{ title }}</h3>
         </div>
         <div class="ibox-content">
             <div class="row">
@@ -41,7 +46,7 @@
                             </div>
                         {% endfor %}
                         <div class="text-right m-t-lg">
-                            <button class="btn btn-primary" type="submit">Create</button>
+                            <button class="btn btn-primary" type="submit">Save</button>
                         </div>
                     </form>
                 </div>

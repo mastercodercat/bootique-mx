@@ -5,7 +5,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, JsonResponse, HttpResponseForbidden
 from django.middleware import csrf
-from django.db.models import Q
+from django.db.models import Q, ProtectedError
 
 from routeplanning.models import *
 from routeplanning.forms import *
@@ -265,13 +265,42 @@ def add_flight(request):
     form = FlightForm(request.POST or None)
     if request.method == 'POST':
         if form.is_valid():
-            form.save()
-            form = FlightForm()
+            flight = form.save()
+            return redirect('routeplanning:edit_flight', flight_id=flight.id)
 
     context = {
         'form': form,
+        'title': 'Add Flight',
     }
     return render(request, 'flight.html', context)
+
+@login_required
+@gantt_writable_required
+def edit_flight(request, flight_id=None):
+    flight = get_object_or_404(Flight, pk=flight_id)
+    form = FlightForm(request.POST or None, instance=flight)
+    if request.method == 'POST':
+        if form.is_valid():
+            form.save()
+
+    context = {
+        'form': form,
+        'title': 'Edit Flight',
+    }
+    return render(request, 'flight.html', context)
+
+@login_required
+@gantt_writable_required
+def delete_flights(request):
+    if request.method == 'POST':
+        ids_string = request.POST.get('flight_ids')
+        ids = ids_string.split(',')
+        for id in ids:
+            try:
+                Flight.objects.filter(pk=id).delete()
+            except ProtectedError:
+                pass
+    return redirect('routeplanning:flights')
 
 @login_required
 @gantt_readable_required

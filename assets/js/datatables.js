@@ -31,7 +31,7 @@ window.datatables = {
                 {
                     "sortable": false,
                     render: function(data, type, full, meta) {
-                        return '<input type="checkbox" class="checkbox-select" name="id[]" value="' + parseInt(full[0]) + '"/>'
+                        return '<input type="checkbox" class="checkbox-select" name="id[]" value="' + parseInt(full[1]) + '"/>'
                     },
                     targets: 0,
                 }
@@ -59,19 +59,26 @@ window.datatables = {
             });
         }
 
-        this._datatables[name] = $datatable.DataTable(options);
+        var dt = $datatable.DataTable(options);
+        this._datatables[name] = dt;
 
         // Check/uncheck all checkboxes in the table
-        $('.select-all').on('click', function(){
-            var dtName = $(this).closest('.datatable').data('name');
-            var datatable = window.datatables.get(dtName);
-            var rows = datatable.rows({ 'search': 'applied' }).nodes();
+        dt.on('click', '.select-all', function() {
+            var rows = dt.rows({ 'search': 'applied' }).nodes();
             $('input[type="checkbox"]', rows).prop('checked', this.checked);
-            // if (this.checked) {
-            //     datatable.rows().select();
-            // } else {
-            //     datatable.rows().deselect();
-            // }
+            if (this.checked) {
+                dt.rows().select();
+            } else {
+                dt.rows().deselect();
+            }
+        });
+
+        // Check/uncheck single checkbox
+        dt.on('click', 'tr', function() {
+            var $this = $(this);
+            $this.toggleClass('selected');
+            var $checkbox = $this.find('.checkbox-select');
+            $this.hasClass('selected') ? $checkbox.prop('checked', 1) : $checkbox.prop('checked', 0);
         });
     },
 

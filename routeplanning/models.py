@@ -62,8 +62,8 @@ class Assignment(models.Model):
     end_time = models.DateTimeField(null=False, blank=False)
     status = models.IntegerField(default=1, choices=STATUS_CHOICES)
 
-    flight = models.ForeignKey(Flight, null=True, blank=False)
-    tail = models.ForeignKey(Tail, null=True, blank=False)
+    flight = models.ForeignKey(Flight, null=True, blank=False, on_delete=models.PROTECT)
+    tail = models.ForeignKey(Tail, null=True, blank=False, on_delete=models.PROTECT)
 
     def __unicode__(self):
         if self.status == 1:
