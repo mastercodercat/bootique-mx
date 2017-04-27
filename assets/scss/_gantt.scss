@@ -127,6 +127,7 @@ $popover-text-color: #333;
         z-index: 1;
         &.assigned {
             background-color: #999;
+            pointer-events: none;
         }
         &.selected {
             &:before {

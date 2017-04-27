@@ -677,7 +677,7 @@ RoutePlanningGantt.prototype.initInteractables = function() {
             var sy = $selectionMarker.offset().top;
             var sxe = sx + parseInt($selectionMarker.css('width').replace('px', ''));
             var sye = sy + parseInt($selectionMarker.css('height').replace('px', ''));
-            var $bars = $tableWrapper.find('.bar');
+            var $bars = $tableWrapper.find('.bar:not(.assigned)');
 
             if (!event.originalEvent.shiftKey && !event.originalEvent.altKey) {
                 $bars.removeClass('selected');
@@ -798,6 +798,9 @@ RoutePlanningGantt.prototype.refreshAssignmentTable = function() {
         if ($bar) {
             $bar.attr('data-assignment-id', assignment.id)
                 .attr('enabled', true);
+            if (assignment.flight_id) {
+                $bar.attr('data-flight-id', assignment.flight_id);
+            }
         }
     }
 }
