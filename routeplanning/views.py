@@ -63,8 +63,9 @@ def index(request):
         'prev_start_tmstmp': int(start_tmstmp) - table_length_in_secs,
         'next_start_tmstmp': int(start_tmstmp) + table_length_in_secs,
         'csrf_token': csrf.get_token(request),
+        'window_at_end': request.GET.get('window_at_end') or 0,
     }
-    return render(request, 'index_rp.html', context)
+    return render(request, 'gantt.html', context)
 
 @login_required
 @gantt_writable_required

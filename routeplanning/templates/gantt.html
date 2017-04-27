@@ -35,10 +35,12 @@
                     href="{% url 'routeplanning:index' %}?mode=6&start={{ start_tmstmp }}">7 Days</a>
             </div>
             <div class="page-control">
-                <a href="{% url 'routeplanning:index' %}?mode={{ mode }}&start={{ prev_start_tmstmp }}" class="btn btn-white">
+                <a href="javascript:;" id="btn-prev-time-window" class="btn btn-white"
+                    data-prev-period-href="{% url 'routeplanning:index' %}?mode={{ mode }}&start={{ prev_start_tmstmp }}&window_at_end=1">
                     <i class="fa fa-chevron-left"></i>
                 </a>
-                <a href="{% url 'routeplanning:index' %}?mode={{ mode }}&start={{ next_start_tmstmp }}" class="btn btn-white">
+                <a href="javascript:;" id="btn-next-time-window" class="btn btn-white"
+                    data-next-period-href="{% url 'routeplanning:index' %}?mode={{ mode }}&start={{ next_start_tmstmp }}">
                     <i class="fa fa-chevron-right"></i>
                 </a>
             </div>
@@ -286,7 +288,47 @@
 
         var $cover = $('.cover');
         var $coverInner = $cover.children('.cover-inner');
-        $coverInner.css('width', 90 + (parseFloat($cover.css('width').replace('px', '')) - 90) * (days > 1 ? 14 / days : 14 * (24 / hours)));
+        var timeWindowCount = days > 1 ? 14 / days : 14 * (24 / hours);
+        var timeWindowWidth = $cover.width() - 90;
+        $coverInner.css('width', 90 + timeWindowWidth * timeWindowCount);
+        if ({{ window_at_end }}) {
+            $cover.scrollLeft((timeWindowCount - 1) * timeWindowWidth);
+        }
+
+        /* Prev, next time window buttons */
+
+        $('#btn-prev-time-window').on('click', function() {
+            var $cover = $('.cover');
+            var timeWindowWidth = $cover.width() - 90;
+            var pos = $cover.scrollLeft() / timeWindowWidth;
+            if (pos <= 0.005) {
+                window.location.href = $(this).data('prev-period-href');
+            } else {
+                if (pos == Math.round(pos)) {
+                    pos--;
+                } else {
+                    pos = Math.floor(pos);
+                }
+                $cover.scrollLeft(pos * timeWindowWidth);
+            }
+        });
+
+        $('#btn-next-time-window').on('click', function() {
+            var $cover = $('.cover');
+            var timeWindowWidth = $cover.width() - 90;
+            var pos = $cover.scrollLeft() / timeWindowWidth;
+            if (Math.abs(timeWindowCount - 1 - pos) <= 0.005) {
+                window.location.href = $(this).data('next-period-href');
+            } else {
+                console.log(pos, Math.round(pos));
+                if (pos == Math.round(pos)) {
+                    pos++;
+                } else {
+                    pos = Math.ceil(pos);
+                }
+                $cover.scrollLeft(pos * timeWindowWidth);
+            }
+        });
 
         /* Gantt table init */
 
