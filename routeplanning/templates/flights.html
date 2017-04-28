@@ -38,8 +38,8 @@
         <div class="ibox-content">
             <div class="m-b">
                 <a href="{% url 'routeplanning:add_flight' %}" class="btn btn-w-m btn-primary">Create Flight</a>
-                <a href="javascript:;" class="btn btn-w-m btn-primary" data-toggle="modal" data-target="#upload-csv-modal">Upload CSV File</a>
-                <div class="bulk-action-form-wrapper">
+                <a href="javascript:void();" class="btn btn-w-m btn-primary" data-toggle="modal" data-target="#upload-csv-modal">Upload CSV File</a>
+                <!-- <div class="bulk-action-form-wrapper">
                     <form id="action-form" class="bulk-action-form form-horizontal">
                         <label class="control-label">Bulk Change</label>
                         <select class="form-control" id="select-action" name="action">
@@ -48,7 +48,7 @@
                         </select>
                         <button class="btn btn-primary" type="submit">Go</button>
                     </form>
-                </div>
+                </div> -->
             </div>
             <div class="clearfix">
                 <table id="flights-table" class="datatable table table-stripped toggle-arrow-tiny"
@@ -77,7 +77,7 @@
                                 <td>{{ flight.arrival_datetime }}</td>
                                 <td>
                                     <a href="{% url 'routeplanning:edit_flight' flight_id=flight.id %}" class="btn btn-primary btn-xs"><i class="fa fa-fw fa-edit"></i></a>
-                                    <a href="javascript:;" class="btn-delete-flight btn btn-danger btn-xs"><i class="fa fa-fw fa-trash"></i></a>
+                                    <a href="javascript:void();" class="btn-delete-flight btn btn-danger btn-xs"><i class="fa fa-fw fa-trash"></i></a>
                                 </td>
                             </tr>
                         {% endfor %}
@@ -87,15 +87,15 @@
         </div>
     </div>
     <div class="modal inmodal fade" id="upload-csv-modal" tabindex="-1" role="dialog" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
+        <div class="modal-dialog modal-md">
             <div class="modal-content">
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
                     <h5 class="modal-title">Upload File</h5>
                 </div>
                 <div class="modal-body">
-                    <div class="row">
-                        <div class="col-md-5">
+                    <!-- <div class="row">
+                        <div class="col-md-5"> -->
                             <h4>Upload File</h4>
                             <div class="fileinput fileinput-new input-group" data-provides="fileinput">
                                 <div class="form-control" data-trigger="fileinput">
@@ -105,11 +105,11 @@
                                 <span class="input-group-addon btn btn-default btn-file">
                                     <span class="fileinput-new">Select file</span>
                                     <span class="fileinput-exists">Change</span>
-                                    <input type="file" name="..."/>
+                                    <input type="file" id="csvfile" />
                                 </span>
                                 <a href="#" class="input-group-addon btn btn-default fileinput-exists" data-dismiss="fileinput">Remove</a>
                             </div>
-                        </div>
+                        <!-- </div>
                         <div class="col-md-7">
                             <h4>What date and time will this new schedule begin? (UTC time)</h4>
                             <div class="row">
@@ -129,12 +129,17 @@
                                 </div>
                             </div>
                         </div>
+                    </div> -->
+                    <div class="upload-progress m-t hidden">
+                        <h5 class="status">Uploading...</h5>
+                        <div class="progress progress-bar-default">
+                            <div class="progress-bar" style="width: 0%">
+                            </div>
+                        </div>
                     </div>
-                </div>
-
                 <div class="modal-footer">
                     <button type="button" class="btn btn-white" data-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary">Upload</button>
+                    <button type="button" class="btn btn-primary btn-upload-csv">Upload</button>
                 </div>
             </div>
         </div>
@@ -143,6 +148,12 @@
 
 {% block pagejs %}
     <script type="text/javascript">
+        function setUploadProgress(progress, status) {
+            var $progressContainer = $('.upload-progress');
+            $progressContainer.find('.progress-bar').css('width', progress + '%');
+            $progressContainer.find('.status').html(status);
+        }
+
         $('.input-group.date').datepicker({
             todayBtn: "linked",
             keyboardNavigation: false,
@@ -153,29 +164,29 @@
 
         $('.clockpicker').clockpicker();
 
-        $('#action-form').on('submit', function(e) {
-            e.preventDefault();
-            var flightsTable = window.datatables.get('flights_table');
-            var selectedData = flightsTable.rows('.selected').data();
-            if (selectedData.length > 0) {
-                var ids = '';
-                for(var i = 0; i < selectedData.length - 1; i++) {
-                    ids += selectedData[i][0] + ',';
-                }
-                ids += selectedData[selectedData.length - 1][0];
+        // $('#action-form').on('submit', function(e) {
+        //     e.preventDefault();
+        //     var flightsTable = window.datatables.get('flights_table');
+        //     var selectedData = flightsTable.rows('.selected').data();
+        //     if (selectedData.length > 0) {
+        //         var ids = '';
+        //         for(var i = 0; i < selectedData.length - 1; i++) {
+        //             ids += selectedData[i][0] + ',';
+        //         }
+        //         ids += selectedData[selectedData.length - 1][0];
 
-                var action = $('#select-action').val();
-                if (action == 'edit') {
-                    var $form = $('#edit-form');
-                    $form.find('.flight-ids').val(ids);
-                    $form.submit();
-                } else if (action == 'delete') {
-                    var $form = $('#delete-form');
-                    $form.find('.flight-ids').val(ids);
-                    $form.submit();
-                }
-            }
-        });
+        //         var action = $('#select-action').val();
+        //         if (action == 'edit') {
+        //             var $form = $('#edit-form');
+        //             $form.find('.flight-ids').val(ids);
+        //             $form.submit();
+        //         } else if (action == 'delete') {
+        //             var $form = $('#delete-form');
+        //             $form.find('.flight-ids').val(ids);
+        //             $form.submit();
+        //         }
+        //     }
+        // });
 
         $('.btn-delete-flight').on('click', function(e) {
             e.stopPropagation();
@@ -188,6 +199,48 @@
                 $form.find('.flight-ids').val(id);
                 $form.submit();
             }
+        });
+
+        $('.btn-upload-csv').on('click', function(e) {
+            e.preventDefault();
+
+            var files = $('#csvfile')[0].files;
+            if (!files.length) {
+                alert('Please select a file to upload.');
+                return;
+            }
+
+            var $btn = $(this);
+            $('.upload-progress').removeClass('hidden');
+            $btn.attr('disabled', true);
+
+            var formData = new FormData();
+            formData.append('csvfile', files[0]);
+            formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+            $.ajax({
+                method: 'POST',
+                url: '{% url 'routeplanning:api_upload_csv' %}',
+                data: formData,
+                processData: false,
+                contentType: false,
+                xhr: function(){
+                    var xhr = $.ajaxSettings.xhr();
+                    xhr.upload.onprogress = function(evt) {
+                        setUploadProgress(evt.loaded / evt.total * 100, 'Uploading...');
+                    };
+                    xhr.upload.onload = function() {
+                        setUploadProgress(100, 'Upload done. Processing...');
+                    };
+                    return xhr;
+                },
+            })
+            .then(function(response) {
+                setUploadProgress(100, 'Finished.');
+                $btn.attr('disabled', false);
+            }, function() {
+                setUploadProgress(100, 'Error occurred.');
+                $btn.attr('disabled', false);
+            });
         });
     </script>
 {% endblock %}

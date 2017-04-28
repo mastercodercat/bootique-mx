@@ -1,11 +1,15 @@
 from datetime import timedelta, datetime
 import json
 import dateutil.parser
+import random
+import os
+import csv
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, JsonResponse, HttpResponseForbidden
 from django.middleware import csrf
-from django.db.models import Q, ProtectedError
+from django.db.models import Q, ProtectedError, Max
+from django.conf import settings
 
 from routeplanning.models import *
 from routeplanning.forms import *
@@ -257,6 +261,7 @@ def flights(request):
 
     context = {
         'flights': flights,
+        'csrf_token': csrf.get_token(request),
     }
     return render(request, 'flights.html', context)
 
@@ -576,4 +581,123 @@ def api_resize_assignment(request):
     result['success'] = True
     result['start_time'] = assignment.start_time.isoformat()
     result['end_time'] = assignment.end_time.isoformat()
+    return JsonResponse(result, safe=False)
+
+def str_to_datetime(str):
+    parts = str.split(' ')
+    date_parts = parts[0].split('/')
+    date = int(date_parts[0])
+    month = int(date_parts[1])
+    year = int(date_parts[2])
+    hour = 0
+    minute = 0
+    second = 0
+
+    if len(parts) > 1:
+        time_parts = parts[1].split(':')
+        hour = int(time_parts[0])
+        minute = int(time_parts[1])
+        second = int(time_parts[2])
+
+    return datetime(year, month, date, hour, minute, second, tzinfo=utc)
+
+@login_required
+@gantt_writable_required
+def api_upload_csv(request):
+    result = {
+        'success': False,
+    }
+
+    filepath = settings.STATIC_ROOT + 'uploads/' + str(totimestamp(datetime_now_utc())) + '_' + str(random.randint(100000, 999999)) + '.csv'
+    try:
+        file = request.FILES['csvfile']
+        destination = open(filepath, 'wb+')
+        for chunk in file.chunks():
+            destination.write(chunk)
+            destination.close()
+    except:
+        result['error'] = 'Failed to upload file to server.'
+        return JsonResponse(result, safe=False)
+
+    with open(filepath) as csvfile:
+        csvreader = csv.reader(csvfile, delimiter=',', quotechar='"')
+        now = datetime_now_utc()
+        import pdb; pdb.set_trace()
+
+        for row in csvreader:
+            try:
+                flight_number = int(row[1][3:])
+                origin = row[2]
+                destination = row[3]
+                departure_datetime = str_to_datetime(row[4])
+                arrival_datetime = str_to_datetime(row[6])
+
+                # if departure_datetime < now:
+                #     continue
+
+                flight_to_update = None
+
+                closest_past_date = Flight.objects \
+                    .filter(number=flight_number, departure_datetime__lte=departure_datetime) \
+                    .aggregate(closest_past_date=Max('departure_datetime'))['closest_past_date']
+
+                flight_just_before = Flight.objects.select_related('assignment').get(
+                    number=flight_number,
+                    departure_datetime=closest_past_date
+                )
+
+                if closest_past_date.year == departure_datetime.year \
+                    and closest_past_date.month == departure_datetime.month \
+                    and closest_past_date.day == departure_datetime.day:
+
+                    flight_to_update = flight_just_before
+                else:
+                    closest_next_date = Flight.objects \
+                        .filter(number=flight_number, departure_datetime__gt=departure_datetime) \
+                        .aggregate(closest_next_date=Max('departure_datetime'))['closest_next_date']
+
+                    flight_just_after = Flight.objects.select_related('assignment').get(
+                        number=flight_number,
+                        departure_datetime=closest_next_date
+                    )
+
+                    if closest_next_date.year == departure_datetime.year \
+                        and closest_next_date.month == departure_datetime.month \
+                        and closest_next_date.day == departure_datetime.day:
+                        flight_to_update = flight_just_after
+
+                if flight_to_update:
+                    flight_to_update.departure_datetime = departure_datetime
+                    flight_to_update.arrival_datetime = arrival_datetime
+                    flight_to_update.save()
+
+                    assignment = flight_to_update.get_assignment()
+                    if assignment:
+                        dup_assignments = Assignment.get_duplicated_assignments(assignment.tail, departure_datetime, arrival_datetime, assignment)
+                        if dup_assignments.count() > 0:
+                            assignment.delete()
+                            dup_assignments.delete()
+                        else:
+                            assignment.start_time = departure_datetime
+                            assignment.end_time = arrival_datetime
+                            assignment.save()
+                else:
+                    flight=Flight(
+                        number=flight_number,
+                        origin=origin,
+                        destination=destination,
+                        departure_datetime=departure_datetime,
+                        arrival_datetime=arrival_datetime
+                    )
+                    flight.save()
+
+            except:
+                pass
+
+    try:
+        os.remove(filepath)
+    except:
+        pass
+
+    result['success'] = True
     return JsonResponse(result, safe=False)

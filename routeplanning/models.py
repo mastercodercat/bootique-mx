@@ -49,6 +49,12 @@ class Flight(models.Model):
     def length(self):
         return (self.arrival_datetime - self.departure_datetime).total_seconds()
 
+    def get_assignment(self):
+        try:
+            return self.assignment
+        except:
+            return None
+
 
 class Assignment(models.Model):
     STATUS_CHOICES = (
@@ -62,7 +68,7 @@ class Assignment(models.Model):
     end_time = models.DateTimeField(null=False, blank=False)
     status = models.IntegerField(default=1, choices=STATUS_CHOICES)
 
-    flight = models.ForeignKey(Flight, null=True, blank=False, on_delete=models.PROTECT)
+    flight = models.OneToOneField(Flight, null=True, blank=False, on_delete=models.PROTECT)
     tail = models.ForeignKey(Tail, null=True, blank=False, on_delete=models.PROTECT)
 
     def __unicode__(self):
@@ -77,8 +83,6 @@ class Assignment(models.Model):
 
     @classmethod
     def is_duplicated(cls, tail, start_time, end_time, exclude_check_assignment=None):
-        # start time check
-
         query = cls.objects.filter(
             Q(tail=tail) &
             (
@@ -94,3 +98,17 @@ class Assignment(models.Model):
             return True
 
         return False
+
+    @classmethod
+    def get_duplicated_assignments(cls, tail, start_time, end_time, exclude_check_assignment=None):
+        query = cls.objects.filter(
+            Q(tail=tail) &
+            (
+                (Q(start_time__lte=start_time) & Q(end_time__gt=start_time)) |
+                (Q(start_time__lt=end_time) & Q(end_time__gte=end_time)) |
+                (Q(start_time__gte=start_time) & Q(end_time__lte=end_time))
+            )
+        )
+        if exclude_check_assignment:
+            query = query.exclude(pk=exclude_check_assignment.id)
+        return query.all()
