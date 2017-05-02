@@ -22,6 +22,7 @@ from common.decorators import *
 def index(request):
     mode = request.GET.get('mode') if request.GET.get('mode') else '1'
     start_tmstmp = request.GET.get('start')
+    end_tmstmp = request.GET.get('end')
 
     tails = Tail.objects.all()
     lines = Line.objects.order_by('name').all()
@@ -30,22 +31,26 @@ def index(request):
     hours_options = { '1': 3, '2': 6, '3': 12, '4': 24, '5': 24, '6': 6, }      # Hours mark count
     units_per_hour_options = { '1': 4, '2': 2, '3': 1, '4': 1, '5': 1, '6': 0.25, }
 
-    if request.GET.get('days'):
-        days = int(request.GET.get('days'))
-        days = 14 if days > 14 else days
-        days = 1 if days < 1 else days
-        if days > 3:
-            mode = '6'
-    else:
-        days = days_options[mode]
+    # if request.GET.get('days'):
+    #     days = int(request.GET.get('days'))
+    #     days = 14 if days > 14 else days
+    #     days = 1 if days < 1 else days
+    #     if days > 3:
+    #         mode = '6'
+    # else:
+    #     days = days_options[mode]
+    days = days_options[mode]
 
     hours = hours_options[mode]
     units_per_hour = units_per_hour_options[mode]
 
     if not start_tmstmp:
-        start_time = datetime_now_utc()
-        start_time = start_time.replace(hour=0, minute=0, second=0, microsecond=0)
-        start_tmstmp = totimestamp(start_time)
+        if end_tmstmp:
+            start_tmstmp = int(end_tmstmp) - 14 * 24 * 3600
+        else:
+            start_time = datetime_now_utc()
+            start_time = start_time.replace(hour=0, minute=0, second=0, microsecond=0)
+            start_tmstmp = totimestamp(start_time)
 
     big_unit_colspan = units_per_hour * hours if units_per_hour > 1 else hours
     big_unit_count = 14 * (24 / hours) if days == 1 else 14
@@ -64,6 +69,9 @@ def index(request):
         'units_per_hour': units_per_hour,
         'mode': mode,
         'start_tmstmp': start_tmstmp,
+        'end_tmstmp': end_tmstmp,
+        'start_param': request.GET.get('start'),
+        'end_param': request.GET.get('end'),
         'prev_start_tmstmp': int(start_tmstmp) - table_length_in_secs,
         'next_start_tmstmp': int(start_tmstmp) + table_length_in_secs,
         'csrf_token': csrf.get_token(request),

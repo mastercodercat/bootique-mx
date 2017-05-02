@@ -61,7 +61,8 @@
                     <form id="date-form" action="{% url 'routeplanning:index' %}" method="GET">
                         <input type="hidden" name="mode" value="{{ mode }}" />
                         <input type="hidden" id="start_tmstmp" name="start" />
-                        <input type="hidden" id="days" name="days" />
+                        <input type="hidden" id="end_tmstmp" name="end" />
+                        <!-- <input type="hidden" id="days" name="days" /> -->
                         <input type="submit" class="btn btn-primary" value="Search" />
                     </form>
                 </div>
@@ -264,8 +265,12 @@
 
         /* Date pickers init */
 
-        $('#start_date').val(formatTo2Digits(startDate.getMonth() + 1) + '/' + formatTo2Digits(startDate.getDate()) + '/' + startDate.getFullYear());
-        $('#end_date').val(formatTo2Digits(endDate.getMonth() + 1) + '/' + formatTo2Digits(endDate.getDate()) + '/' + endDate.getFullYear());
+        {% if start_param %}
+            $('#start_date').val(formatTo2Digits(startDate.getMonth() + 1) + '/' + formatTo2Digits(startDate.getDate()) + '/' + startDate.getFullYear());
+        {% endif %}
+        {% if end_param %}
+            $('#end_date').val(formatTo2Digits(endDate.getMonth() + 1) + '/' + formatTo2Digits(endDate.getDate()) + '/' + endDate.getFullYear());
+        {% endif %}
         $('.input-group.date').datepicker({
             todayBtn: "linked",
             keyboardNavigation: false,
@@ -277,11 +282,20 @@
         /* Date form */
 
         $('#date-form').on('submit', function() {
-            var startDate = new Date($('#start_date').val());
-            $('#start_tmstmp').val(parseInt(startDate.getTime() / 1000));
-            var endDate = new Date($('#end_date').val());
-            var days = parseInt((endDate - startDate) / 86400000) + 1;
-            $('#days').val(days);
+            if ($('#start_date').val()) {
+                var startDate = new Date($('#start_date').val());
+                $('#start_tmstmp').val(parseInt(startDate.getTime() / 1000));
+            } else {
+                $('#start_tmstmp').val('');
+            }
+            if ($('#end_date').val()) {
+                var endDate = new Date($('#end_date').val());
+                $('#end_tmstmp').val(parseInt(endDate.getTime() / 1000));
+            } else {
+                $('#end_tmstmp').val('');
+            }
+            // var days = parseInt((endDate - startDate) / 86400000) + 1;
+            // $('#days').val(days);
         });
 
         /* Set table size */
