@@ -42,6 +42,7 @@ $popover-text-color: #333;
         }
         .axis-cell {
             text-align: left;
+            border-bottom: 1px solid $border-color;
             & > a {
                 padding: 5px 5px 4px 12px;
                 display: block;
@@ -57,7 +58,6 @@ $popover-text-color: #333;
                 }
             }
             &.line {
-                border-top-color: $dark-gray;
                 & > a {
                     background: $dark-gray;
                     color: $label-badget-color !important;
