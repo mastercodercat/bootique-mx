@@ -1,0 +1,197 @@
+{% extends "layout.html" %}
+{% load staticfiles %}
+{% load addclass %}
+{% load permission %}
+{% load compress %}
+
+{% block head_title %}Coming Due {{ tail.number }}{% endblock %}
+
+{% block page_title %}
+    Coming Due {{ tail.number }}
+{% endblock %}
+
+{% block breadcrumb %}
+    <ol class="breadcrumb">
+        <li>
+            <a href="{% url 'routeplanning:index' %}">
+                Route Planning Gantt
+            </a>
+        </li>
+        <li class="active">
+            <strong>Coming Due {{ tail.number }}</strong>
+        </li>
+    </ol>
+{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-lg-6 col-md-12 col-sm-12 col-xs-12">
+            <div class="ibox">
+                <div class="ibox-title">
+                    <h3>Actual Hobbs</h3>
+                </div>
+                <div class="ibox-content">
+                    <form id="actual-hobbs-form" class="form-horizontal" action="{% url 'routeplanning:api_save_hobbs' %}" method="POST">
+                        {% csrf_token %}
+                        <input type="hidden" class="action-after-save" name="action_after_save" value="save" />
+                        <input type="hidden" name="tail_id" value="{{ tail.id }}" />
+                        <input type="hidden" name="type" value="1" />
+                        <input type="hidden" class="hobbs-id" name="hobbs_id" value="" />
+                        <div class="row">
+                            <div class="col-md-6 col-sm-12">
+                                <div class="form-group">
+                                    <label class="col-sm-3 control-label" for="actual-hobbs-date">Date</label>
+                                    <div class="col-sm-9">
+                                        <div class="input-group date">
+                                            <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
+                                            <input type="text" id="actual-hobbs-date" class="form-control hobbs-date" name="date" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 col-sm-12">
+                                <div class="form-group">
+                                    <label class="col-sm-3 control-label" for="actual-hobbs-time">Time</label>
+                                    <div class="col-sm-9">
+                                        <div class="input-group clockpicker" data-autoclose="true">
+                                            <input type="text" id="actual-hobbs-date" class="form-control hobbs-time" name="time" />
+                                            <span class="input-group-addon">
+                                                <span class="fa fa-clock-o"></span>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 col-sm-12">
+                                <div class="form-group">
+                                    <label class="col-sm-3 control-label" for="actual-hobbs-name">Name</label>
+                                    <div class="col-sm-9">
+                                        <input type="text" id="actual-hobbs-name" class="form-control hobbs-name" name="name" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% if request.user|can_write_gantt %}
+                            <div class="text-right m-t-lg">
+                                <button class="btn btn-default save-and-add-another" type="button">Save and add another</button>
+                                <button class="btn btn-default save-and-continue" type="button">Save and continue editing</button>
+                                <button class="btn btn-primary save" type="submit">Save</button>
+                            </div>
+                        {% endif %}
+                    </form>
+                </div>
+            </div>
+            <div class="ibox">
+                <div class="ibox-title">
+                    <h3>Next Due Hobbs</h3>
+                </div>
+                <div class="ibox-content">
+                    <form id="next-due-hobbs-form" class="form-horizontal" action="{% url 'routeplanning:api_save_hobbs' %}" method="POST">
+                        {% csrf_token %}
+                        <input type="hidden" class="action-after-save" name="action_after_save" value="save" />
+                        <input type="hidden" name="tail_id" value="{{ tail.id }}" />
+                        <input type="hidden" name="type" value="2" />
+                        <input type="hidden" class="hobbs-id" name="hobbs_id" value="" />
+                        <div class="row">
+                            <div class="col-md-6 col-sm-12">
+                                <div class="form-group">
+                                    <label class="col-sm-3 control-label" for="next-due-hobbs-date">Date</label>
+                                    <div class="col-sm-9">
+                                        <div class="input-group date">
+                                            <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
+                                            <input type="text" id="next-due-hobbs-date" class="form-control hobbs-date" name="date" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 col-sm-12">
+                                <div class="form-group">
+                                    <label class="col-sm-3 control-label" for="next-due-hobbs-time">Time</label>
+                                    <div class="col-sm-9">
+                                        <div class="input-group clockpicker" data-autoclose="true">
+                                            <input type="text" id="next-due-hobbs-date" class="form-control hobbs-time" name="time" />
+                                            <span class="input-group-addon">
+                                                <span class="fa fa-clock-o"></span>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 col-sm-12">
+                                <div class="form-group">
+                                    <label class="col-sm-3 control-label" for="next-due-hobbs-name">Name</label>
+                                    <div class="col-sm-9">
+                                        <input type="text" id="next-due-hobbs-name" class="form-control hobbs-name" name="name" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% if request.user|can_write_gantt %}
+                            <div class="text-right m-t-lg">
+                                <button class="btn btn-default save-and-add-another" type="button">Save and add another</button>
+                                <button class="btn btn-default save-and-continue" type="button">Save and continue editing</button>
+                                <button class="btn btn-primary" type="submit">Save</button>
+                            </div>
+                        {% endif %}
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-5 col-md-12 col-sm-12 col-xs-12">
+            <div class="ibox">
+                <div class="ibox-title">
+                    <h3>Coming Due List for {{ tail.number }}</h3>
+                </div>
+                <div class="ibox-content">
+                    <div id="coming-due-list">
+                        {% for tail in tails %}
+                            <div class="clearfix m-xs tail-container">
+                                {{ tail.number }}
+                                <div class="pull-right">
+                                    <a href="{% url 'routeplanning:edit_tail' tail_id=tail.id %}" class="btn btn-primary btn-xs"><i class="fa fa-fw fa-edit"></i></a>
+                                    <a class="btn-delete btn btn-danger btn-xs" href="javascript:;" data-delete-url="{% url 'routeplanning:delete_tail' tail_id=tail.id %}"><i class="fa fa-fw fa-trash"></i></a>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block pagejs %}
+{% compress js %}
+    <script src="{% static "js/hobbs.js" %}"></script>
+{% endcompress %}
+<script type="text/javascript">
+    var csrfToken = "{{ csrf_token }}";
+
+    $('.input-group.date').datepicker({
+        todayBtn: "linked",
+        keyboardNavigation: false,
+        forceParse: false,
+        calendarWeeks: true,
+        autoclose: true,
+    });
+
+    $('.clockpicker').clockpicker();
+
+    var comingDueList = new ComingDueList({
+        listSelector: '#coming-due-list',
+    });
+
+    var actualHobbsForm = new HobbsForm({
+        formSelector: '#actual-hobbs-form',
+        urlToRedirectAfterSave: '{% url 'routeplanning:index' %}',
+    });
+
+    var nextDueHobbsForm = new HobbsForm({
+        formSelector: '#next-due-hobbs-form',
+        urlToRedirectAfterSave: '{% url 'routeplanning:index' %}',
+    });
+
+    comingDueList.setActualHobbsForm(actualHobbsForm);
+    comingDueList.setNextDueHobbsForm(nextDueHobbsForm);
+</script>
+{% endblock %}

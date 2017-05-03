@@ -112,3 +112,17 @@ class Assignment(models.Model):
         if exclude_check_assignment:
             query = query.exclude(pk=exclude_check_assignment.id)
         return query.all()
+
+class Hobbs(models.Model):
+    TYPE_CHOICES = (
+        (1, 'Actual'),
+        (2, 'Next Due'),
+    )
+
+    hobbs_time = models.DateTimeField(null=False, blank=False)
+    type = models.IntegerField(default=1, choices=TYPE_CHOICES)
+    name = models.CharField(max_length=30, blank=True)
+    tail = models.ForeignKey(Tail, null=True, blank=False, on_delete=models.PROTECT)
+
+    def __unicode__(self):
+        return 'Hobbs of ' + self.tail.number + ' on date ' + self.hobbs_time.strftime("%F")

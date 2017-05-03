@@ -157,6 +157,18 @@ def delete_tail(request, tail_id=None):
 
 @login_required
 @gantt_writable_required
+def coming_due(request, tail_id=None):
+    tail = Tail.objects.get(pk=tail_id)
+
+    context = {
+        'tail': tail,
+        'tails': [],
+        'csrf_token': csrf.get_token(request),
+    }
+    return render(request, 'comingdue.html', context)
+
+@login_required
+@gantt_writable_required
 def add_line(request):
     form = LineForm(request.POST or None)
     action_after_save = request.POST.get('action_after_save')
@@ -708,4 +720,115 @@ def api_upload_csv(request):
         pass
 
     result['success'] = True
+    return JsonResponse(result, safe=False)
+
+@login_required
+@gantt_writable_required
+def api_resize_assignment(request):
+    result = {
+        'success': False,
+    }
+
+    if request.method != 'POST':
+        result['error'] = 'Only POST method is allowed'
+        return JsonResponse(result, safe=False)
+
+    try:
+        assignment_id = request.POST.get('assignment_id')
+        pos = request.POST.get('position')  # start or end
+        diff_seconds = round(float(request.POST.get('diff_seconds')) / 300.0) * 300.0     # changed time in seconds
+    except:
+        result['error'] = 'Invalid parameters'
+        return JsonResponse(result, safe=False, status=400)
+
+    try:
+        assignment = Assignment.objects.get(pk=assignment_id)
+
+        start_time = assignment.start_time
+        end_time = assignment.end_time
+        if pos == 'end':
+            end_time = end_time + timedelta(seconds=diff_seconds)
+        else:
+            start_time = start_time - timedelta(seconds=diff_seconds)
+
+        if start_time >= end_time:
+            result['error'] = 'Start time cannot be later than end time'
+            return JsonResponse(result, safe=False, status=400)
+
+        if Assignment.is_duplicated(assignment.tail, start_time, end_time, assignment):
+            result['error'] = 'Duplicated assignment'
+            return JsonResponse(result, safe=False)
+
+        assignment.start_time = start_time
+        assignment.end_time = end_time
+        assignment.save()
+    except Exception as e:
+        result['error'] = str(e)
+        return JsonResponse(result, safe=False, status=500)
+
+    result['success'] = True
+    result['start_time'] = assignment.start_time.isoformat()
+    result['end_time'] = assignment.end_time.isoformat()
+    return JsonResponse(result, safe=False)
+
+def str_to_datetime(str):
+    parts = str.split(' ')
+    date_parts = parts[0].split('/')
+    date = int(date_parts[0])
+    month = int(date_parts[1])
+    year = int(date_parts[2])
+    hour = 0
+    minute = 0
+    second = 0
+
+    if len(parts) > 1:
+        time_parts = parts[1].split(':')
+        hour = int(time_parts[0])
+        minute = int(time_parts[1])
+        second = int(time_parts[2])
+
+    return datetime(year, month, date, hour, minute, second, tzinfo=utc)
+
+@login_required
+@gantt_writable_required
+def api_save_hobbs(request):
+    result = {
+        'success': False,
+    }
+
+    if request.method != 'POST':
+        result['error'] = 'Only POST method is allowed'
+        return JsonResponse(result, safe=False)
+
+    try:
+        tail_id = request.POST.get('tail_id')
+        hobbs_id = request.POST.get('id')
+        hobbs_type = request.POST.get('type')
+        hobbs_name = request.POST.get('name')
+        hobbs_datetime = dateutil.parser.parse(request.POST.get('datetime'))
+        if hobbs_id:
+            hobbs = Hobbs.objects.get(pk=hobbs_id)
+        else:
+            hobbs = None
+        if hobbs and hobbs.type != int(hobbs_type):
+            raise Exception('Invalid parameters')
+    except:
+        result['error'] = 'Invalid parameters'
+        return JsonResponse(result, safe=False, status=400)
+
+    try:
+        tail = Tail.objects.get(pk=tail_id)
+        if not hobbs:
+            hobbs = Hobbs()
+            hobbs.type = hobbs_type
+        hobbs.hobbs_time = hobbs_datetime
+        hobbs.name = hobbs_name
+        hobbs.tail = tail
+        hobbs.save()
+    except Exception as e:
+        result['error'] = str(e)
+        return JsonResponse(result, safe=False, status=500)
+
+    result['success'] = True
+    result['hobbs_id'] = hobbs.id
     return JsonResponse(result, safe=False)
