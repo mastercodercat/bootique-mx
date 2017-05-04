@@ -64,9 +64,9 @@
                             </div>
                             <div class="col-md-6 col-sm-12">
                                 <div class="form-group">
-                                    <label class="col-sm-3 control-label" for="actual-hobbs-name">Name</label>
+                                    <label class="col-sm-3 control-label" for="actual-hobbs-value">Hobbs</label>
                                     <div class="col-sm-9">
-                                        <input type="text" id="actual-hobbs-name" class="form-control hobbs-name" name="name" />
+                                        <input type="text" id="actual-hobbs-value" class="form-control hobbs-value" name="value" />
                                     </div>
                                 </div>
                             </div>
@@ -119,9 +119,9 @@
                             </div>
                             <div class="col-md-6 col-sm-12">
                                 <div class="form-group">
-                                    <label class="col-sm-3 control-label" for="next-due-hobbs-name">Name</label>
+                                    <label class="col-sm-3 control-label" for="next-due-hobbs-value">Hobbs</label>
                                     <div class="col-sm-9">
-                                        <input type="text" id="next-due-hobbs-name" class="form-control hobbs-name" name="name" />
+                                        <input type="text" id="next-due-hobbs-value" class="form-control hobbs-value" name="value" />
                                     </div>
                                 </div>
                             </div>
@@ -179,6 +179,7 @@
 
     var comingDueList = new ComingDueList({
         listSelector: '#coming-due-list',
+        comingDueListAPI: '{% url 'routeplanning:api_coming_due_list' %}',
     });
 
     var actualHobbsForm = new HobbsForm({

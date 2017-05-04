@@ -69,7 +69,7 @@ HobbsForm.prototype.submitForm = function() {
     for (var field of data) {
         tmpData[field.name] = field.value;
     }
-    if (!tmpData['name'] || !tmpData['date'] || !tmpData['time']) {
+    if (!tmpData['value'] || !tmpData['date'] || !tmpData['time']) {
         alert('Please enter all fields.');
         return;
     }
@@ -78,7 +78,7 @@ HobbsForm.prototype.submitForm = function() {
     formData['id'] = tmpData['hobbs_id'];
     formData['tail_id'] = tmpData['tail_id'];
     formData['type'] = tmpData['type'];
-    formData['name'] = tmpData['name'];
+    formData['value'] = tmpData['value'];
     var datetime = new Date(tmpData['date']);
     var timeparts = tmpData['time'].split(':');
     datetime.setHours(parseInt(timeparts[0]));
@@ -102,7 +102,7 @@ HobbsForm.prototype.submitForm = function() {
                 self.$form.find('.hobbs-id').val('');
                 self.$form.find('.hobbs-date').val('');
                 self.$form.find('.hobbs-time').val('');
-                self.$form.find('.hobbs-name').val('');
+                self.$form.find('.hobbs-value').val('');
             }
         }
     });

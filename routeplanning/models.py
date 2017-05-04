@@ -121,8 +121,22 @@ class Hobbs(models.Model):
 
     hobbs_time = models.DateTimeField(null=False, blank=False)
     type = models.IntegerField(default=1, choices=TYPE_CHOICES)
-    name = models.CharField(max_length=30, blank=True)
+    hobbs = models.IntegerField(default=0, blank=False)
     tail = models.ForeignKey(Tail, null=True, blank=False, on_delete=models.PROTECT)
 
     def __unicode__(self):
         return 'Hobbs of ' + self.tail.number + ' on date ' + self.hobbs_time.strftime("%F")
+
+    @classmethod
+    def get_hobbs(cls, start_time, end_time):
+        return cls.objects.filter(hobbs_time__gte=start_time) \
+            .filter(hobbs_time__lt=end_time) \
+            .order_by('hobbs_time') \
+            .all()
+
+    @classmethod
+    def get_last_entered_hobbs(cls, type, datetime):
+        return cls.objects.filter(hobbs_time__lt=datetime) \
+            .filter(type=type) \
+            .order_by('-hobbs_time') \
+            .first()

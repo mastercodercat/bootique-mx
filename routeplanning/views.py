@@ -804,7 +804,7 @@ def api_save_hobbs(request):
         tail_id = request.POST.get('tail_id')
         hobbs_id = request.POST.get('id')
         hobbs_type = request.POST.get('type')
-        hobbs_name = request.POST.get('name')
+        hobbs_value = request.POST.get('hobbs')
         hobbs_datetime = dateutil.parser.parse(request.POST.get('datetime'))
         if hobbs_id:
             hobbs = Hobbs.objects.get(pk=hobbs_id)
@@ -822,7 +822,7 @@ def api_save_hobbs(request):
             hobbs = Hobbs()
             hobbs.type = hobbs_type
         hobbs.hobbs_time = hobbs_datetime
-        hobbs.name = hobbs_name
+        hobbs.hobbs = hobbs_value
         hobbs.tail = tail
         hobbs.save()
     except Exception as e:
@@ -831,4 +831,61 @@ def api_save_hobbs(request):
 
     result['success'] = True
     result['hobbs_id'] = hobbs.id
+    return JsonResponse(result, safe=False)
+
+@login_required
+@gantt_readable_required
+def api_coming_due_list(request):
+    result = {
+        'success': False,
+    }
+
+    if request.method != 'POST':
+        result['error'] = 'Only POST method is allowed'
+        return JsonResponse(result, safe=False)
+
+    try:
+        start_time = dateutil.parser.parse(request.POST.get('start'))
+        days = int(request.POST.get('days'))
+    except:
+        result['error'] = 'Invalid parameters'
+        return JsonResponse(result, safe=False, status=400)
+
+    try:
+        hobbs_list = []
+
+        projected_actual_hobbs = 0
+        projected_next_due_hobbs = 0
+
+        last_entered_actual_hobbs = Hobbs.get_last_entered_hobbs(1, start_time)
+        if last_entered_actual_hobbs:
+            projected_actual_hobbs = last_entered_actual_hobbs.hobbs
+
+        last_entered_next_due_hobbs = Hobbs.get_last_entered_hobbs(2, start_time)
+        if last_entered_next_due_hobbs:
+            projected_next_due_hobbs = last_entered_next_due_hobbs.hobbs
+
+        for _ in xrange(days):
+            end_time = start_time + timedelta(days=1)
+
+            hobbs_set = Hobbs.get_hobbs(start_time, end_time)
+            for hobbs in hobbs_set:
+                if hobbs.type == 1:
+                    projected_actual_hobbs = hobbs.hobbs
+                elif hobbs.type == 2:
+                    projected_next_due_hobbs = hobbs.hobbs
+                if projected_actual_hobbs > 0:
+                    hobbs_list.append({
+                        'day': start_time,
+                        'actual': projected_actual_hobbs,
+                        'next_due': projected_next_due_hobbs,
+                    })
+
+            start_time = end_time
+    except Exception as e:
+        result['error'] = str(e)
+        return JsonResponse(result, safe=False, status=500)
+
+    result['success'] = True
+    result['hobbs_list'] = hobbs_list
     return JsonResponse(result, safe=False)
