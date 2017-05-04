@@ -791,6 +791,22 @@ def str_to_datetime(str):
 
 @login_required
 @gantt_writable_required
+def api_get_hobbs(request, hobbs_id=None):
+    result = {
+        'success': False,
+    }
+
+    try:
+        hobbs = Hobbs.objects.filter(pk=hobbs_id)
+    except:
+        return JsonResponse(result, safe=False, status=400)
+
+    result['success'] = True
+    result['hobbs'] = hobbs
+    return JsonResponse(result, safe=False)
+
+@login_required
+@gantt_writable_required
 def api_save_hobbs(request):
     result = {
         'success': False,
@@ -862,8 +878,10 @@ def api_coming_due_list(request):
             projected_actual_hobbs = last_entered_actual_hobbs.hobbs
 
         last_entered_next_due_hobbs = Hobbs.get_last_entered_hobbs(2, start_time)
+        projected_next_due_hobbs_id = 0
         if last_entered_next_due_hobbs:
             projected_next_due_hobbs = last_entered_next_due_hobbs.hobbs
+            projected_next_due_hobbs_id = last_entered_next_due_hobbs.id
 
         for _ in xrange(days):
             end_time = start_time + timedelta(days=1)
@@ -872,14 +890,16 @@ def api_coming_due_list(request):
             for hobbs in hobbs_set:
                 if hobbs.type == 1:
                     projected_actual_hobbs = hobbs.hobbs
-                elif hobbs.type == 2:
-                    projected_next_due_hobbs = hobbs.hobbs
-                if projected_actual_hobbs > 0:
                     hobbs_list.append({
                         'day': start_time,
                         'actual': projected_actual_hobbs,
                         'next_due': projected_next_due_hobbs,
+                        'actual_hobbs_id': hobbs.id,
+                        'next_due_hobbs_id': projected_next_due_hobbs_id,
                     })
+                elif hobbs.type == 2:
+                    projected_next_due_hobbs = hobbs.hobbs
+                    projected_next_due_hobbs_id = hobbs.id
 
             start_time = end_time
     except Exception as e:

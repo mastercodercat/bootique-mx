@@ -143,16 +143,15 @@
                     <h3>Coming Due List for {{ tail.number }}</h3>
                 </div>
                 <div class="ibox-content">
-                    <div id="coming-due-list">
-                        {% for tail in tails %}
-                            <div class="clearfix m-xs tail-container">
-                                {{ tail.number }}
-                                <div class="pull-right">
-                                    <a href="{% url 'routeplanning:edit_tail' tail_id=tail.id %}" class="btn btn-primary btn-xs"><i class="fa fa-fw fa-edit"></i></a>
-                                    <a class="btn-delete btn btn-danger btn-xs" href="javascript:;" data-delete-url="{% url 'routeplanning:delete_tail' tail_id=tail.id %}"><i class="fa fa-fw fa-trash"></i></a>
-                                </div>
+                    <div class="row">
+                        <div class="col-sm-8 m-b">
+                            <div class="input-group date">
+                                <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
+                                <input type="text" id="coming-due-list-date" class="form-control" />
                             </div>
-                        {% endfor %}
+                        </div>
+                    </div>
+                    <table id="coming-due-list" style="width: 100%;">
                     </div>
                 </div>
             </div>
@@ -180,19 +179,32 @@
     var comingDueList = new ComingDueList({
         listSelector: '#coming-due-list',
         comingDueListAPI: '{% url 'routeplanning:api_coming_due_list' %}',
+        apiCSRFToken: csrfToken,
+        {% if request.user|can_write_gantt %}
+            writeable: true,
+        {% else %}
+            writeable: false,
+        {% endif %}
     });
 
     var actualHobbsForm = new HobbsForm({
         formSelector: '#actual-hobbs-form',
         urlToRedirectAfterSave: '{% url 'routeplanning:index' %}',
+        comingDueList: comingDueList,
     });
 
     var nextDueHobbsForm = new HobbsForm({
         formSelector: '#next-due-hobbs-form',
         urlToRedirectAfterSave: '{% url 'routeplanning:index' %}',
+        comingDueList: comingDueList,
     });
 
     comingDueList.setActualHobbsForm(actualHobbsForm);
     comingDueList.setNextDueHobbsForm(nextDueHobbsForm);
+
+    $('#coming-due-list-date').on('change', function() {
+        var date = new Date($(this).datepicker('getDate'));
+        comingDueList.changeAnchorDate(date);
+    });
 </script>
 {% endblock %}

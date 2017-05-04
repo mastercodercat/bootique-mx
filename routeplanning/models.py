@@ -121,7 +121,7 @@ class Hobbs(models.Model):
 
     hobbs_time = models.DateTimeField(null=False, blank=False)
     type = models.IntegerField(default=1, choices=TYPE_CHOICES)
-    hobbs = models.IntegerField(default=0, blank=False)
+    hobbs = models.FloatField(default=0.0, blank=False)
     tail = models.ForeignKey(Tail, null=True, blank=False, on_delete=models.PROTECT)
 
     def __unicode__(self):
