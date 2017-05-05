@@ -647,7 +647,6 @@ def api_upload_csv(request):
     with open(filepath) as csvfile:
         csvreader = csv.reader(csvfile, delimiter=',', quotechar='"')
         now = datetime_now_utc()
-        import pdb; pdb.set_trace()
 
         for row in csvreader:
             try:
