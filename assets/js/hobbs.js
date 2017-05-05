@@ -9,15 +9,16 @@ function ComingDueList(options) {
     this.$table = $(options.listSelector);
     this.anchorDate = new Date();
 
+    this.init();
     this.refresh();
 }
 
-ComingDueList.prototype.setActualHobbsForm = function($form) {
-    this.$actualHobbsForm = $form;
+ComingDueList.prototype.setActualHobbsForm = function(form) {
+    this.actualHobbsForm = form;
 }
 
-ComingDueList.prototype.setNextDueHobbsForm = function($form) {
-    this.$nextDueHobbsForm = $form;
+ComingDueList.prototype.setNextDueHobbsForm = function(form) {
+    this.nextDueHobbsForm = form;
 }
 
 ComingDueList.prototype.formatHobbsDate = function(date) {
@@ -46,6 +47,7 @@ ComingDueList.prototype.refresh = function() {
 
     var data = {
         csrfmiddlewaretoken: self.options.apiCSRFToken,
+        tail_id: self.options.tailId,
         start: self.firstWeekDay().toISOString(),
         days: 7,
     };
@@ -60,6 +62,7 @@ ComingDueList.prototype.refresh = function() {
 
             var $thead = $('<thead />');
             $thead.append('<th><strong>Date</strong></th>');
+            $thead.append('<th><strong>Flight</strong></th>');
             $thead.append('<th><strong>Hobbs<br>EOD</strong></th>');
             $thead.append('<th><strong>Next Due<br>Hobbs</strong></th>');
             $thead.append('<th><strong>Hobbs<br>Left</strong></th>');
@@ -77,10 +80,11 @@ ComingDueList.prototype.refresh = function() {
                 } else {
                     $tr.append('<td></td>');
                 }
-                $tr.append('<td>' + hobbs.actual + '</td>');
-                $tr.append('<td>' + hobbs.next_due + '</td>');
-                $tr.append('<td>' + (hobbs.next_due - hobbs.actual) + '</td>');
-                if (self.options.writeable) {
+                $tr.append('<td>' + hobbs.flight + '</td>');
+                $tr.append('<td>' + hobbs.actual.toFixed(1) + '</td>');
+                $tr.append('<td>' + hobbs.next_due.toFixed(1) + '</td>');
+                $tr.append('<td>' + (hobbs.next_due - hobbs.actual).toFixed(1) + '</td>');
+                if (self.options.writeable && hobbs.actual_hobbs_id) {
                     $tr.append('<td style="padding-bottom: 3px;">' +
                         '<a href="javascript:;" class="btn btn-primary btn-xs btn-edit-hobbs"><i class="fa fa-fw fa-edit"></i></a> ' +
                         '<a href="javascript:;" class="btn-delete-flight btn btn-danger btn-xs btn-delete-hobbs"><i class="fa fa-fw fa-trash"></i></a>' +
@@ -88,6 +92,45 @@ ComingDueList.prototype.refresh = function() {
                 }
                 self.$table.append($tr);
             }
+        }
+    });
+}
+
+ComingDueList.prototype.init = function() {
+    var self = this;
+
+    self.$table.on('click', '.btn-edit-hobbs', function(e) {
+        e.preventDefault();
+        var $tr = $(this).closest('tr');
+        if (self.actualHobbsForm) {
+            var actualHobbsId = $tr.data('actual-hobbs-id');
+            self.actualHobbsForm.load(actualHobbsId);
+        }
+        if (self.nextDueHobbsForm) {
+            var actualHobbsId = $tr.data('next-due-hobbs-id');
+            self.nextDueHobbsForm.load(actualHobbsId);
+        }
+    });
+
+    self.$table.on('click', '.btn-delete-hobbs', function(e) {
+        e.preventDefault();
+        var $tr = $(this).closest('tr');
+        var actualHobbsId = $tr.data('actual-hobbs-id');
+        if (actualHobbsId) {
+            var apiUrl = self.options.deleteActualHobbsAPI.replace('0', actualHobbsId);
+
+            $.ajax({
+                method: 'POST',
+                url: apiUrl,
+                data: {
+                    csrfmiddlewaretoken: self.options.apiCSRFToken,
+                },
+            })
+            .then(function(response) {
+                if (response.success) {
+                    self.refresh();
+                }
+            });
         }
     });
 }
@@ -129,6 +172,32 @@ HobbsForm.prototype.bindEventHandlers = function() {
     });
 }
 
+HobbsForm.prototype.load = function(hobbsId) {
+    var self = this;
+
+    var apiUrl = self.options.loadHobbsAPI.replace('0', hobbsId);
+
+    $.ajax({
+        method: 'GET',
+        url: apiUrl,
+    })
+    .then(function(response) {
+        if (response.success) {
+            var hobbsArray = JSON.parse(response.hobbs);
+            if (!hobbsArray.length) {
+                return;
+            }
+            var hobbs = hobbsArray[0];
+            self.$form.find('.hobbs-id').val(hobbs.pk);
+            var hobbsDate = new Date(hobbs.fields.hobbs_time);
+            self.$form.find('.hobbs-date').closest('.input-group.date').datepicker('update', hobbsDate);
+            self.$form.find('.hobbs-time').val(hobbsDate.getHours() + ':' + hobbsDate.getMinutes());
+            self.$form.find('.hobbs-value').val(hobbs.fields.hobbs);
+            self.$form.find('.hobbs-flight').val(hobbs.fields.flight);
+        }
+    });
+}
+
 HobbsForm.prototype.submitForm = function() {
     var self = this;
     var data = self.$form.serializeArray();
@@ -148,6 +217,9 @@ HobbsForm.prototype.submitForm = function() {
     formData['tail_id'] = tmpData['tail_id'];
     formData['type'] = tmpData['type'];
     formData['hobbs'] = tmpData['value'];
+    if (tmpData['flight_id']) {
+        formData['flight_id'] = tmpData['flight_id']
+    }
     var datetime = new Date(tmpData['date']);
     var timeparts = tmpData['time'].split(':');
     datetime.setHours(parseInt(timeparts[0]));
@@ -172,12 +244,10 @@ HobbsForm.prototype.submitForm = function() {
                 self.$form.find('.hobbs-date').val('');
                 self.$form.find('.hobbs-time').val('');
                 self.$form.find('.hobbs-value').val('');
+                self.$form.find('.hobbs-flight').val('');
             }
             if (actionAfterSave != 'save' && self.options.comingDueList) {
-                var secondsDiff = (datetime - self.options.comingDueList.firstWeekDay()) / 1000;
-                if (secondsDiff >= 0 && secondsDiff < 7 * 24 * 3600) {
-                    self.options.comingDueList.refresh();
-                }
+                self.options.comingDueList.refresh();
             }
         }
     });

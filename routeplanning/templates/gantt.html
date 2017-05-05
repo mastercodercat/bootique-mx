@@ -132,7 +132,7 @@
                 </div>
                 {% for tail in tails %}
                     <div class="axis-cell tail">
-                        <a href="{% url 'routeplanning:edit_tail' tail_id=tail.id %}">{{ tail.number }}</a>
+                        <a href="{% url 'routeplanning:coming_due' tail_id=tail.id %}">{{ tail.number }}</a>
                     </div>
                 {% endfor %}
                 <div class="label-cell">

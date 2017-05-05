@@ -1,8 +1,8 @@
 {% extends "layout.html" %}
 {% load staticfiles %}
-{% load addclass %}
 {% load permission %}
 {% load compress %}
+{% load tz %}
 
 {% block head_title %}Coming Due {{ tail.number }}{% endblock %}
 
@@ -67,6 +67,22 @@
                                     <label class="col-sm-3 control-label" for="actual-hobbs-value">Hobbs</label>
                                     <div class="col-sm-9">
                                         <input type="text" id="actual-hobbs-value" class="form-control hobbs-value" name="value" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 col-sm-12">
+                                <div class="form-group">
+                                    <label class="col-sm-3 control-label" for="actual-hobbs-flight">Flight</label>
+                                    <div class="col-sm-9">
+                                        <select id="actual-hobbs-flight" class="form-control hobbs-flight" name="flight_id">
+                                            {% for flight in flights %}
+                                                <option value="{{ flight.id }}">
+                                                    {{ flight.number }}: {{ flight.origin }}-{{ flight.destination }} at {{ flight.departure_datetime|localtime|date:"n/d/Y H:i:s" }}
+                                                </option>
+                                            {% endfor %}
+                                        </select>
                                     </div>
                                 </div>
                             </div>
@@ -177,8 +193,10 @@
     $('.clockpicker').clockpicker();
 
     var comingDueList = new ComingDueList({
+        tailId: {{ tail.id }},
         listSelector: '#coming-due-list',
         comingDueListAPI: '{% url 'routeplanning:api_coming_due_list' %}',
+        deleteActualHobbsAPI: '{% url 'routeplanning:api_delete_actual_hobbs' hobbs_id=0 %}',
         apiCSRFToken: csrfToken,
         {% if request.user|can_write_gantt %}
             writeable: true,
@@ -189,12 +207,14 @@
 
     var actualHobbsForm = new HobbsForm({
         formSelector: '#actual-hobbs-form',
+        loadHobbsAPI: '{% url 'routeplanning:api_get_hobbs' hobbs_id=0 %}',
         urlToRedirectAfterSave: '{% url 'routeplanning:index' %}',
         comingDueList: comingDueList,
     });
 
     var nextDueHobbsForm = new HobbsForm({
         formSelector: '#next-due-hobbs-form',
+        loadHobbsAPI: '{% url 'routeplanning:api_get_hobbs' hobbs_id=0 %}',
         urlToRedirectAfterSave: '{% url 'routeplanning:index' %}',
         comingDueList: comingDueList,
     });

@@ -1,7 +1,7 @@
 from __future__ import unicode_literals
 
 from django.db import models
-from django.db.models import Q
+from django.db.models import Q, Sum
 
 
 class Tail(models.Model):
@@ -122,21 +122,34 @@ class Hobbs(models.Model):
     hobbs_time = models.DateTimeField(null=False, blank=False)
     type = models.IntegerField(default=1, choices=TYPE_CHOICES)
     hobbs = models.FloatField(default=0.0, blank=False)
+
     tail = models.ForeignKey(Tail, null=True, blank=False, on_delete=models.PROTECT)
+    flight = models.OneToOneField(Flight, null=True, blank=False, on_delete=models.PROTECT)
 
     def __unicode__(self):
         return 'Hobbs of ' + self.tail.number + ' on date ' + self.hobbs_time.strftime("%F")
 
     @classmethod
-    def get_hobbs(cls, start_time, end_time):
+    def get_hobbs(cls, tail, start_time, end_time):
         return cls.objects.filter(hobbs_time__gte=start_time) \
             .filter(hobbs_time__lt=end_time) \
+            .filter(tail=tail) \
             .order_by('hobbs_time') \
+            .select_related('flight') \
             .all()
 
     @classmethod
-    def get_last_entered_hobbs(cls, type, datetime):
+    def get_projected_actual_value(cls, tail, datetime):
+        result = cls.objects.filter(hobbs_time__lt=datetime) \
+            .filter(tail=tail) \
+            .filter(type=1) \
+            .aggregate(Sum('hobbs'))
+        return result['hobbs__sum'] if result else 0
+
+    @classmethod
+    def get_projected_next_due(cls, tail, datetime):
         return cls.objects.filter(hobbs_time__lt=datetime) \
-            .filter(type=type) \
+            .filter(tail=tail) \
+            .filter(type=2) \
             .order_by('-hobbs_time') \
             .first()

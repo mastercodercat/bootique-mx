@@ -4,6 +4,7 @@ import dateutil.parser
 import random
 import os
 import csv
+from django.core import serializers
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, JsonResponse, HttpResponseForbidden
@@ -159,9 +160,13 @@ def delete_tail(request, tail_id=None):
 @gantt_writable_required
 def coming_due(request, tail_id=None):
     tail = Tail.objects.get(pk=tail_id)
+    flights = []
+    for assignment in tail.assignment_set.order_by('start_time').all():
+        flights.append(assignment.flight)
 
     context = {
         'tail': tail,
+        'flights': flights,
         'tails': [],
         'csrf_token': csrf.get_token(request),
     }
@@ -790,7 +795,7 @@ def str_to_datetime(str):
     return datetime(year, month, date, hour, minute, second, tzinfo=utc)
 
 @login_required
-@gantt_writable_required
+@gantt_readable_required
 def api_get_hobbs(request, hobbs_id=None):
     result = {
         'success': False,
@@ -802,7 +807,26 @@ def api_get_hobbs(request, hobbs_id=None):
         return JsonResponse(result, safe=False, status=400)
 
     result['success'] = True
-    result['hobbs'] = hobbs
+    result['hobbs'] = serializers.serialize("json", hobbs)
+    return JsonResponse(result, safe=False)
+
+@login_required
+@gantt_writable_required
+def api_delete_actual_hobbs(request, hobbs_id=None):
+    result = {
+        'success': False,
+    }
+
+    if request.method != 'POST':
+        result['error'] = 'Only POST method is allowed'
+        return JsonResponse(result, safe=False)
+
+    try:
+        Hobbs.objects.filter(pk=hobbs_id).filter(type=1).delete()
+    except:
+        return JsonResponse(result, safe=False, status=400)
+
+    result['success'] = True
     return JsonResponse(result, safe=False)
 
 @login_required
@@ -822,10 +846,16 @@ def api_save_hobbs(request):
         hobbs_type = request.POST.get('type')
         hobbs_value = request.POST.get('hobbs')
         hobbs_datetime = dateutil.parser.parse(request.POST.get('datetime'))
+
+        flight_id = request.POST.get('flight_id')
+        if hobbs_type == '1' and not flight_id:
+            raise Exception('Invalid parameters')
+
         if hobbs_id:
             hobbs = Hobbs.objects.get(pk=hobbs_id)
         else:
             hobbs = None
+
         if hobbs and hobbs.type != int(hobbs_type):
             raise Exception('Invalid parameters')
     except:
@@ -834,12 +864,18 @@ def api_save_hobbs(request):
 
     try:
         tail = Tail.objects.get(pk=tail_id)
+        if flight_id:
+            flight = Flight.objects.get(pk=flight_id)
+        else:
+            flight = None
         if not hobbs:
             hobbs = Hobbs()
             hobbs.type = hobbs_type
         hobbs.hobbs_time = hobbs_datetime
         hobbs.hobbs = hobbs_value
         hobbs.tail = tail
+        if flight:
+            hobbs.flight = flight
         hobbs.save()
     except Exception as e:
         result['error'] = str(e)
@@ -861,6 +897,7 @@ def api_coming_due_list(request):
         return JsonResponse(result, safe=False)
 
     try:
+        tail_id = request.POST.get('tail_id')
         start_time = dateutil.parser.parse(request.POST.get('start'))
         days = int(request.POST.get('days'))
     except:
@@ -868,40 +905,51 @@ def api_coming_due_list(request):
         return JsonResponse(result, safe=False, status=400)
 
     try:
+        tail = Tail.objects.get(pk=tail_id)
+
         hobbs_list = []
 
-        projected_actual_hobbs = 0
-        projected_next_due_hobbs = 0
-
-        last_entered_actual_hobbs = Hobbs.get_last_entered_hobbs(1, start_time)
-        if last_entered_actual_hobbs:
-            projected_actual_hobbs = last_entered_actual_hobbs.hobbs
-
-        last_entered_next_due_hobbs = Hobbs.get_last_entered_hobbs(2, start_time)
+        projected_actual_hobbs_value = Hobbs.get_projected_actual_value(tail, start_time)
+        projected_next_due_hobbs = Hobbs.get_projected_next_due(tail, start_time)
+        projected_next_due_hobbs_value = 0
         projected_next_due_hobbs_id = 0
-        if last_entered_next_due_hobbs:
-            projected_next_due_hobbs = last_entered_next_due_hobbs.hobbs
-            projected_next_due_hobbs_id = last_entered_next_due_hobbs.id
+        if projected_next_due_hobbs:
+            projected_next_due_hobbs_value = projected_next_due_hobbs.hobbs
+            projected_next_due_hobbs_id = projected_next_due_hobbs.id
 
         for _ in xrange(days):
             end_time = start_time + timedelta(days=1)
 
-            hobbs_set = Hobbs.get_hobbs(start_time, end_time)
+            hobbs_set = Hobbs.get_hobbs(tail, start_time, end_time)
             for hobbs in hobbs_set:
                 if hobbs.type == 1:
-                    projected_actual_hobbs = hobbs.hobbs
+                    projected_actual_hobbs_value += hobbs.hobbs
                     hobbs_list.append({
                         'day': start_time,
-                        'actual': projected_actual_hobbs,
-                        'next_due': projected_next_due_hobbs,
+                        'actual': projected_actual_hobbs_value,
+                        'next_due': projected_next_due_hobbs_value,
                         'actual_hobbs_id': hobbs.id,
                         'next_due_hobbs_id': projected_next_due_hobbs_id,
+                        'flight_id': hobbs.flight.id,
+                        'flight': str(hobbs.flight),
                     })
                 elif hobbs.type == 2:
-                    projected_next_due_hobbs = hobbs.hobbs
+                    projected_next_due_hobbs_value = hobbs.hobbs
                     projected_next_due_hobbs_id = hobbs.id
 
             start_time = end_time
+
+        if len(hobbs_list) == 0:
+            hobbs_list.append({
+                'day': '',
+                'actual': projected_actual_hobbs_value,
+                'next_due': projected_next_due_hobbs_value,
+                'actual_hobbs_id': 0,
+                'next_due_hobbs_id': projected_next_due_hobbs_id,
+                'flight_id': 0,
+                'flight': '',
+            })
+
     except Exception as e:
         result['error'] = str(e)
         return JsonResponse(result, safe=False, status=500)
