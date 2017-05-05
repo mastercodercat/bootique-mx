@@ -664,31 +664,25 @@ def api_upload_csv(request):
                 closest_past_date = Flight.objects \
                     .filter(number=flight_number, departure_datetime__lte=departure_datetime) \
                     .aggregate(closest_past_date=Max('departure_datetime'))['closest_past_date']
-
-                flight_just_before = Flight.objects.select_related('assignment').get(
-                    number=flight_number,
-                    departure_datetime=closest_past_date
-                )
-
-                if closest_past_date.year == departure_datetime.year \
+                if closest_past_date and closest_past_date.year == departure_datetime.year \
                     and closest_past_date.month == departure_datetime.month \
                     and closest_past_date.day == departure_datetime.day:
+                    flight_to_update = Flight.objects.select_related('assignment').get(
+                        number=flight_number,
+                        departure_datetime=closest_past_date
+                    )
 
-                    flight_to_update = flight_just_before
-                else:
+                if not flight_to_update:
                     closest_next_date = Flight.objects \
                         .filter(number=flight_number, departure_datetime__gt=departure_datetime) \
                         .aggregate(closest_next_date=Max('departure_datetime'))['closest_next_date']
-
-                    flight_just_after = Flight.objects.select_related('assignment').get(
-                        number=flight_number,
-                        departure_datetime=closest_next_date
-                    )
-
-                    if closest_next_date.year == departure_datetime.year \
+                    if closest_next_date and closest_next_date.year == departure_datetime.year \
                         and closest_next_date.month == departure_datetime.month \
                         and closest_next_date.day == departure_datetime.day:
-                        flight_to_update = flight_just_after
+                        flight_to_update = Flight.objects.select_related('assignment').get(
+                            number=flight_number,
+                            departure_datetime=closest_next_date
+                        )
 
                 if flight_to_update:
                     flight_to_update.departure_datetime = departure_datetime
