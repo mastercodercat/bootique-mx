@@ -11,6 +11,7 @@ from django.http import HttpResponse, JsonResponse, HttpResponseForbidden
 from django.middleware import csrf
 from django.db.models import Q, ProtectedError, Max
 from django.conf import settings
+from django.urls import reverse
 
 from routeplanning.models import *
 from routeplanning.forms import *
@@ -280,15 +281,79 @@ def delete_line(request, line_id=None):
     return JsonResponse(result, safe=False)
 
 @login_required
-@gantt_writable_required
+@gantt_readable_required
 def flights(request):
-    flights = Flight.objects.all()
+    flights = []
 
     context = {
         'flights': flights,
         'csrf_token': csrf.get_token(request),
     }
     return render(request, 'flights.html', context)
+
+@login_required
+@gantt_readable_required
+def api_flight_get_page(request):
+    result = {
+        'success': False,
+        'draw': 1,
+        'recordsTotal': 0,
+        'recordsFiltered': 0,
+        'data': [],
+    }
+
+    order_columns = ('id', 'number', 'origin', 'destination', 'departure_datetime', 'arrival_datetime')
+
+    try:
+        start = int(request.POST.get('start'))
+        length = int(request.POST.get('length'))
+        order_dir = request.POST.get('order[0][dir]')
+        order_column_index = int(request.POST.get('order[0][column]'))
+        search = request.POST.get('search[value]')
+
+        order_column = order_columns[order_column_index]
+        if order_dir == 'desc':
+            order_column = '-' + order_column
+
+        flights = Flight.objects.all()
+        if search:
+            flights = flights.filter(
+                Q(number__contains=search) |
+                Q(origin__icontains=search) |
+                Q(destination__icontains=search) |
+                Q(departure_datetime__contains=search) |
+                Q(arrival_datetime__contains=search)
+            )
+        flights = flights.order_by(order_column)
+        flights_page = flights[start:(start + length)]
+        data = []
+        for flight in flights_page:
+            flight_edit_link = reverse('routeplanning:edit_flight', kwargs={ 'flight_id': flight.id })
+            buttons = '<a href="' + flight_edit_link + '" class="btn btn-primary btn-xs"><i class="fa fa-fw fa-edit"></i></a> '
+            buttons += '<a href="javascript:void();" class="btn-delete-flight btn btn-danger btn-xs"><i class="fa fa-fw fa-trash"></i></a>'
+            data.append((
+                flight.id,
+                flight.number,
+                flight.origin,
+                flight.destination,
+                totimestamp(flight.departure_datetime),
+                totimestamp(flight.arrival_datetime),
+                buttons,
+            ))
+        result['data'] = data
+        result['recordsFiltered'] = flights.count()
+        result['recordsTotal'] = Flight.objects.count()
+
+        draw = request.session.get('flights_dt_page_draw', 1)
+        draw = draw + 1
+        result['draw'] = draw
+        request.session['flights_dt_page_draw'] = draw
+    except Exception as e:
+        result['error'] = str(e)
+        return JsonResponse(result, safe=False, status=500)
+
+    result['success'] = True
+    return JsonResponse(result, safe=False)
 
 @login_required
 @gantt_writable_required

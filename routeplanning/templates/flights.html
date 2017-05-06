@@ -39,22 +39,15 @@
             <div class="m-b">
                 <a href="{% url 'routeplanning:add_flight' %}" class="btn btn-w-m btn-primary">Create Flight</a>
                 <a href="javascript:void();" class="btn btn-w-m btn-primary" data-toggle="modal" data-target="#upload-csv-modal">Upload CSV File</a>
-                <!-- <div class="bulk-action-form-wrapper">
-                    <form id="action-form" class="bulk-action-form form-horizontal">
-                        <label class="control-label">Bulk Change</label>
-                        <select class="form-control" id="select-action" name="action">
-                            <option value="edit">Edit</option>
-                            <option value="delete">Delete</option>
-                        </select>
-                        <button class="btn btn-primary" type="submit">Go</button>
-                    </form>
-                </div> -->
             </div>
             <div class="clearfix">
                 <table id="flights-table" class="datatable table table-stripped toggle-arrow-tiny"
                     data-name="flights_table"
                     data-default-sort-column="1"
-                    data-selectable="true">
+                    data-selectable="true"
+                    data-timestamp-columns="4,5"
+                    data-ajax-url="{% url 'routeplanning:api_flight_get_page' %}"
+                    data-ajax-csrf-token="{{ csrf_token }}">
                     <thead>
                         <tr>
                             <th data-sortable="false"><input type="checkbox" class="select-all"></th>
@@ -66,22 +59,6 @@
                             <th data-sortable="false"></th>
                         </tr>
                     </thead>
-                    <tbody>
-                        {% for flight in flights %}
-                            <tr>
-                                <td>{{ flight.id }}</td>
-                                <td>{{ flight.number }}</td>
-                                <td>{{ flight.origin }}</td>
-                                <td>{{ flight.destination }}</td>
-                                <td>{{ flight.departure_datetime }}</td>
-                                <td>{{ flight.arrival_datetime }}</td>
-                                <td>
-                                    <a href="{% url 'routeplanning:edit_flight' flight_id=flight.id %}" class="btn btn-primary btn-xs"><i class="fa fa-fw fa-edit"></i></a>
-                                    <a href="javascript:void();" class="btn-delete-flight btn btn-danger btn-xs"><i class="fa fa-fw fa-trash"></i></a>
-                                </td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
                 </table>
             </div>
         </div>
@@ -94,42 +71,19 @@
                     <h5 class="modal-title">Upload File</h5>
                 </div>
                 <div class="modal-body">
-                    <!-- <div class="row">
-                        <div class="col-md-5"> -->
-                            <h4>Upload File</h4>
-                            <div class="fileinput fileinput-new input-group" data-provides="fileinput">
-                                <div class="form-control" data-trigger="fileinput">
-                                    <i class="glyphicon glyphicon-file fileinput-exists"></i>
-                                    <span class="fileinput-filename"></span>
-                                </div>
-                                <span class="input-group-addon btn btn-default btn-file">
-                                    <span class="fileinput-new">Select file</span>
-                                    <span class="fileinput-exists">Change</span>
-                                    <input type="file" id="csvfile" />
-                                </span>
-                                <a href="#" class="input-group-addon btn btn-default fileinput-exists" data-dismiss="fileinput">Remove</a>
-                            </div>
-                        <!-- </div>
-                        <div class="col-md-7">
-                            <h4>What date and time will this new schedule begin? (UTC time)</h4>
-                            <div class="row">
-                                <div class="col-md-6 col-sm-12">
-                                    <div class="input-group date">
-                                        <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
-                                        <input type="text" id="start_date" class="form-control">
-                                    </div>
-                                </div>
-                                <div class="col-md-6 col-sm-12">
-                                    <div class="input-group clockpicker" data-autoclose="true">
-                                        <input type="text" class="form-control" value="00:00" >
-                                        <span class="input-group-addon">
-                                            <span class="fa fa-clock-o"></span>
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
+                    <h4>Upload File</h4>
+                    <div class="fileinput fileinput-new input-group" data-provides="fileinput">
+                        <div class="form-control" data-trigger="fileinput">
+                            <i class="glyphicon glyphicon-file fileinput-exists"></i>
+                            <span class="fileinput-filename"></span>
                         </div>
-                    </div> -->
+                        <span class="input-group-addon btn btn-default btn-file">
+                            <span class="fileinput-new">Select file</span>
+                            <span class="fileinput-exists">Change</span>
+                            <input type="file" id="csvfile" />
+                        </span>
+                        <a href="#" class="input-group-addon btn btn-default fileinput-exists" data-dismiss="fileinput">Remove</a>
+                    </div>
                     <div class="upload-progress m-t hidden">
                         <h5 class="status">Uploading...</h5>
                         <div class="progress progress-bar-default">
@@ -164,31 +118,7 @@
 
         $('.clockpicker').clockpicker();
 
-        // $('#action-form').on('submit', function(e) {
-        //     e.preventDefault();
-        //     var flightsTable = window.datatables.get('flights_table');
-        //     var selectedData = flightsTable.rows('.selected').data();
-        //     if (selectedData.length > 0) {
-        //         var ids = '';
-        //         for(var i = 0; i < selectedData.length - 1; i++) {
-        //             ids += selectedData[i][0] + ',';
-        //         }
-        //         ids += selectedData[selectedData.length - 1][0];
-
-        //         var action = $('#select-action').val();
-        //         if (action == 'edit') {
-        //             var $form = $('#edit-form');
-        //             $form.find('.flight-ids').val(ids);
-        //             $form.submit();
-        //         } else if (action == 'delete') {
-        //             var $form = $('#delete-form');
-        //             $form.find('.flight-ids').val(ids);
-        //             $form.submit();
-        //         }
-        //     }
-        // });
-
-        $('.btn-delete-flight').on('click', function(e) {
+        $('#flights-table').on('click', '.btn-delete-flight', function(e) {
             e.stopPropagation();
             var $row = $(this).closest('tr');
             var flightsTable = window.datatables.get('flights_table');

@@ -27,6 +27,7 @@ urlpatterns = [
     url(r'^api/assignment/remove/*$', views.api_remove_assignment, name='api_remove_assignment'),
     url(r'^api/assignment/resize/*$', views.api_resize_assignment, name='api_resize_assignment'),
     url(r'^api/flight/uploadcsv/*$', views.api_upload_csv, name='api_upload_csv'),
+    url(r'^api/flight/getpage/*$', views.api_flight_get_page, name='api_flight_get_page'),
     url(r'^api/hobbs/(?P<hobbs_id>[0-9]+)/*$', views.api_get_hobbs, name='api_get_hobbs'),
     url(r'^api/hobbs/(?P<hobbs_id>[0-9]+)/remove/*$', views.api_delete_actual_hobbs, name='api_delete_actual_hobbs'),
 

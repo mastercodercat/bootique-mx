@@ -4,6 +4,10 @@ window.datatables = {
 
     _datatables: {},
 
+    formatTo2Digits: function(val) {
+        return val < 10 ? '0' + val : val;
+    },
+
     /*
      * Automatic setup of datatables in the page
      *
@@ -17,11 +21,12 @@ window.datatables = {
     setup: function () {
         var $datatable = $('.datatable');
         var name = $datatable.data('name');
+        var self = this;
 
         var initSortColumn = $datatable.data('default-sort-column') ? parseInt($datatable.data('default-sort-column')) : 0;
 
         var options = {
-            responsive: true,
+            responsive: false,
             lengthMenu: [10, 25, 50, 100],
             aaSorting: [[initSortColumn, 'asc']],
         };
@@ -41,8 +46,27 @@ window.datatables = {
             };
         }
 
+        if ($datatable.data('timestamp-columns')) {
+            var cols = $datatable.data('timestamp-columns').split(',');
+            options['columnDefs'] = options['columnDefs'] ? options['columnDefs'] : [];
+            for(var col of cols) {
+                options['columnDefs'].push({
+                    render: function(data, type, full, meta) {
+                        var date = new Date(data * 1000);
+                        return (date.getMonth() + 1) + '/' +
+                            date.getDate() + '/' +
+                            date.getFullYear() + ' ' +
+                            self.formatTo2Digits(date.getHours()) + ':' +
+                            self.formatTo2Digits(date.getMinutes());
+                    },
+                    targets: parseInt(col),
+                });
+            }
+        }
+
         if ($datatable.data('ajax-url')) {
             var ajaxUrl = $datatable.data('ajax-url');
+            var csrfToken = $datatable.data('ajax-csrf-token');
             options = Object.assign(options, {
                 processing: true,
                 serverSide: true,
@@ -50,6 +74,11 @@ window.datatables = {
                     url: ajaxUrl,
                     type: "POST",
                     data: function(_data) {
+                        if (csrfToken) {
+                            _data = Object.assign(_data, {
+                                csrfmiddlewaretoken: csrfToken,
+                            });
+                        }
                         if (window.datatableFilter) {
                             _data = Object.assign(_data, window.datatableFilter);
                         }
