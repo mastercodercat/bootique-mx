@@ -403,28 +403,30 @@ def delete_flights(request):
 def api_load_data(request):
     start_time = datetime.fromtimestamp(int(request.GET.get('startdate')), tz=utc)
     end_time = datetime.fromtimestamp(int(request.GET.get('enddate')), tz=utc)
+    assignments_only = request.GET.get('assignments_only')
 
     # Data for template flights on Lines
 
     template_data = []
-    lines = Line.objects.all()
-    for line in lines:
-        flights = line.flights.filter(
-            (Q(departure_datetime__gte=start_time) & Q(departure_datetime__lte=end_time)) |
-            (Q(arrival_datetime__gte=start_time) & Q(arrival_datetime__lte=end_time)) |
-            (Q(departure_datetime__lte=start_time) & Q(arrival_datetime__gte=end_time))
-        )
-        for flight in flights:
-            flight_data = {
-                'id': flight.id,
-                'number': flight.number,
-                'origin': flight.origin,
-                'destination': flight.destination,
-                'departure_datetime': flight.departure_datetime,
-                'arrival_datetime': flight.arrival_datetime,
-                'line_id': line.id,
-            }
-            template_data.append(flight_data)
+    if assignments_only != 'true':
+        lines = Line.objects.all()
+        for line in lines:
+            flights = line.flights.filter(
+                (Q(departure_datetime__gte=start_time) & Q(departure_datetime__lte=end_time)) |
+                (Q(arrival_datetime__gte=start_time) & Q(arrival_datetime__lte=end_time)) |
+                (Q(departure_datetime__lte=start_time) & Q(arrival_datetime__gte=end_time))
+            )
+            for flight in flights:
+                flight_data = {
+                    'id': flight.id,
+                    'number': flight.number,
+                    'origin': flight.origin,
+                    'destination': flight.destination,
+                    'departure_datetime': flight.departure_datetime,
+                    'arrival_datetime': flight.arrival_datetime,
+                    'line_id': line.id,
+                }
+                template_data.append(flight_data)
 
     # Data for assignments on Tails
 
@@ -570,6 +572,8 @@ def api_remove_assignment(request):
 
     for assignment_id in assignment_ids:
         try:
+            if assignment.flight:
+                assignment.flight.hobbs.delete()
             assignment = Assignment.objects.get(pk=assignment_id)
             assignment.delete()
             result['removed_assignments'].append(assignment_id)
@@ -626,6 +630,12 @@ def api_move_assignment(request):
                     assignment.start_time = start_time
                     assignment.end_time = end_time
                 assignment.save()
+                try:
+                    assignment.flight.hobbs.tail = tail
+                    assignment.flight.hobbs.save()
+                except:
+                    pass
+
                 result['assignments'][assignment.id] = {
                     'start_time': assignment.start_time.isoformat(),
                     'end_time': assignment.end_time.isoformat(),

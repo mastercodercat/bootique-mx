@@ -114,6 +114,12 @@ RoutePlanningGantt.prototype.setFlightHobbsInfo = function($bar, actualHobbs, ne
     $bar.find('.projected-hobbs').html(actualHobbs.toFixed(1));
     $bar.find('.next-due-hobbs').html(nextDueHobbs.toFixed(1));
     $bar.find('.hobbs-left').html(hobbsLeft.toFixed(1));
+    $bar.removeClass('hobbs-green')
+        .removeClass('hobbs-red')
+        .removeClass('hobbs-yellow');
+    $bar.find('.field-hobbs-left').removeClass('hobbs-green')
+        .removeClass('hobbs-red')
+        .removeClass('hobbs-yellow');
     if (hobbsLeft >= 15) {
         $bar.addClass('hobbs-green');
         $bar.find('.field-hobbs-left').addClass('hobbs-green');
@@ -441,16 +447,17 @@ RoutePlanningGantt.prototype.initInteractables = function() {
                     self.moveAssignment(assignmentData)
                         .then(function(response) {
                             if (response.success) {
-                                var assignments = response.assignments; /* { assignment_id: { start_time, end_time }, ... } */
-                                for (assignmentId in assignments) {
-                                    if (assignmentId in elementMoveData) {
-                                        self.placeStatusBar(
-                                            elementMoveData[assignmentId].bar,
-                                            elementMoveData[assignmentId].row,
-                                            assignments[assignmentId]
-                                        );
-                                    }
-                                }
+                                self.loadData(true);
+                                // var assignments = response.assignments; /* { assignment_id: { start_time, end_time }, ... } */
+                                // for (assignmentId in assignments) {
+                                //     if (assignmentId in elementMoveData) {
+                                //         // self.placeStatusBar(
+                                //         //     elementMoveData[assignmentId].bar,
+                                //         //     elementMoveData[assignmentId].row,
+                                //         //     assignments[assignmentId]
+                                //         // );
+                                //     }
+                                // }
                             }
                         });
                 } else if ($bar.data('status') > 0) {
@@ -563,12 +570,19 @@ RoutePlanningGantt.prototype.initInteractables = function() {
                     self.moveAssignment(assignmentData)
                         .then(function(elementMoveData, response) {
                             if (response.success) {
-                                var assignments = response.assignments; /* { assignment_id: { start_time, end_time }, ... } */
-                                elementMoveData.forEach(function(data) {
-                                    if (data.assignmentId in assignments) {
-                                        data.bar.appendTo(data.row);
-                                    }
-                                });
+                                self.loadData(true);
+                                // var assignments = response.assignments; /* { assignment_id: { start_time, end_time }, ... } */
+                                // elementMoveData.forEach(function(data) {
+                                //     if (data.assignmentId in assignments) {
+                                //         data.bar.appendTo(data.row);
+                                //         /////
+                                //         // self.setFlightHobbsInfo(
+                                //         //     data.bar,
+                                //         //     assignments[data.assignmentId].actual_hobbs,
+                                //         //     assignments[data.assignmentId].next_due_hobbs
+                                //         // );
+                                //     }
+                                // });
                             }
                         }.bind(this, elementMoveData));
                 }
@@ -739,7 +753,7 @@ RoutePlanningGantt.prototype.checkIfAssigned = function(flightId) {
     return false;
 }
 
-RoutePlanningGantt.prototype.loadData = function() {
+RoutePlanningGantt.prototype.loadData = function(assignmentsOnly = false) {
     var self = this;
 
     var startDate = this.options.startDate;
@@ -750,25 +764,32 @@ RoutePlanningGantt.prototype.loadData = function() {
         data: {
             startdate: startDate.getTime() / 1000,
             enddate: endDate.getTime() / 1000,
+            assignments_only: assignmentsOnly,
         },
     })
     .then(function(data) {
-        data.templates.forEach(function(template) {
-            if (!(template.number in self.templates)) {
-                self.templates[template.number] = []
-            }
-            self.templates[template.number].push(template);
-        });
+        if (!assignmentsOnly) {
+            self.options.flightTemplateTable.find('.bar').remove();
+            self.templates = {};
+            data.templates.forEach(function(template) {
+                if (!(template.number in self.templates)) {
+                    self.templates[template.number] = []
+                }
+                self.templates[template.number].push(template);
+            });
+            self.refreshTemplateTable();
+        }
 
+        self.options.flightAssignmentTable.find('.bar').remove();
+        self.assignments = [];
         data.assignments.forEach(function(assignment) {
             self.assignments.push(assignment);
         });
-
-        self.refreshTemplateTable();
         self.refreshAssignmentTable();
 
         var $cover = $(self.options.tablesWrapperSelector);
         $cover.removeClass('loading');
+        $('.status-bars').removeClass('disabled');
     });
 }
 
@@ -822,7 +843,9 @@ RoutePlanningGantt.prototype.refreshAssignmentTable = function() {
             if (assignment.flight_id) {
                 $bar.attr('data-flight-id', assignment.flight_id);
             }
-            self.setFlightHobbsInfo($bar, assignment.actual_hobbs, assignment.next_due_hobbs);
+            if (assignment.status == 1) {
+                self.setFlightHobbsInfo($bar, assignment.actual_hobbs, assignment.next_due_hobbs);
+            }
         }
     }
 }
