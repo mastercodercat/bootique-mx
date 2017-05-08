@@ -144,12 +144,21 @@ class Hobbs(models.Model):
             .filter(tail=tail) \
             .filter(type=1) \
             .aggregate(Sum('hobbs'))
-        return result['hobbs__sum'] if result else 0
+        return result['hobbs__sum'] if result and result['hobbs__sum'] else 0
 
     @classmethod
-    def get_projected_next_due(cls, tail, datetime):
+    def get_next_due(cls, tail, datetime):
         return cls.objects.filter(hobbs_time__lt=datetime) \
             .filter(tail=tail) \
             .filter(type=2) \
             .order_by('-hobbs_time') \
             .first()
+
+    @classmethod
+    def get_next_due_value(cls, tail, datetime):
+        next_due_hobbs = cls.objects.filter(hobbs_time__lt=datetime) \
+            .filter(tail=tail) \
+            .filter(type=2) \
+            .order_by('-hobbs_time') \
+            .first()
+        return next_due_hobbs.hobbs if next_due_hobbs else 0

@@ -109,6 +109,23 @@ RoutePlanningGantt.prototype.placeBar = function($row, pos, length, object) {
     return $bar;
 }
 
+RoutePlanningGantt.prototype.setFlightHobbsInfo = function($bar, actualHobbs, nextDueHobbs) {
+    var hobbsLeft = nextDueHobbs - actualHobbs;
+    $bar.find('.projected-hobbs').html(actualHobbs.toFixed(1));
+    $bar.find('.next-due-hobbs').html(nextDueHobbs.toFixed(1));
+    $bar.find('.hobbs-left').html(hobbsLeft.toFixed(1));
+    if (hobbsLeft >= 15) {
+        $bar.addClass('hobbs-green');
+        $bar.find('.field-hobbs-left').addClass('hobbs-green');
+    } else if (hobbsLeft >= 8) {
+        $bar.addClass('hobbs-yellow');
+        $bar.find('.field-hobbs-left').addClass('hobbs-yellow');
+    } else {
+        $bar.addClass('hobbs-red');
+        $bar.find('.field-hobbs-left').addClass('hobbs-red');
+    }
+}
+
 RoutePlanningGantt.prototype.setStatusBarInfo = function($bar, object) {
     var $info = $bar.find('.info');
     date = new Date(object.start_time);
@@ -529,9 +546,13 @@ RoutePlanningGantt.prototype.initInteractables = function() {
                                 var assignedFlights = response.assigned_flights; /* { flightId: assignmentId, ... } */
                                 elementMoveData.forEach(function(data) {
                                     if (data.flightId in assignedFlights) {
+                                        var assignedFlightData = assignedFlights[data.flightId];
+
                                         var $newBar = data.bar.clone().attr('enabled', true);
-                                        $newBar.attr('data-assignment-id', assignedFlights[data.flightId])
+                                        $newBar.attr('data-assignment-id', assignedFlightData.assignment_id)
                                             .appendTo(data.row);
+                                        self.setFlightHobbsInfo($newBar, assignedFlightData.actual_hobbs, assignedFlightData.next_due_hobbs);
+
                                         data.bar.addClass('assigned')
                                             .attr('enabled', false);
                                     }
@@ -801,6 +822,7 @@ RoutePlanningGantt.prototype.refreshAssignmentTable = function() {
             if (assignment.flight_id) {
                 $bar.attr('data-flight-id', assignment.flight_id);
             }
+            self.setFlightHobbsInfo($bar, assignment.actual_hobbs, assignment.next_due_hobbs);
         }
     }
 }

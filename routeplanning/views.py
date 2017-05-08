@@ -404,6 +404,8 @@ def api_load_data(request):
     start_time = datetime.fromtimestamp(int(request.GET.get('startdate')), tz=utc)
     end_time = datetime.fromtimestamp(int(request.GET.get('enddate')), tz=utc)
 
+    # Data for template flights on Lines
+
     template_data = []
     lines = Line.objects.all()
     for line in lines:
@@ -424,12 +426,15 @@ def api_load_data(request):
             }
             template_data.append(flight_data)
 
+    # Data for assignments on Tails
+
     assignments_data = []
     assignments = Assignment.objects.select_related('flight', 'tail').filter(
         (Q(start_time__gte=start_time) & Q(start_time__lte=end_time)) |
         (Q(end_time__gte=start_time) & Q(end_time__lte=end_time)) |
         (Q(start_time__lte=start_time) & Q(end_time__gte=end_time))
-    )
+    ).order_by('start_time')
+
     for assignment in assignments:
         assignment_data = {
             'id': assignment.id,
@@ -438,7 +443,10 @@ def api_load_data(request):
             'end_time': assignment.end_time,
             'status': assignment.status,
             'tail': assignment.tail.number,
+            'actual_hobbs': Hobbs.get_projected_actual_value(assignment.tail, assignment.end_time),
+            'next_due_hobbs': Hobbs.get_next_due_value(assignment.tail, assignment.end_time),
         }
+
         if assignment.flight:
             assignment_data['origin'] = assignment.flight.origin
             assignment_data['destination'] = assignment.flight.destination
@@ -488,7 +496,11 @@ def api_assign_flight(request):
                     tail=tail
                 )
                 assignment.save()
-                result['assigned_flights'][flight_id] = assignment.id
+                result['assigned_flights'][flight_id] = {
+                    'assignment_id': assignment.id,
+                    'actual_hobbs': Hobbs.get_projected_actual_value(tail, assignment.end_time),
+                    'next_due_hobbs': Hobbs.get_next_due_value(tail, assignment.end_time),
+                }
         except Exception as e:
             print(str(e))
 
@@ -968,7 +980,7 @@ def api_coming_due_list(request):
         hobbs_list = []
 
         projected_actual_hobbs_value = Hobbs.get_projected_actual_value(tail, start_time)
-        projected_next_due_hobbs = Hobbs.get_projected_next_due(tail, start_time)
+        projected_next_due_hobbs = Hobbs.get_next_due(tail, start_time)
         projected_next_due_hobbs_value = 0
         projected_next_due_hobbs_id = 0
         if projected_next_due_hobbs:

@@ -114,6 +114,12 @@
                 <div class="field">Destination: <span class="dest"></span></div>
                 <div class="field">Sched. Depature Time: <span class="departure"></span></div>
                 <div class="field">Sched. Arrival Time: <span class="arrival"></span></div>
+                <div class="assignment-only">
+                    <hr />
+                    <div class="field">Projected Hobbs: <span class="projected-hobbs"></span></div>
+                    <div class="field">Next Due Hobbs: <span class="next-due-hobbs"></span></div>
+                    <div class="field field-hobbs-left">Hobbs Left: <span class="hobbs-left"></span></div>
+                </div>
             </div>
         </div>
         <!-- Shadow prototype -->
@@ -334,7 +340,6 @@
             if (Math.abs(timeWindowCount - 1 - pos) <= 0.005) {
                 window.location.href = $(this).data('next-period-href');
             } else {
-                console.log(pos, Math.round(pos));
                 if (pos == Math.round(pos)) {
                     pos++;
                 } else {

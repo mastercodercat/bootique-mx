@@ -11,6 +11,16 @@ $popover-text-color: #333;
     }
 }
 
+@mixin striped-background($color1, $color2, $barsize) {
+    background: repeating-linear-gradient(
+        45deg,
+        $color1,
+        $color1 $barsize,
+        $color2 $barsize - 1,
+        $color2 $barsize * 2 - 1
+    );
+}
+
 .gantt {
     min-width: 600px;
     overflow: visible;
@@ -127,7 +137,6 @@ $popover-text-color: #333;
         z-index: 1;
         &.assigned {
             background-color: #999;
-            pointer-events: none;
         }
         &.selected {
             &:before {
@@ -144,6 +153,15 @@ $popover-text-color: #333;
         }
         &.drag-clone {
             opacity: 0.8;
+        }
+        &.hobbs-green {
+            @include striped-background(#B6D325, #C4DC48, 13px);
+        }
+        &.hobbs-yellow {
+            @include striped-background(#F9C666, #FAD186, 13px);
+        }
+        &.hobbs-red {
+            @include striped-background(#F4949C, #F37983, 13px);
         }
         .flight-info-table-wrapper {
             position: relative;
@@ -184,7 +202,7 @@ $popover-text-color: #333;
         .bar-popover {
             position: absolute;
             display: none;
-            padding: 6px 12px;
+            padding: 6px 18px;
             left: 30%;
             margin-left: -15px;
             bottom: 100%;
@@ -206,6 +224,33 @@ $popover-text-color: #333;
             }
             .field {
                 white-space: nowrap;
+            }
+            .field-hobbs-left {
+                padding: 5px 8px;
+                border-radius: 3px;
+                margin: 4px -8px;
+                font-weight: 700;
+                span {
+                    font-size: 1.4em;
+                    margin-left: 5px;
+                    vertical-align: -5%;
+                }
+                &.hobbs-green {
+                    @include striped-background(#B6D325, #C4DC48, 13px);
+                }
+                &.hobbs-yellow {
+                    @include striped-background(#F9C666, #FAD186, 13px);
+                }
+                &.hobbs-red {
+                    @include striped-background(#F4949C, #F37983, 13px);
+                }
+            }
+            hr {
+                margin: 7px 0;
+                border-top-color: #bbb;
+            }
+            .assignment-only {
+                display: none;
             }
         }
         &:not(.dragging):hover .bar-popover {
@@ -436,4 +481,10 @@ $popover-text-color: #333;
 
 .clockpicker-popover {
     z-index: 2050 !important;
+}
+
+#flight-assignment-table {
+    .assignment-only {
+        display: block;
+    }
 }
