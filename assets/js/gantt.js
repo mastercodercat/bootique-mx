@@ -632,14 +632,15 @@ RoutePlanningGantt.prototype.initInteractables = function() {
                 self.removeAssignment(assignmentIdsToRemove)
                     .then(function(elementRemoveData, response) {
                         if (response.success) {
-                            var removedAssignments = response.removed_assignments; /* [ assignment_ids ] */
-                            elementRemoveData.forEach(function(data) {
-                                if (removedAssignments.indexOf(data.assignmentId) >= 0) {
-                                    var flightId = data.bar.data('flight-id');
-                                    data.bar.remove();
-                                    self.options.flightTemplateTable.find('.bar.assigned[data-flight-id="' + flightId + '"]').removeClass('assigned');
-                                }
-                            });
+                            self.loadData(true);
+                            // var removedAssignments = response.removed_assignments; /* [ assignment_ids ] */
+                            // elementRemoveData.forEach(function(data) {
+                            //     if (removedAssignments.indexOf(data.assignmentId) >= 0) {
+                            //         var flightId = data.bar.data('flight-id');
+                            //         data.bar.remove();
+                            //         self.options.flightTemplateTable.find('.bar.assigned[data-flight-id="' + flightId + '"]').removeClass('assigned');
+                            //     }
+                            // });
                         }
                     }.bind(this, elementRemoveData));
             }

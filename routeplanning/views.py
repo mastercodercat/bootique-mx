@@ -572,9 +572,11 @@ def api_remove_assignment(request):
 
     for assignment_id in assignment_ids:
         try:
-            if assignment.flight:
-                assignment.flight.hobbs.delete()
             assignment = Assignment.objects.get(pk=assignment_id)
+            try:
+                assignment.flight.hobbs.delete()
+            except:
+                pass
             assignment.delete()
             result['removed_assignments'].append(assignment_id)
         except Exception as e:
