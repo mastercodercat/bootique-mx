@@ -317,11 +317,13 @@
 
         /* Prev, next time window buttons */
 
+        var offset = 0.01;
+
         $('#btn-prev-time-window').on('click', function() {
             var $cover = $('.cover');
             var timeWindowWidth = $cover.width() - 90;
             var pos = $cover.scrollLeft() / timeWindowWidth;
-            if (pos <= 0.005) {
+            if (pos <= offset) {
                 window.location.href = $(this).data('prev-period-href');
             } else {
                 if (pos == Math.round(pos)) {
@@ -337,7 +339,7 @@
             var $cover = $('.cover');
             var timeWindowWidth = $cover.width() - 90;
             var pos = $cover.scrollLeft() / timeWindowWidth;
-            if (Math.abs(timeWindowCount - 1 - pos) <= 0.005) {
+            if (Math.abs(timeWindowCount - 1 - pos) <= offset) {
                 window.location.href = $(this).data('next-period-href');
             } else {
                 if (pos == Math.round(pos)) {
