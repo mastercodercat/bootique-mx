@@ -550,16 +550,10 @@ RoutePlanningGantt.prototype.initInteractables = function() {
                     self.assignFlight(assignmentData)
                         .then(function(elementMoveData, response) {
                             if (response.success) {
+                                self.loadData(true);
                                 var assignedFlights = response.assigned_flights; /* { flightId: assignmentId, ... } */
                                 elementMoveData.forEach(function(data) {
                                     if (data.flightId in assignedFlights) {
-                                        var assignedFlightData = assignedFlights[data.flightId];
-
-                                        var $newBar = data.bar.clone().attr('enabled', true);
-                                        $newBar.attr('data-assignment-id', assignedFlightData.assignment_id)
-                                            .appendTo(data.row);
-                                        self.setFlightHobbsInfo($newBar, assignedFlightData.actual_hobbs, assignedFlightData.next_due_hobbs);
-
                                         data.bar.addClass('assigned')
                                             .attr('enabled', false);
                                     }
@@ -633,14 +627,13 @@ RoutePlanningGantt.prototype.initInteractables = function() {
                     .then(function(elementRemoveData, response) {
                         if (response.success) {
                             self.loadData(true);
-                            // var removedAssignments = response.removed_assignments; /* [ assignment_ids ] */
-                            // elementRemoveData.forEach(function(data) {
-                            //     if (removedAssignments.indexOf(data.assignmentId) >= 0) {
-                            //         var flightId = data.bar.data('flight-id');
-                            //         data.bar.remove();
-                            //         self.options.flightTemplateTable.find('.bar.assigned[data-flight-id="' + flightId + '"]').removeClass('assigned');
-                            //     }
-                            // });
+                            var removedAssignments = response.removed_assignments; /* [ assignment_ids ] */
+                            elementRemoveData.forEach(function(data) {
+                                if (removedAssignments.indexOf(data.assignmentId) >= 0) {
+                                    var flightId = data.bar.data('flight-id');
+                                    self.options.flightTemplateTable.find('.bar.assigned[data-flight-id="' + flightId + '"]').removeClass('assigned');
+                                }
+                            });
                         }
                     }.bind(this, elementRemoveData));
             }

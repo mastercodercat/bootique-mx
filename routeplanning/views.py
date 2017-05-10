@@ -498,6 +498,16 @@ def api_assign_flight(request):
                     tail=tail
                 )
                 assignment.save()
+
+                hobbs = Hobbs(
+                    type=1,
+                    hobbs_time=flight.departure_datetime,
+                    hobbs=flight.length / 3600,
+                    flight=flight,
+                    tail=tail
+                )
+                hobbs.save()
+
                 result['assigned_flights'][flight_id] = {
                     'assignment_id': assignment.id,
                     'actual_hobbs': Hobbs.get_projected_actual_value(tail, assignment.end_time),
