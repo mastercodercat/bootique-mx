@@ -762,6 +762,11 @@ RoutePlanningGantt.prototype.loadData = function(assignmentsOnly = false) {
         },
     })
     .then(function(data) {
+        self.assignments = [];
+        data.assignments.forEach(function(assignment) {
+            self.assignments.push(assignment);
+        });
+
         if (!assignmentsOnly) {
             self.options.flightTemplateTable.find('.bar').remove();
             self.templates = {};
@@ -775,10 +780,6 @@ RoutePlanningGantt.prototype.loadData = function(assignmentsOnly = false) {
         }
 
         self.options.flightAssignmentTable.find('.bar').remove();
-        self.assignments = [];
-        data.assignments.forEach(function(assignment) {
-            self.assignments.push(assignment);
-        });
         self.refreshAssignmentTable();
 
         var $cover = $(self.options.tablesWrapperSelector);
