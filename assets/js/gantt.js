@@ -121,9 +121,11 @@ RoutePlanningGantt.prototype.setFlightHobbsInfo = function($bar, actualHobbs, ne
         .removeClass('hobbs-red')
         .removeClass('hobbs-yellow');
     if (hobbsLeft >= 15) {
+        // use normal background color
+    } else if (hobbsLeft >= 8) {
         $bar.addClass('hobbs-green');
         $bar.find('.field-hobbs-left').addClass('hobbs-green');
-    } else if (hobbsLeft >= 8) {
+    } else if (hobbsLeft >= 0) {
         $bar.addClass('hobbs-yellow');
         $bar.find('.field-hobbs-left').addClass('hobbs-yellow');
     } else {
