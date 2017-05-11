@@ -324,8 +324,8 @@
             if (pos <= offset) {
                 window.location.href = $(this).data('prev-period-href');
             } else {
-                if (pos == Math.round(pos)) {
-                    pos--;
+                if (Math.abs(pos - Math.round(pos)) <= offset) {
+                    pos = Math.floor(pos) - 1;
                 } else {
                     pos = Math.floor(pos);
                 }
@@ -340,8 +340,8 @@
             if (Math.abs(timeWindowCount - 1 - pos) <= offset) {
                 window.location.href = $(this).data('next-period-href');
             } else {
-                if (pos == Math.round(pos)) {
-                    pos++;
+                if (Math.abs(pos - Math.round(pos)) <= offset) {
+                    pos = Math.ceil(pos) + 1;
                 } else {
                     pos = Math.ceil(pos);
                 }
