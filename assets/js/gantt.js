@@ -95,6 +95,21 @@ RoutePlanningGantt.prototype.placeBar = function($row, pos, length, object) {
         $bar.find('.arrival').html(formatDate(date));
 
         $row.append($bar);
+    } else if (object.status == 3) {
+        $bar = $('.status-bar.status-prototype.unscheduled-flight').clone().removeClass('status-prototype');
+        $bar
+            .css({
+                width: unitWidth * length + '%',
+                left: pos + '%',
+            });
+        $bar.find('.org').html(object.origin);
+        $bar.find('.dest').html(object.destination);
+        date = new Date(object.departure_datetime);
+        $bar.find('.departure').html(formatDate(date));
+        date = new Date(object.arrival_datetime);
+        $bar.find('.arrival').html(formatDate(date));
+
+        $row.append($bar);
     } else {
         var status = object.status;
         $bar = $('.status-prototype[data-status="' + status + '"]').clone().removeClass('status-prototype');
@@ -467,6 +482,7 @@ RoutePlanningGantt.prototype.initInteractables = function() {
                     var x = event.dragEvent.clientX - $row.offset().left;
                     var diffSeconds = ganttLengthSeconds / $row.width() * x;
                     diffSeconds = Math.round(diffSeconds / 300) * 300;
+                    var status = $bar.data('status');
                     var tailNumber = $row.data('tail-number');
                     var startTime = new Date(self.options.startDate);
                     startTime.setSeconds(startTime.getSeconds() + diffSeconds);
@@ -474,17 +490,28 @@ RoutePlanningGantt.prototype.initInteractables = function() {
                     startTime.setSeconds(0);
                     var endTime = new Date(startTime.getTime() + 3600000);
 
-                    self.assignStatus(tailNumber, $bar.data('status'), startTime, endTime)
-                        .then(function(response) {
-                            if (response.success) {
-                                var $newBar = $bar.clone();
-                                self.placeStatusBar($newBar, $row, {
-                                    start_time: startTime,
-                                    end_time: endTime,
-                                });
-                                $newBar.attr('data-assignment-id', response.id);
-                            }
-                        });
+                    if (status == 3) {
+                        var data = {
+                            tailNumber: tailNumber,
+                            status: status,
+                            startTime: startTime.getTime(),
+                            endTime: endTime.getTime(),
+                        };
+                        self.options.unscheduledFlightForm.find('form').attr('data-assignment', JSON.stringify(data));
+                        self.options.unscheduledFlightForm.modal();
+                    } else {
+                        self.assignStatus(tailNumber, status, startTime, endTime)
+                            .then(function(response) {
+                                if (response.success) {
+                                    var $newBar = $bar.clone();
+                                    self.placeStatusBar($newBar, $row, {
+                                        start_time: startTime,
+                                        end_time: endTime,
+                                    });
+                                    $newBar.attr('data-assignment-id', response.id);
+                                }
+                            });
+                    }
                 }
 
             } else {
@@ -571,7 +598,7 @@ RoutePlanningGantt.prototype.initInteractables = function() {
                                 // elementMoveData.forEach(function(data) {
                                 //     if (data.assignmentId in assignments) {
                                 //         data.bar.appendTo(data.row);
-                                //         /////
+
                                 //         // self.setFlightHobbsInfo(
                                 //         //     data.bar,
                                 //         //     assignments[data.assignmentId].actual_hobbs,
@@ -737,6 +764,42 @@ RoutePlanningGantt.prototype.initInteractables = function() {
             $selectionMarker.removeClass('active');
         }
     });
+
+    // Unscheduled Flight modal
+
+    self.options.unscheduledFlightForm.on('click', '.btn-save-unscheduled-flight', function() {
+        var $form = self.options.unscheduledFlightForm.find('form');
+        var data = $form.data('assignment');
+        if (!data.tailNumber || !data.status || !data.startTime || !data.endTime) {
+            console.error('Unexpected error: no data about unscheduled flight found');
+            return;
+        }
+
+        var origin = $form.find('.unscheduled-flight-origin').val();
+        var destination = $form.find('.unscheduled-flight-destination').val();
+        if (!origin || !destination) {
+            alert('Please enter origin and destination of the unscheduled flight');
+            return;
+        }
+
+        self.assignStatus(data.tailNumber, data.status,
+            new Date(data.startTime), new Date(data.endTime),
+            origin, destination)
+            .then(function(response) {
+                if (response.success) {
+                    self.loadData(true);
+                    // var $newBar = $bar.clone();
+                    // self.placeStatusBar($newBar, $row, {
+                    //     start_time: startTime,
+                    //     end_time: endTime,
+                    // });
+                    // $newBar.attr('data-assignment-id', response.id);
+                }
+            });
+
+        self.options.unscheduledFlightForm.modal('hide');
+        alert('yeah!');///
+    });
 }
 
 RoutePlanningGantt.prototype.checkIfAssigned = function(flightId) {
@@ -840,7 +903,7 @@ RoutePlanningGantt.prototype.refreshAssignmentTable = function() {
             if (assignment.flight_id) {
                 $bar.attr('data-flight-id', assignment.flight_id);
             }
-            if (assignment.status == 1) {
+            if (assignment.status == 1 || assignment.status == 3) {
                 self.setFlightHobbsInfo($bar, assignment.actual_hobbs, assignment.next_due_hobbs);
             }
         }
@@ -865,7 +928,7 @@ RoutePlanningGantt.prototype.assignFlight = function(flightData) {
     });
 }
 
-RoutePlanningGantt.prototype.assignStatus = function(tailNumber, status, startTime, endTime) {
+RoutePlanningGantt.prototype.assignStatus = function(tailNumber, status, startTime, endTime, origin = '', destination = '') {
     var self = this;
 
     if (!self.options.assignStatusAPIUrl) {
@@ -882,6 +945,8 @@ RoutePlanningGantt.prototype.assignStatus = function(tailNumber, status, startTi
             status: status,
             start_time: startTime.toISOString(),
             end_time: endTime.toISOString(),
+            origin: origin,
+            destination: destination,
         },
     });
 }

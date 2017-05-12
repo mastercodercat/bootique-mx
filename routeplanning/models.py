@@ -34,16 +34,26 @@ class LinePart(models.Model):
 
 
 class Flight(models.Model):
+    TYPE_SCHEDULED = 1
+    TYPE_UNSCHEDULED = 2
+
+    TYPE_CHOICES = (
+        (TYPE_SCHEDULED, 'Scheduled Flight'),
+        (TYPE_UNSCHEDULED, 'Unscheduled Flight'),
+    )
+
     number = models.CharField(db_index=True, max_length=10, default=0, null=False, blank=False)
     origin = models.CharField(max_length=10, blank=False)
     destination = models.CharField(max_length=10, blank=False)
     departure_datetime = models.DateTimeField(null=False, blank=False)
     arrival_datetime = models.DateTimeField(null=False, blank=False)
-
-    # line = models.ForeignKey(Line, null=True, blank=False)
+    type = models.IntegerField(default=TYPE_SCHEDULED, choices=TYPE_CHOICES)
 
     def __unicode__(self):
-        return str(self.number) + '. ' + self.origin + '-' + self.destination
+        if self.type == Flight.TYPE_SCHEDULED:
+            return str(self.number) + '. ' + self.origin + '-' + self.destination
+        else:
+            return 'Unscheduled Flight: ' + self.origin + '-' + self.destination
 
     @property
     def length(self):
@@ -57,26 +67,30 @@ class Flight(models.Model):
 
 
 class Assignment(models.Model):
+    STATUS_FLIGHT = 1
+    STATUS_MAINTENANCE = 2
+    STATUS_UNSCHEDULED_FLIGHT = 3
+
     STATUS_CHOICES = (
-        (1, 'Flight'),
-        (2, 'Maintenance'),
-        (3, 'Unscheduled Flight'),
+        (STATUS_FLIGHT, 'Flight'),
+        (STATUS_MAINTENANCE, 'Maintenance'),
+        (STATUS_UNSCHEDULED_FLIGHT, 'Unscheduled Flight'),
     )
 
     flight_number = models.CharField(max_length=10, default='', null=False, blank=False)
     start_time = models.DateTimeField(null=False, blank=False)
     end_time = models.DateTimeField(null=False, blank=False)
-    status = models.IntegerField(default=1, choices=STATUS_CHOICES)
+    status = models.IntegerField(default=STATUS_FLIGHT, choices=STATUS_CHOICES)
 
     flight = models.OneToOneField(Flight, null=True, blank=False, on_delete=models.PROTECT)
     tail = models.ForeignKey(Tail, null=True, blank=False, on_delete=models.PROTECT)
 
     def __unicode__(self):
-        if self.status == 1:
+        if self.status == Assignment.STATUS_FLIGHT:
             return 'Flight ' + str(self.flight_number) + ' Assignment'
-        elif self.status == 2:
+        elif self.status == Assignment.STATUS_MAINTENANCE:
             return 'Maintenance'
-        elif self.status == 3:
+        elif self.status == Assignment.STATUS_UNSCHEDULED_FLIGHT:
             return 'Unscheduled Flight'
         else:
             return 'Other'
@@ -114,13 +128,16 @@ class Assignment(models.Model):
         return query.all()
 
 class Hobbs(models.Model):
+    TYPE_ACTUAL = 1
+    TYPE_NEXT_DUE = 2
+
     TYPE_CHOICES = (
-        (1, 'Actual'),
-        (2, 'Next Due'),
+        (TYPE_ACTUAL, 'Actual'),
+        (TYPE_NEXT_DUE, 'Next Due'),
     )
 
     hobbs_time = models.DateTimeField(null=False, blank=False)
-    type = models.IntegerField(default=1, choices=TYPE_CHOICES)
+    type = models.IntegerField(default=TYPE_ACTUAL, choices=TYPE_CHOICES)
     hobbs = models.FloatField(default=0.0, blank=False)
 
     tail = models.ForeignKey(Tail, null=True, blank=False, on_delete=models.PROTECT)
@@ -142,7 +159,7 @@ class Hobbs(models.Model):
     def get_projected_actual_value(cls, tail, datetime):
         result = cls.objects.filter(hobbs_time__lt=datetime) \
             .filter(tail=tail) \
-            .filter(type=1) \
+            .filter(type=Hobbs.TYPE_ACTUAL) \
             .aggregate(Sum('hobbs'))
         return result['hobbs__sum'] if result and result['hobbs__sum'] else 0
 
@@ -150,7 +167,7 @@ class Hobbs(models.Model):
     def get_next_due(cls, tail, datetime):
         return cls.objects.filter(hobbs_time__lt=datetime) \
             .filter(tail=tail) \
-            .filter(type=2) \
+            .filter(type=Hobbs.TYPE_NEXT_DUE) \
             .order_by('-hobbs_time') \
             .first()
 
@@ -158,7 +175,7 @@ class Hobbs(models.Model):
     def get_next_due_value(cls, tail, datetime):
         next_due_hobbs = cls.objects.filter(hobbs_time__lt=datetime) \
             .filter(tail=tail) \
-            .filter(type=2) \
+            .filter(type=Hobbs.TYPE_NEXT_DUE) \
             .order_by('-hobbs_time') \
             .first()
         return next_due_hobbs.hobbs if next_due_hobbs else 0

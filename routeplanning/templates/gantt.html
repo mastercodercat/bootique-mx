@@ -85,10 +85,18 @@
                 <div class="bar-container">
                     <div class="bar status-bar unscheduled-flight status-prototype" draggable="true" data-status="3">
                         <span>Unscheduled Flight</span>
-                        <div class="info status-popover">
-                            <div class="field">Status: Unscheduled Flight</div>
-                            <div class="field">Sched. Start Time: <span class="start"></span></div>
-                            <div class="field">Sched. End Time: <span class="end"></span></div>
+                        <div class="bar-popover">
+                            <div class="field">Unscheduled Flight</div>
+                            <div class="field">Origin: <span class="org"></span></div>
+                            <div class="field">Destination: <span class="dest"></span></div>
+                            <div class="field">Sched. Depature Time: <span class="departure"></span></div>
+                            <div class="field">Sched. Arrival Time: <span class="arrival"></span></div>
+                            <div class="assignment-only">
+                                <hr />
+                                <div class="field">Projected Hobbs: <span class="projected-hobbs"></span></div>
+                                <div class="field">Next Due Hobbs: <span class="next-due-hobbs"></span></div>
+                                <div class="field field-hobbs-left">Hobbs Left: <span class="hobbs-left"></span></div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -208,6 +216,37 @@
                             {% endfor %}
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Unscheduled Flight modal -->
+    <div class="modal inmodal fade" id="unscheduled-flight-modal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-md">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                    <h5 class="modal-title">Create Unscheduled Flight</h5>
+                </div>
+                <div class="modal-body">
+                    <form class="form-horizontal">
+                        <div class="form-group">
+                            <label class="col-lg-2 control-label">Origin</label>
+                            <div class="col-lg-10">
+                                <input type="origin" class="form-control unscheduled-flight-origin" placeholder="Origin">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-lg-2 control-label">Destination</label>
+                            <div class="col-lg-10">
+                                <input type="destination" class="form-control unscheduled-flight-destination" placeholder="Destination">
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-white" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary btn-save-unscheduled-flight">Save</button>
                 </div>
             </div>
         </div>
@@ -354,6 +393,7 @@
         var gantt = new RoutePlanningGantt({
             flightAssignmentTable: $('#flight-assignment-table'),
             flightTemplateTable: $('#flight-template-table'),
+            unscheduledFlightForm: $('#unscheduled-flight-modal'),
             loadDataAPIUrl: "{% url 'routeplanning:api_load_data' %}",
             assignFlightAPIUrl: "{% url 'routeplanning:api_assign_flight' %}",
             assignStatusAPIUrl: "{% url 'routeplanning:api_assign_status' %}",

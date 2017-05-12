@@ -493,14 +493,14 @@ def api_assign_flight(request):
                     flight_number=flight.number,
                     start_time=flight.departure_datetime,
                     end_time=flight.arrival_datetime,
-                    status=1,
+                    status=Assignment.STATUS_FLIGHT,
                     flight=flight,
                     tail=tail
                 )
                 assignment.save()
 
                 hobbs = Hobbs(
-                    type=1,
+                    type=Hobbs.TYPE_ACTUAL,
                     hobbs_time=flight.departure_datetime,
                     hobbs=flight.length / 3600,
                     flight=flight,
@@ -534,7 +534,9 @@ def api_assign_status(request):
         tail_number = request.POST.get('tail')
         start_time = dateutil.parser.parse(request.POST.get('start_time'))
         end_time = dateutil.parser.parse(request.POST.get('end_time'))
-        status = request.POST.get('status')
+        status = int(request.POST.get('status'))
+        origin = request.POST.get('origin') or ''     # used for unscheduled flight assignments
+        destination = request.POST.get('destination') or ''   # used for unscheduled flight assignments
     except:
         result['error'] = 'Invalid parameters'
         return JsonResponse(result, safe=False, status=400)
@@ -553,7 +555,29 @@ def api_assign_status(request):
             flight=None,
             tail=tail
         )
+        if status == Assignment.STATUS_UNSCHEDULED_FLIGHT:
+            flight = Flight(
+                origin=origin,
+                destination=destination,
+                departure_datetime=start_time,
+                arrival_datetime=end_time,
+                type=Flight.TYPE_UNSCHEDULED
+            )
+            flight.save()
+
+            hobbs = Hobbs(
+                type=Hobbs.TYPE_ACTUAL,
+                hobbs_time=flight.departure_datetime,
+                hobbs=flight.length / 3600,
+                flight=flight,
+                tail=tail
+            )
+            hobbs.save()
+
+            assignment.flight = flight
+
         assignment.save()
+
     except Exception as e:
         result['error'] = str(e)
         return JsonResponse(result, safe=False, status=500)
@@ -639,6 +663,14 @@ def api_move_assignment(request):
             if not Assignment.is_duplicated(tail, start_time, end_time, assignment):
                 assignment.tail = tail
                 if start_time_str:
+                    if assignment.status == Assignment.STATUS_UNSCHEDULED_FLIGHT:
+                        assignment.flight.departure_datetime = start_time
+                        assignment.flight.arrival_datetime = end_time
+                        assignment.flight.save()
+
+                        assignment.flight.hobbs.hobbs_time = start_time
+                        assignment.flight.hobbs.save()
+
                     assignment.start_time = start_time
                     assignment.end_time = end_time
                 assignment.save()
@@ -914,7 +946,7 @@ def api_delete_actual_hobbs(request, hobbs_id=None):
         return JsonResponse(result, safe=False)
 
     try:
-        Hobbs.objects.filter(pk=hobbs_id).filter(type=1).delete()
+        Hobbs.objects.filter(pk=hobbs_id).filter(type=Hobbs.TYPE_ACTUAL).delete()
     except:
         return JsonResponse(result, safe=False, status=400)
 
@@ -940,7 +972,7 @@ def api_save_hobbs(request):
         hobbs_datetime = dateutil.parser.parse(request.POST.get('datetime'))
 
         flight_id = request.POST.get('flight_id')
-        if hobbs_type == '1' and not flight_id:
+        if int(hobbs_type) == Hobbs.TYPE_ACTUAL and not flight_id:
             raise Exception('Invalid parameters')
 
         if hobbs_id:
@@ -1014,7 +1046,7 @@ def api_coming_due_list(request):
 
             hobbs_set = Hobbs.get_hobbs(tail, start_time, end_time)
             for hobbs in hobbs_set:
-                if hobbs.type == 1:
+                if hobbs.type == Hobbs.TYPE_ACTUAL:
                     projected_actual_hobbs_value += hobbs.hobbs
                     hobbs_list.append({
                         'day': start_time,
@@ -1025,7 +1057,7 @@ def api_coming_due_list(request):
                         'flight_id': hobbs.flight.id,
                         'flight': str(hobbs.flight),
                     })
-                elif hobbs.type == 2:
+                elif hobbs.type == Hobbs.TYPE_NEXT_DUE:
                     projected_next_due_hobbs_value = hobbs.hobbs
                     projected_next_due_hobbs_id = hobbs.id
 
