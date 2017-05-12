@@ -609,6 +609,8 @@ def api_remove_assignment(request):
             assignment = Assignment.objects.get(pk=assignment_id)
             try:
                 assignment.flight.hobbs.delete()
+                if assignment.status == Assignment.STATUS_UNSCHEDULED_FLIGHT:
+                    assignment.flight.delete()
             except:
                 pass
             assignment.delete()
@@ -730,6 +732,16 @@ def api_resize_assignment(request):
         assignment.start_time = start_time
         assignment.end_time = end_time
         assignment.save()
+
+        if assignment.status == Assignment.STATUS_UNSCHEDULED_FLIGHT:
+            assignment.flight.departure_datetime = start_time
+            assignment.flight.arrival_datetime = end_time
+            assignment.flight.save()
+
+            assignment.flight.hobbs.hobbs_time = start_time
+            assignment.flight.hobbs.hobbs = assignment.flight.length / 3600
+            assignment.flight.hobbs.save()
+
     except Exception as e:
         result['error'] = str(e)
         return JsonResponse(result, safe=False, status=500)
@@ -850,73 +862,6 @@ def api_upload_csv(request):
 
     result['success'] = True
     return JsonResponse(result, safe=False)
-
-@login_required
-@gantt_writable_required
-def api_resize_assignment(request):
-    result = {
-        'success': False,
-    }
-
-    if request.method != 'POST':
-        result['error'] = 'Only POST method is allowed'
-        return JsonResponse(result, safe=False)
-
-    try:
-        assignment_id = request.POST.get('assignment_id')
-        pos = request.POST.get('position')  # start or end
-        diff_seconds = round(float(request.POST.get('diff_seconds')) / 300.0) * 300.0     # changed time in seconds
-    except:
-        result['error'] = 'Invalid parameters'
-        return JsonResponse(result, safe=False, status=400)
-
-    try:
-        assignment = Assignment.objects.get(pk=assignment_id)
-
-        start_time = assignment.start_time
-        end_time = assignment.end_time
-        if pos == 'end':
-            end_time = end_time + timedelta(seconds=diff_seconds)
-        else:
-            start_time = start_time - timedelta(seconds=diff_seconds)
-
-        if start_time >= end_time:
-            result['error'] = 'Start time cannot be later than end time'
-            return JsonResponse(result, safe=False, status=400)
-
-        if Assignment.is_duplicated(assignment.tail, start_time, end_time, assignment):
-            result['error'] = 'Duplicated assignment'
-            return JsonResponse(result, safe=False)
-
-        assignment.start_time = start_time
-        assignment.end_time = end_time
-        assignment.save()
-    except Exception as e:
-        result['error'] = str(e)
-        return JsonResponse(result, safe=False, status=500)
-
-    result['success'] = True
-    result['start_time'] = assignment.start_time.isoformat()
-    result['end_time'] = assignment.end_time.isoformat()
-    return JsonResponse(result, safe=False)
-
-def str_to_datetime(str):
-    parts = str.split(' ')
-    date_parts = parts[0].split('/')
-    date = int(date_parts[0])
-    month = int(date_parts[1])
-    year = int(date_parts[2])
-    hour = 0
-    minute = 0
-    second = 0
-
-    if len(parts) > 1:
-        time_parts = parts[1].split(':')
-        hour = int(time_parts[0])
-        minute = int(time_parts[1])
-        second = int(time_parts[2])
-
-    return datetime(year, month, date, hour, minute, second, tzinfo=utc)
 
 @login_required
 @gantt_readable_required

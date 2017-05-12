@@ -271,10 +271,14 @@ RoutePlanningGantt.prototype.initInteractables = function() {
                     .attr('data-pos', '');
 
                 if (response.success) {
-                    var startTime = new Date(response.start_time);
-                    var endTime = new Date(response.end_time);
+                    if ($bar.data('status') == 3) {
+                        self.loadData(true);
+                    } else {
+                        var startTime = new Date(response.start_time);
+                        var endTime = new Date(response.end_time);
 
-                    self.resizeStatusBar($bar, startTime, endTime);
+                        self.resizeStatusBar($bar, startTime, endTime);
+                    }
                 }
             },
             function() {
