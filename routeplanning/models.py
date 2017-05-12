@@ -114,6 +114,36 @@ class Assignment(models.Model):
         return False
 
     @classmethod
+    def is_physically_valid(cls, tail, origin, destination, start_time, end_time, exclude_check_assignment=None):
+        query = cls.objects.filter(
+                Q(tail=tail) &
+                Q(end_time__lte=start_time)
+            ) \
+            .exclude(status=Assignment.STATUS_MAINTENANCE) \
+            .order_by('-start_time') \
+            .select_related('flight')
+        if exclude_check_assignment:
+            query = query.exclude(pk=exclude_check_assignment.id)
+        assignment_just_before = query.first()
+        if assignment_just_before and assignment_just_before.flight.destination != origin:
+            return False
+
+        query = cls.objects.filter(
+                Q(tail=tail) &
+                Q(start_time__gte=end_time)
+            ) \
+            .exclude(status=Assignment.STATUS_MAINTENANCE) \
+            .order_by('start_time') \
+            .select_related('flight')
+        if exclude_check_assignment:
+            query = query.exclude(pk=exclude_check_assignment.id)
+        assignment_just_after = query.first()
+        if assignment_just_after and assignment_just_after.flight.origin != destination:
+            return False
+
+        return True
+
+    @classmethod
     def get_duplicated_assignments(cls, tail, start_time, end_time, exclude_check_assignment=None):
         query = cls.objects.filter(
             Q(tail=tail) &

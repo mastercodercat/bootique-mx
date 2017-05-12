@@ -1,0 +1,106 @@
+[
+    {
+        "model": "routeplanning.assignment",
+        "pk": 450,
+        "fields": 
+        {
+            "flight_number": "322",
+            "start_time": "2017-05-24T13:00:00Z",
+            "end_time": "2017-05-24T14:15:00Z",
+            "status": 1,
+            "flight": 13069,
+            "tail": 14
+        }
+    },
+    {
+        "model": "routeplanning.assignment",
+        "pk": 451,
+        "fields": 
+        {
+            "flight_number": "0",
+            "start_time": "2017-05-24T15:05:00Z",
+            "end_time": "2017-05-24T16:20:00Z",
+            "status": 3,
+            "flight": 13262,
+            "tail": 14
+        }
+    },
+    {
+        "model": "routeplanning.assignment",
+        "pk": 453,
+        "fields": 
+        {
+            "flight_number": "0",
+            "start_time": "2017-05-24T17:55:00Z",
+            "end_time": "2017-05-24T18:35:00Z",
+            "status": 3,
+            "flight": 13185,
+            "tail": 14
+        }
+    },
+    {
+        "model": "routeplanning.assignment",
+        "pk": 454,
+        "fields": 
+        {
+            "flight_number": "326",
+            "start_time": "2017-05-24T19:00:00Z",
+            "end_time": "2017-05-24T20:15:00Z",
+            "status": 1,
+            "flight": 13070,
+            "tail": 14
+        }
+    },
+    {
+        "model": "routeplanning.assignment",
+        "pk": 457,
+        "fields": 
+        {
+            "flight_number": "327",
+            "start_time": "2017-05-24T21:30:00Z",
+            "end_time": "2017-05-24T22:45:00Z",
+            "status": 1,
+            "flight": 13263,
+            "tail": 14
+        }
+    },
+    {
+        "model": "routeplanning.assignment",
+        "pk": 459,
+        "fields": 
+        {
+            "flight_number": "329",
+            "start_time": "2017-05-25T00:20:00Z",
+            "end_time": "2017-05-25T01:00:00Z",
+            "status": 1,
+            "flight": 13186,
+            "tail": 14
+        }
+    },
+    {
+        "model": "routeplanning.assignment",
+        "pk": 455,
+        "fields": 
+        {
+            "flight_number": "322",
+            "start_time": "2017-05-25T13:00:00Z",
+            "end_time": "2017-05-25T14:15:00Z",
+            "status": 1,
+            "flight": 13072,
+            "tail": 14
+        }
+    },
+    {
+        "model": "routeplanning.assignment",
+        "pk": 456,
+        "fields": 
+        {
+            "flight_number": "323",
+            "start_time": "2017-05-25T15:05:00Z",
+            "end_time": "2017-05-25T16:20:00Z",
+            "status": 1,
+            "flight": 13265,
+            "tail": 14
+        }
+    }
+]

@@ -1,0 +1,119 @@
+[
+    {
+        "model": "routeplanning.flight",
+        "pk": 13069,
+        "fields": 
+        {
+            "number": "322",
+            "origin": "MCE",
+            "destination": "LAX",
+            "departure_datetime": "2017-05-24T13:00:00Z",
+            "arrival_datetime": "2017-05-24T14:15:00Z",
+            "type": 1
+        }
+    },
+    {
+        "model": "routeplanning.flight",
+        "pk": 13070,
+        "fields": 
+        {
+            "number": "326",
+            "origin": "MCE",
+            "destination": "LAX",
+            "departure_datetime": "2017-05-24T19:00:00Z",
+            "arrival_datetime": "2017-05-24T20:15:00Z",
+            "type": 1
+        }
+    },
+    {
+        "model": "routeplanning.flight",
+        "pk": 13072,
+        "fields": 
+        {
+            "number": "322",
+            "origin": "MCE",
+            "destination": "LAX",
+            "departure_datetime": "2017-05-25T13:00:00Z",
+            "arrival_datetime": "2017-05-25T14:15:00Z",
+            "type": 1
+        }
+    },
+    {
+        "model": "routeplanning.flight",
+        "pk": 13132,
+        "fields": 
+        {
+            "number": "328",
+            "origin": "MCE",
+            "destination": "OAK",
+            "departure_datetime": "2017-05-24T23:10:00Z",
+            "arrival_datetime": "2017-05-24T23:50:00Z",
+            "type": 1
+        }
+    },
+    {
+        "model": "routeplanning.flight",
+        "pk": 13185,
+        "fields": 
+        {
+            "number": "0",
+            "origin": "OAK",
+            "destination": "MCE",
+            "departure_datetime": "2017-05-24T17:55:00Z",
+            "arrival_datetime": "2017-05-24T18:35:00Z",
+            "type": 2
+        }
+    },
+    {
+        "model": "routeplanning.flight",
+        "pk": 13186,
+        "fields": 
+        {
+            "number": "329",
+            "origin": "OAK",
+            "destination": "MCE",
+            "departure_datetime": "2017-05-25T00:20:00Z",
+            "arrival_datetime": "2017-05-25T01:00:00Z",
+            "type": 1
+        }
+    },
+    {
+        "model": "routeplanning.flight",
+        "pk": 13262,
+        "fields": 
+        {
+            "number": "0",
+            "origin": "LAX",
+            "destination": "MCE",
+            "departure_datetime": "2017-05-24T15:05:00Z",
+            "arrival_datetime": "2017-05-24T16:20:00Z",
+            "type": 2
+        }
+    },
+    {
+        "model": "routeplanning.flight",
+        "pk": 13263,
+        "fields": 
+        {
+            "number": "327",
+            "origin": "LAX",
+            "destination": "MCE",
+            "departure_datetime": "2017-05-24T21:30:00Z",
+            "arrival_datetime": "2017-05-24T22:45:00Z",
+            "type": 1
+        }
+    },
+    {
+        "model": "routeplanning.flight",
+        "pk": 13265,
+        "fields": 
+        {
+            "number": "323",
+            "origin": "LAX",
+            "destination": "MCE",
+            "departure_datetime": "2017-05-25T15:05:00Z",
+            "arrival_datetime": "2017-05-25T16:20:00Z",
+            "type": 1
+        }
+    }
+]
