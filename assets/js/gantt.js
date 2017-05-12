@@ -205,6 +205,25 @@ RoutePlanningGantt.prototype.displayNowIndicator = function($table) {
     }
 }
 
+RoutePlanningGantt.prototype.alertErrorIfAny = function(response, singular) {
+    if (singular) {
+        if (response.duplication) {
+            alert('Timeframe overlapped with other assignments');
+        } else if (response.physically_invalid) {
+            alert('Physically invalid assignment');
+        }
+    } else {
+        var errors = "Some of assignments are not placed due to following errors:";
+        if (response.duplication) {
+            errors += "\n- Overlapped timeframe";
+        }
+        if (response.physically_invalid) {
+            errors += "\n- Physically invalid assignment";
+        }
+        alert(errors);
+    }
+}
+
 RoutePlanningGantt.prototype.initInteractables = function() {
     var self = this;
     var assignmentTableId = self.options.flightAssignmentTable.attr('id');
@@ -469,17 +488,8 @@ RoutePlanningGantt.prototype.initInteractables = function() {
                         .then(function(response) {
                             if (response.success) {
                                 self.loadData(true);
-                                // var assignments = response.assignments; /* { assignment_id: { start_time, end_time }, ... } */
-                                // for (assignmentId in assignments) {
-                                //     if (assignmentId in elementMoveData) {
-                                //         // self.placeStatusBar(
-                                //         //     elementMoveData[assignmentId].bar,
-                                //         //     elementMoveData[assignmentId].row,
-                                //         //     assignments[assignmentId]
-                                //         // );
-                                //     }
-                                // }
                             }
+                            self.alertErrorIfAny(response, assignmentData.length == 1);
                         });
                 } else if ($bar.data('status') > 0) {
                     var $row = $(event.target);
@@ -592,25 +602,15 @@ RoutePlanningGantt.prototype.initInteractables = function() {
                                     }
                                 });
                             }
+                            self.alertErrorIfAny(response, assignmentData.length == 1);
                         }.bind(this, elementMoveData));
                 } else {
                     self.moveAssignment(assignmentData)
                         .then(function(elementMoveData, response) {
                             if (response.success) {
                                 self.loadData(true);
-                                // var assignments = response.assignments; /* { assignment_id: { start_time, end_time }, ... } */
-                                // elementMoveData.forEach(function(data) {
-                                //     if (data.assignmentId in assignments) {
-                                //         data.bar.appendTo(data.row);
-
-                                //         // self.setFlightHobbsInfo(
-                                //         //     data.bar,
-                                //         //     assignments[data.assignmentId].actual_hobbs,
-                                //         //     assignments[data.assignmentId].next_due_hobbs
-                                //         // );
-                                //     }
-                                // });
                             }
+                            self.alertErrorIfAny(response, assignmentData.length == 1);
                         }.bind(this, elementMoveData));
                 }
             }
@@ -792,17 +792,12 @@ RoutePlanningGantt.prototype.initInteractables = function() {
             .then(function(response) {
                 if (response.success) {
                     self.loadData(true);
-                    // var $newBar = $bar.clone();
-                    // self.placeStatusBar($newBar, $row, {
-                    //     start_time: startTime,
-                    //     end_time: endTime,
-                    // });
-                    // $newBar.attr('data-assignment-id', response.id);
+                } else {
+                    alert(response.error);
                 }
             });
 
         self.options.unscheduledFlightForm.modal('hide');
-        alert('yeah!');///
     });
 }
 

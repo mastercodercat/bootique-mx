@@ -469,6 +469,8 @@ def api_assign_flight(request):
     result = {
         'success': False,
         'assigned_flights': {},
+        'duplication': False,
+        'physically_invalid': False,
     }
 
     if request.method != 'POST':
@@ -488,31 +490,42 @@ def api_assign_flight(request):
             tail = Tail.objects.get(number=tail_number)
             flight = Flight.objects.get(pk=flight_id)
 
-            if not Assignment.is_duplicated(tail, flight.departure_datetime, flight.arrival_datetime):
-                assignment = Assignment(
-                    flight_number=flight.number,
-                    start_time=flight.departure_datetime,
-                    end_time=flight.arrival_datetime,
-                    status=Assignment.STATUS_FLIGHT,
-                    flight=flight,
-                    tail=tail
-                )
-                assignment.save()
+            if Assignment.is_duplicated(tail, flight.departure_datetime, flight.arrival_datetime):
+                result['duplication'] = True
+                continue
 
-                hobbs = Hobbs(
-                    type=Hobbs.TYPE_ACTUAL,
-                    hobbs_time=flight.departure_datetime,
-                    hobbs=flight.length / 3600,
-                    flight=flight,
-                    tail=tail
-                )
-                hobbs.save()
+            if not Assignment.is_physically_valid(
+                tail,
+                flight.origin, flight.destination,
+                flight.departure_datetime, flight.arrival_datetime
+            ):
+                result['physically_invalid'] = True
+                continue
 
-                result['assigned_flights'][flight_id] = {
-                    'assignment_id': assignment.id,
-                    'actual_hobbs': Hobbs.get_projected_actual_value(tail, assignment.end_time),
-                    'next_due_hobbs': Hobbs.get_next_due_value(tail, assignment.end_time),
-                }
+            assignment = Assignment(
+                flight_number=flight.number,
+                start_time=flight.departure_datetime,
+                end_time=flight.arrival_datetime,
+                status=Assignment.STATUS_FLIGHT,
+                flight=flight,
+                tail=tail
+            )
+            assignment.save()
+
+            hobbs = Hobbs(
+                type=Hobbs.TYPE_ACTUAL,
+                hobbs_time=flight.departure_datetime,
+                hobbs=flight.length / 3600,
+                flight=flight,
+                tail=tail
+            )
+            hobbs.save()
+
+            result['assigned_flights'][flight_id] = {
+                'assignment_id': assignment.id,
+                'actual_hobbs': Hobbs.get_projected_actual_value(tail, assignment.end_time),
+                'next_due_hobbs': Hobbs.get_next_due_value(tail, assignment.end_time),
+            }
         except Exception as e:
             print(str(e))
 
@@ -543,8 +556,13 @@ def api_assign_status(request):
 
     try:
         tail = Tail.objects.get(number=tail_number)
+
         if Assignment.is_duplicated(tail, start_time, end_time):
             result['error'] = 'Duplicated assignment'
+            return JsonResponse(result, safe=False)
+
+        if status == Assignment.STATUS_UNSCHEDULED_FLIGHT and not Assignment.is_physically_valid(tail, origin, destination, start_time, end_time):
+            result['error'] = 'Physically invalid assignment'
             return JsonResponse(result, safe=False)
 
         assignment = Assignment(
@@ -626,6 +644,8 @@ def api_remove_assignment(request):
 def api_move_assignment(request):
     result = {
         'success': False,
+        'duplication': False,
+        'physically_invalid': False,
         'assignments': {},
     }
 
@@ -653,7 +673,7 @@ def api_move_assignment(request):
                 start_time_str = None
                 start_time = None
 
-            assignment = Assignment.objects.get(pk=assignment_id)
+            assignment = Assignment.objects.select_related('flight').get(pk=assignment_id)
             tail = Tail.objects.get(number=tail_number)
 
             if not start_time:
@@ -662,30 +682,37 @@ def api_move_assignment(request):
             else:
                 end_time = start_time + (assignment.end_time - assignment.start_time)
 
-            if not Assignment.is_duplicated(tail, start_time, end_time, assignment):
-                assignment.tail = tail
-                if start_time_str:
-                    if assignment.status == Assignment.STATUS_UNSCHEDULED_FLIGHT:
-                        assignment.flight.departure_datetime = start_time
-                        assignment.flight.arrival_datetime = end_time
-                        assignment.flight.save()
+            if Assignment.is_duplicated(tail, start_time, end_time, assignment):
+                result['duplication'] = True
+                continue
 
-                        assignment.flight.hobbs.hobbs_time = start_time
-                        assignment.flight.hobbs.save()
+            if not Assignment.is_physically_valid(tail, assignment.flight.origin, assignment.flight.destination, start_time, end_time, assignment):
+                result['physically_invalid'] = True
+                continue
 
-                    assignment.start_time = start_time
-                    assignment.end_time = end_time
-                assignment.save()
-                try:
-                    assignment.flight.hobbs.tail = tail
+            assignment.tail = tail
+            if start_time_str:
+                if assignment.status == Assignment.STATUS_UNSCHEDULED_FLIGHT:
+                    assignment.flight.departure_datetime = start_time
+                    assignment.flight.arrival_datetime = end_time
+                    assignment.flight.save()
+
+                    assignment.flight.hobbs.hobbs_time = start_time
                     assignment.flight.hobbs.save()
-                except:
-                    pass
 
-                result['assignments'][assignment.id] = {
-                    'start_time': assignment.start_time.isoformat(),
-                    'end_time': assignment.end_time.isoformat(),
-                }
+                assignment.start_time = start_time
+                assignment.end_time = end_time
+            assignment.save()
+            try:
+                assignment.flight.hobbs.tail = tail
+                assignment.flight.hobbs.save()
+            except:
+                pass
+
+            result['assignments'][assignment.id] = {
+                'start_time': assignment.start_time.isoformat(),
+                'end_time': assignment.end_time.isoformat(),
+            }
         except Exception as e:
             print(str(e))
 

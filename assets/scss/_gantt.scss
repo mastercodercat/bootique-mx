@@ -256,7 +256,7 @@ $popover-text-color: #333;
                 display: none;
             }
         }
-        &:not(.dragging):hover .bar-popover {
+        &:not(.dragging):not(.status-prototype):hover .bar-popover {
             display: block;
         }
         &.status-bar {
