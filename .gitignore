@@ -12,3 +12,7 @@ static/*
 **/migrations/**
 mxtracking/local_settings.py
 assets/tmp
+
+fabric/ssh/*
+!fabric/ssh/_put_ssh_key_here.txt
+fabric_settings.py
