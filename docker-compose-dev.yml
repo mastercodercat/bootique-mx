@@ -1,0 +1,5 @@
+version: '2.1'
+services:
+  nginx:
+    ports:
+      - "8000:8001"

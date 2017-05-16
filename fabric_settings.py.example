@@ -1,3 +1,4 @@
+PASSWORD = ''
 PROJECT_NAME = ''
 PROJECT_ROOT = '/var/www/%s' % PROJECT_NAME
 VENV_ROOT = ''

@@ -5,7 +5,6 @@ __pycache__
 .idea/*
 .venv
 runserver
-deploy
 files
 media/*
 static/*
@@ -13,6 +12,6 @@ static/*
 mxtracking/local_settings.py
 assets/tmp
 
-fabric/ssh/*
-!fabric/ssh/_put_ssh_key_here.txt
+deploy/ssh/*
+!deploy/ssh/_put_ssh_key_here.txt
 fabric_settings.py
