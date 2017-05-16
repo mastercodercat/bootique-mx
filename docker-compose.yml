@@ -26,5 +26,7 @@ services:
   db:
     image: postgres:latest
     container_name: ps01
+    volumes:
+      - ~/postgres_data:/var/lib/postgresql/data
     healthcheck:
       test: "exit 0"
