@@ -4,8 +4,8 @@
 
 Project has deployment setup to deploy using fabric and docker on staging/production server, so please follow these steps to configure deployment parameters.
 
-- Put your SSH key pair into deploy/ssh/staging or deploy/ssh/production folder. Private key as `id_rsa`, public key as `id_rsa.pub`.
-- Generate SSH key pair on remote server (staging/production) and link public key of the pair to any bitbucket account that can access the repo
+- Put your SSH key pair (for connecting to server) into deploy/ssh/staging or deploy/ssh/production folder. Private key as `id_rsa`, public key as `id_rsa.pub`.
+- Generate SSH key pair of remote server (for pulling from git) and link public key of the pair to any bitbucket account that can access the repo
 - Copy `fabric_settings.py` from `fabric_settings.py.example` file and fill the parameters.
 - Now you're ready to use `fab` command line tool to start deployment process.
 - Deploy

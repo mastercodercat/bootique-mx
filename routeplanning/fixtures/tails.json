@@ -145,5 +145,26 @@
         "fields": {
             "number": "N95GE"
         }
+    },
+    {
+        "model": "routeplanning.tail",
+        "pk": 22,
+        "fields": {
+            "number": "N55NX"
+        }
+    },
+    {
+        "model": "routeplanning.tail",
+        "pk": 23,
+        "fields": {
+            "number": "N74KS"
+        }
+    },
+    {
+        "model": "routeplanning.tail",
+        "pk": 24,
+        "fields": {
+            "number": "N111WG"
+        }
     }
 ]
