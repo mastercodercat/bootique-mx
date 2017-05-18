@@ -686,9 +686,13 @@ def api_move_assignment(request):
                 result['duplication'] = True
                 continue
 
-            if not Assignment.is_physically_valid(tail, assignment.flight.origin, assignment.flight.destination, start_time, end_time, assignment):
-                result['physically_invalid'] = True
-                continue
+            try:
+                if assignment.flight:
+                    if not Assignment.is_physically_valid(tail, assignment.flight.origin, assignment.flight.destination, start_time, end_time, assignment):
+                        result['physically_invalid'] = True
+                        continue
+            except:
+                pass
 
             assignment.tail = tail
             if start_time_str:
