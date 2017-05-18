@@ -267,37 +267,9 @@ $popover-text-color: #333;
                 line-height: 30px;
                 color: #fff;
             }
-            .status-popover {
-                position: absolute;
-                display: none;
-                padding: 6px 12px;
-                left: 30%;
-                margin-left: -15px;
-                bottom: 100%;
-                margin-bottom: 10px;
-                border-radius: 3px;
-                background-color: $popover-bg-color;
-                color: $popover-text-color;
-                text-align: left;
-                font-size: 0.9em;
-                line-height: 1.5;
-                font-weight: 600;
-                &:before {
-                    content: '';
-                    position: absolute;
-                    left: 10px;
-                    top: 100%;
-                    border-width: 7px 6px 0;
-                    border-style: solid;
-                    border-color: $popover-bg-color transparent;
-                }
-                .field {
-                    white-space: nowrap;
-                }
-            }
             &:not(.status-prototype):hover,
             &.resizing {
-                .status-popover {
+                .bar-popover {
                     display: block;
                 }
             }

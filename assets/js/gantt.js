@@ -809,16 +809,6 @@ RoutePlanningGantt.prototype.initEventHandlers = function() {
 
         self.options.unscheduledFlightForm.modal('hide');
     });
-
-    // Popover position adjust when scrolling
-    $(self.options.tablesWrapperSelector).on('scroll', function() {
-        self.adjustPopoverPositions();
-    });
-}
-
-RoutePlanningGantt.prototype.adjustPopoverPositions = function() {
-    // TODO: implement popover position adjustment on scroll
-    ///////////////////
 }
 
 RoutePlanningGantt.prototype.checkIfAssigned = function(flightId) {
