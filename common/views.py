@@ -11,6 +11,6 @@ def index_redirect(request):
         elif can_read_gantt(request.user):
             return redirect('routeplanning:index')
         else:
-            raise Http404('You do not have permission for any page.')
+            return render(request, 'no-permissions.html')
     else:
         return redirect('account_login')

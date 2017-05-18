@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+
+{% block head %}
+    <title>No Permissions</title>
+{% endblock %}
+
+{% block content %}
+    <style type="text/css">
+        .content {
+            padding-top: 50px;
+            margin: auto;
+            max-width: 800px;
+            text-align: center;
+        }
+    </style>
+    <div class="content">
+        <h3>Not Authorized</h3>
+        <p>You don't have any roles assigned to you. Please contact your administrator to assign you appropriate role.</p>
+        <a href="{% url 'account_logout' %}">Login with different account</a>
+    </div>
+{% endblock %}

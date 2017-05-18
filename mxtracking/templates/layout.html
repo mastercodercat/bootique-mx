@@ -118,7 +118,7 @@
                                 <i class="fa fa-binoculars"></i> <span class="nav-label">Route Planning Gantt</span> <span class="fa arrow"></span>
                             </a>
                             <ul class="nav nav-second-level collapse">
-                                <li{% if not 'flight' in request.resolver_match.url_name %} class="active" {% endif %}>
+                                <li{% if 'index' in request.resolver_match.url_name %} class="active" {% endif %}>
                                     <a href="{% url 'routeplanning:index' %}">Gantt Chart</a>
                                 </li>
                                 {% if request.user|can_write_gantt %}
