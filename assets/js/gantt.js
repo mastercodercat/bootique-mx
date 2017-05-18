@@ -44,6 +44,7 @@ function RoutePlanningGantt(options) {
     ) {
         if (!this.options.readOnly) {
             this.initInteractables();
+            this.initEventHandlers();
         }
         this.displayNowIndicator(this.options.flightAssignmentTable);
         this.displayNowIndicator(this.options.flightTemplateTable);
@@ -213,14 +214,19 @@ RoutePlanningGantt.prototype.alertErrorIfAny = function(response, singular) {
             alert('Physically invalid assignment');
         }
     } else {
+        var errorOccurred = false;
         var errors = "Some of assignments are not placed due to following errors:";
         if (response.duplication) {
+            errorOccurred = true;
             errors += "\n- Overlapped timeframe";
         }
         if (response.physically_invalid) {
+            errorOccurred = true;
             errors += "\n- Physically invalid assignment";
         }
-        alert(errors);
+        if (errorOccurred) {
+            alert(errors);
+        }
     }
 }
 
@@ -672,6 +678,10 @@ RoutePlanningGantt.prototype.initInteractables = function() {
             }
         },
     });
+}
+
+RoutePlanningGantt.prototype.initEventHandlers = function() {
+    var self = this;
 
     // Select multiple and do action
 
@@ -799,6 +809,16 @@ RoutePlanningGantt.prototype.initInteractables = function() {
 
         self.options.unscheduledFlightForm.modal('hide');
     });
+
+    // Popover position adjust when scrolling
+    $(self.options.tablesWrapperSelector).on('scroll', function() {
+        self.adjustPopoverPositions();
+    });
+}
+
+RoutePlanningGantt.prototype.adjustPopoverPositions = function() {
+    // TODO: implement popover position adjustment on scroll
+    ///////////////////
 }
 
 RoutePlanningGantt.prototype.checkIfAssigned = function(flightId) {
