@@ -5,6 +5,7 @@ import random
 import os
 import csv
 from django.core import serializers
+from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, JsonResponse, HttpResponseForbidden
@@ -629,7 +630,7 @@ def api_remove_assignment(request):
                 assignment.flight.hobbs.delete()
                 if assignment.status == Assignment.STATUS_UNSCHEDULED_FLIGHT:
                     assignment.flight.delete()
-            except:
+            except ObjectDoesNotExist:
                 pass
             assignment.delete()
             result['removed_assignments'].append(assignment_id)
@@ -691,7 +692,7 @@ def api_move_assignment(request):
                     if not Assignment.is_physically_valid(tail, assignment.flight.origin, assignment.flight.destination, start_time, end_time, assignment):
                         result['physically_invalid'] = True
                         continue
-            except:
+            except ObjectDoesNotExist:
                 pass
 
             assignment.tail = tail
@@ -710,7 +711,7 @@ def api_move_assignment(request):
             try:
                 assignment.flight.hobbs.tail = tail
                 assignment.flight.hobbs.save()
-            except:
+            except ObjectDoesNotExist:
                 pass
 
             result['assignments'][assignment.id] = {
@@ -883,8 +884,8 @@ def api_upload_csv(request):
                     )
                     flight.save()
 
-            except:
-                pass
+            except Exception as e:
+                print(str(e))
 
     try:
         os.remove(filepath)
