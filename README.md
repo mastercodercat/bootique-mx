@@ -13,8 +13,9 @@ Project has deployment setup to deploy using fabric and docker on staging/produc
     `fab staging deploy` - Deploy latest code to server when using docker
     `fab staging deploynodocker` - Deploy latest code to server when not using docker
     * specify `staging` or `production` based on fabric settings
-- Setup super user of django admin
-    `fab staging setupadmin`
+- To setup super user of django admin
+  = open shell inside docker: `fab staging shell`
+  = run the command `python manage.py createsuperuser`
 - To test production environment on local, run these command:
     `docker-compose -f docker-compose.yml -f docker-compose-dev.yml build`
     `docker-compose -f docker-compose.yml -f docker-compose-dev.yml up -d`

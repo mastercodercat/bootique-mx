@@ -11,5 +11,3 @@ DATABASES = {
 }
 
 ALLOWED_HOSTS = ['*']    # Allowed Hosts config on Production server
-
-# COMPRESS_OFFLINE = False       # Uncomment this line for development. Sets Django compressor to compress on the fly.

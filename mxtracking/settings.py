@@ -32,8 +32,6 @@ INSTALLED_APPS = [
     'home',
     'inspection',
     'routeplanning',
-    # Django Compressor
-    'compressor',
     # Allauth
     'django.contrib.sites',
     'allauth',
@@ -159,17 +157,7 @@ STATICFILES_DIRS = [
 STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
-    # other finders..
-    'compressor.finders.CompressorFinder',
 )
-
-# Django Compressor
-
-COMPRESS_PRECOMPILERS = (
-    ('text/x-scss', 'django_libsass.SassCompiler'),
-)
-COMPRESS_ENABLED = True
-COMPRESS_OFFLINE = True
 
 # WEBPACK
 

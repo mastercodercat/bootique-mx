@@ -42,7 +42,7 @@ def deploy():
 
 
 @task
-def setupadmin():
+def shell():
     """
     Create django admin account
     """
