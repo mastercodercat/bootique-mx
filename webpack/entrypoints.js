@@ -3,19 +3,19 @@ module.exports = {
     /* JS bundles */
 
     inspinia: [
-        '../assets/js/inspinia.js',
+        '../frontend/js/inspinia.js',
     ],
 
     datatables: [
-        '../assets/js/datatables.js',
+        '../frontend/js/datatables.js',
     ],
 
     gantt: [
-        '../assets/js/gantt.js',
+        '../frontend/js/gantt.js',
     ],
 
     hobbs: [
-        '../assets/js/hobbs.js',
+        '../frontend/js/hobbs.js',
     ],
 
     /* Style bundles */
@@ -28,10 +28,10 @@ module.exports = {
         'datatables.net-bs/css/dataTables.bootstrap.css',
         'select2/dist/css/select2.css',
         'jasny-bootstrap/dist/css/jasny-bootstrap.css',
-        '../assets/css/animate.css',
-        '../assets/scss/style.scss',
+        '../frontend/css/animate.css',
+        '../frontend/scss/style.scss',
     ],
 
-    loginStyle: '../assets/scss/login.scss',
+    loginStyle: '../frontend/scss/login.scss',
 
 };

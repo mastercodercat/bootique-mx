@@ -1,14 +1,14 @@
 {% extends "base.html" %}
 {% load staticfiles %}
+{% load render_bundle from webpack_loader %}
 {% block head %}
     {% block pagetitle %}<title>{% block head_title %}{% endblock %} - Boutique Air Maintenance Tracking System</title>{% endblock %}
 
-    <!--Global CSS-->
-    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" type="text/css" media="all"/>
     <!-- page specific og tags -->
     {% block og_tags %}{% endblock %}
+
     <!--Global JS - head-->
-    <script   src="http://code.jquery.com/jquery-3.1.1.min.js"   integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="   crossorigin="anonymous"></script>
+    <script src="http://code.jquery.com/jquery-3.1.1.min.js" integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8=" crossorigin="anonymous"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 
     <!--[if lt IE 9]>
@@ -17,7 +17,7 @@
     <![endif]-->
     
     {% render_bundle 'style' 'css' %}
-    {% render_bundle 'login' 'css' %}
+    {% render_bundle 'loginStyle' 'css' %}
 {% endblock %}
 
 {% block body %}
