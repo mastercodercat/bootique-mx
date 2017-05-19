@@ -12,7 +12,7 @@ static/*
 mxtracking/local_settings.py
 assets/tmp
 node_modules
-webpack-stats.json
+*/webpack-stats.json
 
 deploy/ssh/*
 !deploy/ssh/_put_ssh_key_here.txt
