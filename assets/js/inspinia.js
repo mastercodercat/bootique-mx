@@ -5,6 +5,17 @@
  *
  */
 
+require('jquery');
+require('bootstrap');
+require('bootbox');
+require('bootstrap-datepicker');
+require('bootstrap-notify');
+require('clockpicker/dist/jquery-clockpicker');
+require('jasny-bootstrap/dist/js/jasny-bootstrap');
+require('jquery-slimscroll');
+require('metismenu');
+// require('pace-progress/pace');
+require('select2');
 
 $(document).ready(function () {
 
@@ -197,7 +208,20 @@ $(document).ready(function () {
     // Add slimscroll to element
     $('.full-height-scroll').slimscroll({
         height: '100%'
-    })
+    });
+
+    // Init datepickers
+    $('.input-group.date').datepicker({
+        todayBtn: "linked",
+        keyboardNavigation: false,
+        forceParse: false,
+        calendarWeeks: true,
+        autoclose: true,
+    });
+
+    // Init clockpickers
+    $('.clockpicker').clockpicker();
+
 });
 
 

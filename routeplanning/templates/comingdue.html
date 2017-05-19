@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 {% load staticfiles %}
+{% load render_bundle from webpack_loader %}
 {% load permission %}
-{% load compress %}
 {% load tz %}
 
 {% block head_title %}Coming Due {{ tail.number }}{% endblock %}
@@ -176,55 +176,43 @@
 {% endblock %}
 
 {% block pagejs %}
-{% compress js %}
-    <script src="{% static "js/hobbs.js" %}"></script>
-{% endcompress %}
-<script type="text/javascript">
-    var csrfToken = "{{ csrf_token }}";
+    {% render_bundle 'hobbs' %}
+    <script type="text/javascript">
+        var csrfToken = "{{ csrf_token }}";
 
-    $('.input-group.date').datepicker({
-        todayBtn: "linked",
-        keyboardNavigation: false,
-        forceParse: false,
-        calendarWeeks: true,
-        autoclose: true,
-    });
+        var comingDueList = new ComingDueList({
+            tailId: {{ tail.id }},
+            listSelector: '#coming-due-list',
+            comingDueListAPI: '{% url 'routeplanning:api_coming_due_list' %}',
+            deleteActualHobbsAPI: '{% url 'routeplanning:api_delete_actual_hobbs' hobbs_id=0 %}',
+            apiCSRFToken: csrfToken,
+            {% if request.user|can_write_gantt %}
+                writeable: true,
+            {% else %}
+                writeable: false,
+            {% endif %}
+        });
 
-    $('.clockpicker').clockpicker();
+        var actualHobbsForm = new HobbsForm({
+            formSelector: '#actual-hobbs-form',
+            loadHobbsAPI: '{% url 'routeplanning:api_get_hobbs' hobbs_id=0 %}',
+            urlToRedirectAfterSave: '{% url 'routeplanning:index' %}',
+            comingDueList: comingDueList,
+        });
 
-    var comingDueList = new ComingDueList({
-        tailId: {{ tail.id }},
-        listSelector: '#coming-due-list',
-        comingDueListAPI: '{% url 'routeplanning:api_coming_due_list' %}',
-        deleteActualHobbsAPI: '{% url 'routeplanning:api_delete_actual_hobbs' hobbs_id=0 %}',
-        apiCSRFToken: csrfToken,
-        {% if request.user|can_write_gantt %}
-            writeable: true,
-        {% else %}
-            writeable: false,
-        {% endif %}
-    });
+        var nextDueHobbsForm = new HobbsForm({
+            formSelector: '#next-due-hobbs-form',
+            loadHobbsAPI: '{% url 'routeplanning:api_get_hobbs' hobbs_id=0 %}',
+            urlToRedirectAfterSave: '{% url 'routeplanning:index' %}',
+            comingDueList: comingDueList,
+        });
 
-    var actualHobbsForm = new HobbsForm({
-        formSelector: '#actual-hobbs-form',
-        loadHobbsAPI: '{% url 'routeplanning:api_get_hobbs' hobbs_id=0 %}',
-        urlToRedirectAfterSave: '{% url 'routeplanning:index' %}',
-        comingDueList: comingDueList,
-    });
+        comingDueList.setActualHobbsForm(actualHobbsForm);
+        comingDueList.setNextDueHobbsForm(nextDueHobbsForm);
 
-    var nextDueHobbsForm = new HobbsForm({
-        formSelector: '#next-due-hobbs-form',
-        loadHobbsAPI: '{% url 'routeplanning:api_get_hobbs' hobbs_id=0 %}',
-        urlToRedirectAfterSave: '{% url 'routeplanning:index' %}',
-        comingDueList: comingDueList,
-    });
-
-    comingDueList.setActualHobbsForm(actualHobbsForm);
-    comingDueList.setNextDueHobbsForm(nextDueHobbsForm);
-
-    $('#coming-due-list-date').on('change', function() {
-        var date = new Date($(this).datepicker('getDate'));
-        comingDueList.changeAnchorDate(date);
-    });
-</script>
+        $('#coming-due-list-date').on('change', function() {
+            var date = new Date($(this).datepicker('getDate'));
+            comingDueList.changeAnchorDate(date);
+        });
+    </script>
 {% endblock %}

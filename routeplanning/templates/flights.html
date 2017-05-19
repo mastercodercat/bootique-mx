@@ -108,16 +108,6 @@
             $progressContainer.find('.status').html(status);
         }
 
-        $('.input-group.date').datepicker({
-            todayBtn: "linked",
-            keyboardNavigation: false,
-            forceParse: false,
-            calendarWeeks: true,
-            autoclose: true,
-        });
-
-        $('.clockpicker').clockpicker();
-
         $('#flights-table').on('click', '.btn-delete-flight', function(e) {
             e.stopPropagation();
             var $row = $(this).closest('tr');
