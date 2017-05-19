@@ -1,10 +1,8 @@
-"use strict";
-
 /*
  * Coming Due List
  */
 
-function ComingDueList(options) {
+window.ComingDueList = function(options) {
     this.options = options;
     this.$table = $(options.listSelector);
     this.anchorDate = new Date();
@@ -139,7 +137,7 @@ ComingDueList.prototype.init = function() {
  * Hobbs Form (for both actual and next due forms)
  */
 
-function HobbsForm(options) {
+window.HobbsForm = function(options) {
     this.options = options;
     this.$form = $(options.formSelector);
 

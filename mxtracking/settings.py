@@ -40,6 +40,8 @@ INSTALLED_APPS = [
     'allauth.account',
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
+    # Django webpack loader
+    'webpack_loader',
 ]
 
 MIDDLEWARE = [
@@ -161,11 +163,22 @@ STATICFILES_FINDERS = (
     'compressor.finders.CompressorFinder',
 )
 
+# Django Compressor
+
 COMPRESS_PRECOMPILERS = (
     ('text/x-scss', 'django_libsass.SassCompiler'),
 )
 COMPRESS_ENABLED = True
 COMPRESS_OFFLINE = True
+
+# WEBPACK
+
+WEBPACK_LOADER = {
+    'DEFAULT': {
+        'BUNDLE_DIR_NAME': 'bundles/',
+        'STATS_FILE': os.path.join(BASE_DIR, 'webpack/webpack-stats.json'),
+    }
+}
 
 
 # Local settings

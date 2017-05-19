@@ -1,19 +1,19 @@
-"use strict";
+var interact = require('interactjs');
 
 var ganttLengthSeconds = 14 * 24 * 3600;
 
 /* helper functions */
 
-function formatTo2Digits(number) {
+window.formatTo2Digits = function(number) {
     return (number < 10 ? '0' : '') + number;
 }
 
-function weekDayString(weekday) {
+window.weekDayString = function(weekday) {
     var weekdays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
     return weekdays[weekday % 7];
 }
 
-function formatDate(date) {
+window.formatDate = function(date) {
     return formatTo2Digits(date.getMonth() + 1) + '/' +
         formatTo2Digits(date.getDate()) + '/' +
         formatTo2Digits(date.getFullYear())  + ' ' +
@@ -30,7 +30,7 @@ function formatDate(date) {
  *  flightAssignmentTable, flightTemplateTable, unit(in seconds), tablesWrapperSelector,
  *  csrfToken
  */
-function RoutePlanningGantt(options) {
+window.RoutePlanningGantt = function(options) {
     this.mode = 1;
     this.templates = {};
     this.assignments = [];
@@ -152,6 +152,7 @@ RoutePlanningGantt.prototype.setFlightHobbsInfo = function($bar, actualHobbs, ne
 
 RoutePlanningGantt.prototype.setStatusBarInfo = function($bar, object) {
     var $info = $bar.find('.info');
+    var date;
     date = new Date(object.start_time);
     $info.find('.start').html(formatDate(date));
     date = new Date(object.end_time);
@@ -877,7 +878,7 @@ RoutePlanningGantt.prototype.refreshTemplateTable = function() {
 
             var date = new Date(self.options.startDate.getTime());
             var $row = self.options.flightTemplateTable.find('.row-line[data-line=' + template.line_id + ']');
-            pos = self.getPosition(departureDateTime);
+            var pos = self.getPosition(departureDateTime);
             length = (arrivalDateTime - departureDateTime) / 1000 / self.options.unit;
             $bar = self.placeBar($row, pos, length, template);
             if ($bar) {

@@ -1,4 +1,5 @@
-"use strict";
+require('datatables.net');
+require('datatables.net-bs/js/dataTables.bootstrap.js');
 
 window.datatables = {
 

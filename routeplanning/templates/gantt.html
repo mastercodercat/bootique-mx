@@ -1,6 +1,6 @@
 {% extends "layout.html" %}
 {% load staticfiles %}
-{% load compress %}
+{% load render_bundle from webpack_loader %}
 {% load permission %}
 
 {% block head_title %}Route Planning Gantt{% endblock %}
@@ -254,10 +254,7 @@
 {% endblock %}
 
 {% block pagejs %}
-    {% compress js %}
-        <script src="{% static "js/interact.min.js" %}"></script>
-        <script src="{% static "js/gantt.js" %}"></script>
-    {% endcompress %}
+    {% render_bundle 'gantt' %}
     <script type="text/javascript">
         var readOnly = {{ request.user|can_write_gantt|yesno:"false,true" }};
         var days = {{ days }};
@@ -316,13 +313,8 @@
         {% if end_param %}
             $('#end_date').val(formatTo2Digits(endDate.getMonth() + 1) + '/' + formatTo2Digits(endDate.getDate()) + '/' + endDate.getFullYear());
         {% endif %}
-        $('.input-group.date').datepicker({
-            todayBtn: "linked",
-            keyboardNavigation: false,
-            forceParse: false,
-            calendarWeeks: true,
-            autoclose: true,
-        });
+
+        // initDatepickers();
 
         /* Date form */
 
