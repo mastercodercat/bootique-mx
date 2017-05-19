@@ -35,6 +35,10 @@ To run the project:
 - Run `python manage.py makemigrations inspection home routeplanning` to create migrations
 - Run `python manage.py migrate` to migrate database
 - Run `python manage.py runserver` to run project
+- For building front end assets,
+  = install node
+  = Run `npm install` to install dependencies
+  = Run `npm run watch` to watch and compile resource changes
 
 Initial project configuration:
 
