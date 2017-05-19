@@ -809,15 +809,15 @@ def api_upload_csv(request):
         'success': False,
     }
 
-    filepath = settings.STATIC_ROOT + 'uploads/' + str(totimestamp(datetime_now_utc())) + '_' + str(random.randint(100000, 999999)) + '.csv'
+    filepath = settings.STATIC_ROOT + '/uploads/' + str(totimestamp(datetime_now_utc())) + '_' + str(random.randint(100000, 999999)) + '.csv'
     try:
         file = request.FILES['csvfile']
         destination = open(filepath, 'wb+')
         for chunk in file.chunks():
             destination.write(chunk)
             destination.close()
-    except:
-        result['error'] = 'Failed to upload file to server.'
+    except Exception as e:
+        result['error'] = str(e)
         return JsonResponse(result, safe=False)
 
     with open(filepath) as csvfile:

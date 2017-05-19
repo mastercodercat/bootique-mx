@@ -4,6 +4,9 @@
 cd /code
 cp ./mxtracking/docker_settings.py ./mxtracking/local_settings.py
 
+# prepare uploads directory
+mkdir ./static/uploads/
+
 # migration
 python manage.py makemigrations common home inspection routeplanning
 python manage.py migrate
@@ -25,4 +28,4 @@ python manage.py collectstatic --noinput
 npm run build
 
 # now boot
-gunicorn mxtracking.wsgi:application -b 0.0.0.0:8000
+gunicorn mxtracking.wsgi:application -b 0.0.0.0:8000 -t 300
