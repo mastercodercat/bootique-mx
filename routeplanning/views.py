@@ -231,17 +231,13 @@ def edit_line(request, line_id=None):
                 line.name = form.cleaned_data['name']
                 line.save()
 
+            line.linepart_set.delete()
+
             for i in range(1, 12):
                 entered_line_part_number = form.cleaned_data['part' + str(i)]
                 if entered_line_part_number:
-                    try:
-                        line_part = line.linepart_set.get(number=i)
-                        if line_part.number != entered_line_part_number:
-                            line_part.number = entered_line_part_number
-                            line_part.save()
-                    except:
-                        line_part = LinePart(number=entered_line_part_number, line=line)    
-                        line_part.save()
+                    line_part = LinePart(number=entered_line_part_number, line=line)    
+                    line_part.save()
                 else:
                     break
 
