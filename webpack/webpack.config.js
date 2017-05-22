@@ -16,7 +16,7 @@ module.exports = {
 
     output: {
         //where you want your compiled bundle to be stored
-        path: path.resolve('./static/bundles/'),
+        path: path.resolve(__dirname, '../static/bundles/'),
         //naming convention webpack should use for your files
         filename: '[name]-[hash].js',
         //tell Django to use this url for loading webpack bundles
@@ -33,7 +33,11 @@ module.exports = {
         new webpack.ProvidePlugin({
             $: "jquery",
             jQuery: "jquery",
-            "window.jQuery": "jquery"
+            "window.jQuery": "jquery",
+            Utils: path.resolve(__dirname, '../frontend/js/utils.js'),
+            RoutePlanningGantt: path.resolve(__dirname, '../frontend/js/gantt.js'),
+            ComingDueList: path.resolve(__dirname, '../frontend/js/comingduelist.js'),
+            HobbsForm: path.resolve(__dirname, '../frontend/js/hobbsform.js'),
         }),
     ],
 

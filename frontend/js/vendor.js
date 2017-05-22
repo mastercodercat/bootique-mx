@@ -1,0 +1,11 @@
+require('jquery');
+require('bootstrap');
+require('bootbox');
+require('bootstrap-datepicker');
+require('bootstrap-notify');
+require('clockpicker/dist/jquery-clockpicker');
+require('jasny-bootstrap/dist/js/jasny-bootstrap');
+require('jquery-slimscroll');
+require('metismenu');
+// require('pace-progress/pace');
+require('select2');

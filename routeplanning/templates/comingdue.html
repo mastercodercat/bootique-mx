@@ -1,6 +1,5 @@
 {% extends "layout.html" %}
 {% load staticfiles %}
-{% load render_bundle from webpack_loader %}
 {% load permission %}
 {% load tz %}
 
@@ -176,7 +175,6 @@
 {% endblock %}
 
 {% block pagejs %}
-    {% render_bundle 'hobbs' %}
     <script type="text/javascript">
         var csrfToken = "{{ csrf_token }}";
 

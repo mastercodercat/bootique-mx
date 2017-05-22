@@ -1,26 +1,7 @@
 var interact = require('interactjs');
+var Utils = require('./utils.js');
 
 var ganttLengthSeconds = 14 * 24 * 3600;
-
-/* helper functions */
-
-window.formatTo2Digits = function(number) {
-    return (number < 10 ? '0' : '') + number;
-}
-
-window.weekDayString = function(weekday) {
-    var weekdays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-    return weekdays[weekday % 7];
-}
-
-window.formatDate = function(date) {
-    return formatTo2Digits(date.getMonth() + 1) + '/' +
-        formatTo2Digits(date.getDate()) + '/' +
-        formatTo2Digits(date.getFullYear())  + ' ' +
-        formatTo2Digits(date.getHours())  + ':' +
-        formatTo2Digits(date.getMinutes())  + ':' +
-        formatTo2Digits(date.getSeconds());
-}
 
 /*
  * Route planning gantt class
@@ -30,7 +11,7 @@ window.formatDate = function(date) {
  *  flightAssignmentTable, flightTemplateTable, unit(in seconds), tablesWrapperSelector,
  *  csrfToken
  */
-window.RoutePlanningGantt = function(options) {
+function RoutePlanningGantt(options) {
     this.mode = 1;
     this.templates = {};
     this.assignments = [];
@@ -91,9 +72,9 @@ RoutePlanningGantt.prototype.placeBar = function($row, pos, length, object) {
         $bar.find('.org').html(object.origin);
         $bar.find('.dest').html(object.destination);
         date = new Date(object.departure_datetime);
-        $bar.find('.departure').html(formatDate(date));
+        $bar.find('.departure').html(Utils.formatDate(date));
         date = new Date(object.arrival_datetime);
-        $bar.find('.arrival').html(formatDate(date));
+        $bar.find('.arrival').html(Utils.formatDate(date));
 
         $row.append($bar);
     } else if (object.status == 3) {
@@ -106,9 +87,9 @@ RoutePlanningGantt.prototype.placeBar = function($row, pos, length, object) {
         $bar.find('.org').html(object.origin);
         $bar.find('.dest').html(object.destination);
         date = new Date(object.departure_datetime);
-        $bar.find('.departure').html(formatDate(date));
+        $bar.find('.departure').html(Utils.formatDate(date));
         date = new Date(object.arrival_datetime);
-        $bar.find('.arrival').html(formatDate(date));
+        $bar.find('.arrival').html(Utils.formatDate(date));
 
         $row.append($bar);
     } else {
@@ -154,9 +135,9 @@ RoutePlanningGantt.prototype.setStatusBarInfo = function($bar, object) {
     var $info = $bar.find('.info');
     var date;
     date = new Date(object.start_time);
-    $info.find('.start').html(formatDate(date));
+    $info.find('.start').html(Utils.formatDate(date));
     date = new Date(object.end_time);
-    $info.find('.end').html(formatDate(date));
+    $info.find('.end').html(Utils.formatDate(date));
 }
 
 RoutePlanningGantt.prototype.placeStatusBar = function($bar, $row, object) {
@@ -1015,4 +996,10 @@ RoutePlanningGantt.prototype.resizeAssignment = function(assignmentId, pos, diff
             diff_seconds: diffSeconds,
         },
     });
+}
+
+window.RoutePlanningGantt = RoutePlanningGantt;
+
+if (module && module.exports) {
+    module.exports = RoutePlanningGantt;
 }

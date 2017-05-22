@@ -1,6 +1,5 @@
 {% extends "layout.html" %}
 {% load staticfiles %}
-{% load render_bundle from webpack_loader %}
 {% load permission %}
 
 {% block head_title %}Route Planning Gantt{% endblock %}
@@ -254,7 +253,6 @@
 {% endblock %}
 
 {% block pagejs %}
-    {% render_bundle 'gantt' %}
     <script type="text/javascript">
         var readOnly = {{ request.user|can_write_gantt|yesno:"false,true" }};
         var days = {{ days }};
@@ -282,7 +280,7 @@
             var $rowBigUnits = $(this).find('.row-line.big-units');
             var date = new Date(startDate.getTime());
             $rowBigUnits.children('.unit').each(function() {
-                $(this).html(weekDayString(date.getDay()).substr(0, 3) + ' ' +
+                $(this).html(Utils.weekDayString(date.getDay()).substr(0, 3) + ' ' +
                     (date.getMonth() + 1) + '/' +
                     date.getDate() + '/' +
                     date.getFullYear());
@@ -294,12 +292,12 @@
             var date = new Date(startDate.getTime());
             if (days > 1 || hours >= 12) {
                 $row.children('.unit').each(function() {
-                    $(this).html(formatTo2Digits(date.getHours()));
+                    $(this).html(Utils.formatTo2Digits(date.getHours()));
                     date.setSeconds(date.getSeconds() + unit);
                 });
             } else {
                 $row.children('.unit').each(function() {
-                    $(this).html(formatTo2Digits(date.getHours()) + ':' + formatTo2Digits(date.getMinutes()));
+                    $(this).html(Utils.formatTo2Digits(date.getHours()) + ':' + Utils.formatTo2Digits(date.getMinutes()));
                     date.setSeconds(date.getSeconds() + unit);
                 });
             }
@@ -308,10 +306,10 @@
         /* Date pickers init */
 
         {% if start_param %}
-            $('#start_date').val(formatTo2Digits(startDate.getMonth() + 1) + '/' + formatTo2Digits(startDate.getDate()) + '/' + startDate.getFullYear());
+            $('#start_date').val(Utils.formatTo2Digits(startDate.getMonth() + 1) + '/' + Utils.formatTo2Digits(startDate.getDate()) + '/' + startDate.getFullYear());
         {% endif %}
         {% if end_param %}
-            $('#end_date').val(formatTo2Digits(endDate.getMonth() + 1) + '/' + formatTo2Digits(endDate.getDate()) + '/' + endDate.getFullYear());
+            $('#end_date').val(Utils.formatTo2Digits(endDate.getMonth() + 1) + '/' + Utils.formatTo2Digits(endDate.getDate()) + '/' + endDate.getFullYear());
         {% endif %}
 
         // initDatepickers();

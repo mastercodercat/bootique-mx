@@ -2,20 +2,14 @@ module.exports = {
 
     /* JS bundles */
 
-    inspinia: [
+    vendor: [
+        '../frontend/js/vendor.js',
         '../frontend/js/inspinia.js',
-    ],
-
-    datatables: [
         '../frontend/js/datatables.js',
-    ],
-
-    gantt: [
+        '../frontend/js/utils.js',
         '../frontend/js/gantt.js',
-    ],
-
-    hobbs: [
-        '../frontend/js/hobbs.js',
+        '../frontend/js/comingduelist.js',
+        '../frontend/js/hobbsform.js',
     ],
 
     /* Style bundles */
