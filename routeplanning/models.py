@@ -20,8 +20,8 @@ class Line(models.Model):
     @property
     def flights(self):
         line_parts = self.linepart_set.all().values('number')
-        flight_numbers = [lp['number'] for lp in line_parts]
-        return Flight.objects.filter(number__in=flight_numbers)
+        flight_numbers = [lp['number'][0:3] for lp in line_parts]
+        return Flight.objects.filter(number__in=set(flight_numbers))
 
 
 class LinePart(models.Model):
