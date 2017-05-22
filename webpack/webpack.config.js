@@ -19,6 +19,10 @@ module.exports = {
         path: path.resolve('./static/bundles/'),
         //naming convention webpack should use for your files
         filename: '[name]-[hash].js',
+        //tell Django to use this url for loading webpack bundles
+        publicPath: process.env.NODE_ENV === 'production' ?
+            '/static/bundles/' :
+            'http://localhost:8080/static/bundles/',
     },
 
     plugins: [

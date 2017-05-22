@@ -7,6 +7,11 @@ cp ./mxtracking/docker_settings.py ./mxtracking/local_settings.py
 # prepare uploads directory
 mkdir ./static/uploads/
 
+# clear bundles directory
+cd ./static/bundles/
+rm -f *
+cd /code
+
 # migration
 python manage.py makemigrations common home inspection routeplanning
 python manage.py migrate

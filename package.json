@@ -8,7 +8,7 @@
     "webpack"
   ],
   "scripts": {
-    "watch": "./node_modules/.bin/webpack --config webpack/webpack.config.js --watch",
+    "watch": "webpack-dev-server --config webpack/webpack.config.js --port 8080",
     "build": "npm install && NODE_ENV=production ./node_modules/.bin/webpack --config webpack/webpack.config.js"
   },
   "dependencies": {
@@ -42,6 +42,7 @@
     "style-loader": "^0.17.0",
     "url-loader": "^0.5.8",
     "webpack": "^2.5.1",
-    "webpack-bundle-tracker": "^0.2.0"
+    "webpack-bundle-tracker": "^0.2.0",
+    "webpack-dev-server": "^2.4.5"
   }
 }
