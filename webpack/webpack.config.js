@@ -42,13 +42,15 @@ module.exports = {
     ],
 
     module: {
-        loaders: [
+        rules: [
             {
                 test: /\.jsx?$/,
                 //we definitely don't want babel to transpile all the files in
                 //node_modules. That would take a long time.
                 exclude: /node_modules/,
-                loader: 'babel-loader',
+                use: [
+                    { loader: 'babel-loader' }
+                ]
             },
             {
                 test: /\.css$/,
@@ -63,20 +65,27 @@ module.exports = {
                 loader: ExtractTextPlugin.extract({ fallback: 'style-loader', use: 'css-loader!less-loader' })
             },
             {
-                test: /\.json$/,
-                loader: 'json'
-            },
-            {
                 test: /\.jpg|png$/,
                 loader: ExtractTextPlugin.extract({ use: 'file-loader' })
             },
             {
                 test: /\.(eot|svg|ttf|woff|jpg|png)(\?v=\d+\.\d+\.\d+)?/,
-                loader: 'url-loader'
+                use: [
+                    { loader: 'url-loader' }
+                ]
             },
             {
                 test: require.resolve('jquery'),
-                loader: 'expose-loader?jQuery!expose-loader?$'
+                use: [
+                    {
+                        loader: 'expose-loader',
+                        options: 'jQuery',
+                    },
+                    {
+                        loader: 'expose-loader',
+                        options: '$',
+                    }
+                ]
             }
         ]
     },
