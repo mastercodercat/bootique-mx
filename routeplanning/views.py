@@ -231,7 +231,7 @@ def edit_line(request, line_id=None):
                 line.name = form.cleaned_data['name']
                 line.save()
 
-            line.linepart_set.delete()
+            line.linepart_set.all().delete()
 
             for i in range(1, 12):
                 entered_line_part_number = form.cleaned_data['part' + str(i)]
