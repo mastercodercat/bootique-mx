@@ -1,4 +1,4 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseForbidden
 from datetime import timedelta
@@ -50,13 +50,27 @@ def aircraft_details(request, reg=''):
 @inspection_readable_required
 def aircraft_task_list(request, reg=''):
     aircraft = get_object_or_404(Aircraft.objects.select_related('inspection_program'), reg=reg)
-    inspection_programs = InspectionProgram.objects.all()
+    inspection_program = aircraft.inspection_program
+    inspection_tasks = inspection_program.inspection_tasks.all() if inspection_program else []
 
     context = {
         'aircraft': aircraft,
-        'inspection_programs': inspection_programs,
+        'inspection_program': inspection_program,
+        'inspection_tasks': inspection_tasks,
     }
     return render(request, 'task_list.html', context)
+
+@login_required
+@inspection_readable_required
+def aircraft_task(request, reg='', task_id=None):
+    aircraft = get_object_or_404(Aircraft.objects.select_related('inspection_program'), reg=reg)
+    inspection_task = get_object_or_404(InspectionTask, pk=task_id)
+
+    context = {
+        'aircraft': aircraft,
+        'inspection_task': inspection_task,
+    }
+    return render(request, 'task.html', context)
 
 @login_required
 @inspection_readable_required
@@ -73,6 +87,7 @@ def aircraft_mels(request, reg=''):
 @inspection_readable_required
 def aircraft_assign_program(request, reg=''):
     aircraft = get_object_or_404(Aircraft, reg=reg)
+
     form = AssignInspectionProgramForm(request.POST or {
         'inspection_program': aircraft.inspection_program
     })
@@ -83,6 +98,7 @@ def aircraft_assign_program(request, reg=''):
             inspection_program = form.cleaned_data.get('inspection_program')
             aircraft.inspection_program = inspection_program
             aircraft.save()
+            return redirect('home:aircraft_detail', reg=aircraft.reg)
 
     context = {
         'aircraft': aircraft,

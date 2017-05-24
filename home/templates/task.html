@@ -2,10 +2,10 @@
 {% load staticfiles %}
 {% load formatter %}
 
-{% block head_title %}Aircraft {{ aircraft.reg }} Task List{% endblock %}
+{% block head_title %}Aircraft {{ aircraft.reg }} {{ inspection_task.name }}{% endblock %}
 
 {% block page_title %}
-    Aircraft {{ aircraft.reg }} Task List
+    Aircraft {{ aircraft.reg }} {{ inspection_task.name }}
 {% endblock %}
 
 {% block breadcrumb %}
@@ -16,8 +16,11 @@
         <li>
             <a href="{% url 'home:aircraft_details' reg=aircraft.reg %}">{{ aircraft.reg }}</a>
         </li>
+        <li>
+            <a href="{% url 'home:aircraft_task_list' reg=aircraft.reg %}">Task List</a>
+        </li>
         <li class="active">
-            <span>Task List</span>
+            <span>{{ inspection_task.name }}</span>
         </li>
     </ol>
 {% endblock %}
@@ -25,16 +28,10 @@
 {% block content %}
     <div class="ibox">
         <div class="ibox-title">
-            <h3>Task List</h3>
+            <h3>{{ inspection_task.name }}</h3>
         </div>
         <div class="ibox-content">
-            {% for inspection_task in inspection_tasks %}
-                <h5>
-                    <a class="uppercase" href="{% url 'home:aircraft_task' reg=aircraft.reg task_id=inspection_task.id %}">
-                        {{ inspection_task.number|ndigits:2 }} - {{ inspection_task.name }} ({{ 0 }})
-                    </a>
-                </h5>
-            {% endfor %}
+            Task Content
         </div>
     </div>
 {% endblock %}

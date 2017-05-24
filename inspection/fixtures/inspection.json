@@ -1,626 +1,712 @@
 [
     {
-        "model":"inspection.inspectionprogram",
-        "pk":0,
-        "fields":{
-            "number":0,
-            "name":"GENERAL"
+        "model": "inspection.inspectionprogram",
+        "pk": 1,
+        "fields": {
+            "name": "All Check Program",
+            "inspection_tasks": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78]
         }
     },
     {
-        "model":"inspection.inspectionprogram",
+        "model":"inspection.inspectiontask",
         "pk":1,
         "fields":{
-            "number":1,
-            "name":"MAINTENANCE POLICY"
+            "number":0,
+            "name":"General",
+            "target":1
         }
     },
     {
-        "model":"inspection.inspectionprogram",
+        "model":"inspection.inspectiontask",
         "pk":2,
         "fields":{
-            "number":2,
-            "name":"OPERATIONS"
+            "number":1,
+            "name":"Maintenance Policy",
+            "target":1
         }
     },
     {
-        "model":"inspection.inspectionprogram",
+        "model":"inspection.inspectiontask",
         "pk":3,
         "fields":{
-            "number":3,
-            "name":"SUPPORT"
+            "number":2,
+            "name":"Operations",
+            "target":1
         }
     },
     {
-        "model":"inspection.inspectionprogram",
+        "model":"inspection.inspectiontask",
         "pk":4,
         "fields":{
-            "number":4,
-            "name":"AIRPLANE STATICS"
+            "number":3,
+            "name":"Support",
+            "target":1
         }
     },
     {
-        "model":"inspection.inspectionprogram",
+        "model":"inspection.inspectiontask",
         "pk":5,
         "fields":{
-            "number":5,
-            "name":"TIME LIMITS/MAINTENANCE CHECKS"
+            "number":4,
+            "name":"Airplane Statics",
+            "target":1
         }
     },
     {
-        "model":"inspection.inspectionprogram",
+        "model":"inspection.inspectiontask",
         "pk":6,
         "fields":{
-            "number":6,
-            "name":"DIMENSIONS AND AREAS"
+            "number":5,
+            "name":"Time Limits/maintenance Checks",
+            "target":1
         }
     },
     {
-        "model":"inspection.inspectionprogram",
+        "model":"inspection.inspectiontask",
         "pk":7,
         "fields":{
-            "number":7,
-            "name":"LIFTING AND SHORING"
+            "number":6,
+            "name":"Dimensions And Areas",
+            "target":1
         }
     },
     {
-        "model":"inspection.inspectionprogram",
+        "model":"inspection.inspectiontask",
         "pk":8,
         "fields":{
-            "number":8,
-            "name":"LEVELING AND WEIGHING."
+            "number":7,
+            "name":"Lifting And Shoring",
+            "target":1
         }
     },
     {
-        "model":"inspection.inspectionprogram",
+        "model":"inspection.inspectiontask",
         "pk":9,
         "fields":{
-            "number":9,
-            "name":"TOWING AND TAXI"
+            "number":8,
+            "name":"Leveling And Weighing.",
+            "target":1
         }
     },
     {
-        "model":"inspection.inspectionprogram",
+        "model":"inspection.inspectiontask",
         "pk":10,
         "fields":{
-            "number":10,
-            "name":"PARKING, MOORING, STORAGE AND RETURN TO SERVICE"
+            "number":9,
+            "name":"Towing And Taxi",
+            "target":1
         }
     },
     {
-        "model":"inspection.inspectionprogram",
+        "model":"inspection.inspectiontask",
         "pk":11,
         "fields":{
-            "number":11,
-            "name":"PLACARDS AND MARKINGS"
+            "number":10,
+            "name":"Parking, Mooring, Storage And Return To Service",
+            "target":1
         }
     },
     {
-        "model":"inspection.inspectionprogram",
+        "model":"inspection.inspectiontask",
         "pk":12,
         "fields":{
-            "number":12,
-            "name":"SERVICING - ROUTINE MAINTENANCE"
+            "number":11,
+            "name":"Placards And Markings",
+            "target":1
         }
     },
     {
-        "model":"inspection.inspectionprogram",
+        "model":"inspection.inspectiontask",
         "pk":13,
         "fields":{
-            "number":14,
-            "name":"HARDWARE"
+            "number":12,
+            "name":"Servicing - Routine Maintenance",
+            "target":1
         }
     },
     {
-        "model":"inspection.inspectionprogram",
+        "model":"inspection.inspectiontask",
         "pk":14,
         "fields":{
-            "number":18,
-            "name":"VIBRATION AND NOISE ANALYSIS (HELICOPTER ONLY)"
+            "number":14,
+            "name":"Hardware",
+            "target":1
         }
     },
     {
-        "model":"inspection.inspectionprogram",
+        "model":"inspection.inspectiontask",
         "pk":15,
         "fields":{
-            "number":20,
-            "name":"STANDARD PRACTICES - AIRFRAME"
+            "number":18,
+            "name":"Vibration And Noise Analysis (Helicopter Only)",
+            "target":1
         }
     },
     {
-        "model":"inspection.inspectionprogram",
+        "model":"inspection.inspectiontask",
         "pk":16,
         "fields":{
-            "number":21,
-            "name":"AIR CONDITIONING & PRESSURIZATION"
+            "number":20,
+            "name":"Standard Practices - Airframe",
+            "target":2
         }
     },
     {
-        "model":"inspection.inspectionprogram",
+        "model":"inspection.inspectiontask",
         "pk":17,
         "fields":{
-            "number":22,
-            "name":"AUTO FLIGHT"
+            "number":21,
+            "name":"Air Conditioning & Pressurization",
+            "target":2
         }
     },
     {
-        "model":"inspection.inspectionprogram",
+        "model":"inspection.inspectiontask",
         "pk":18,
         "fields":{
-            "number":23,
-            "name":"COMMUNICATIONS"
+            "number":22,
+            "name":"Auto Flight",
+            "target":2
         }
     },
     {
-        "model":"inspection.inspectionprogram",
+        "model":"inspection.inspectiontask",
         "pk":19,
         "fields":{
-            "number":24,
-            "name":"ELECTRICAL POWER"
+            "number":23,
+            "name":"Communications",
+            "target":2
         }
     },
     {
-        "model":"inspection.inspectionprogram",
+        "model":"inspection.inspectiontask",
         "pk":20,
         "fields":{
-            "number":25,
-            "name":"EQUIPMENT / FURNISHINGS"
+            "number":24,
+            "name":"Electrical Power",
+            "target":2
         }
     },
     {
-        "model":"inspection.inspectionprogram",
+        "model":"inspection.inspectiontask",
         "pk":21,
         "fields":{
-            "number":26,
-            "name":"FIRE PROTECTION"
+            "number":25,
+            "name":"Equipment / Furnishings",
+            "target":2
         }
     },
     {
-        "model":"inspection.inspectionprogram",
+        "model":"inspection.inspectiontask",
         "pk":22,
         "fields":{
-            "number":27,
-            "name":"FLIGHT CONTROLS"
+            "number":26,
+            "name":"Fire Protection",
+            "target":2
         }
     },
     {
-        "model":"inspection.inspectionprogram",
+        "model":"inspection.inspectiontask",
         "pk":23,
         "fields":{
-            "number":28,
-            "name":"FUEL"
+            "number":27,
+            "name":"Flight Controls",
+            "target":2
         }
     },
     {
-        "model":"inspection.inspectionprogram",
+        "model":"inspection.inspectiontask",
         "pk":24,
         "fields":{
-            "number":29,
-            "name":"HYDRAULIC POWER"
+            "number":28,
+            "name":"Fuel",
+            "target":2
         }
     },
     {
-        "model":"inspection.inspectionprogram",
+        "model":"inspection.inspectiontask",
         "pk":25,
         "fields":{
-            "number":30,
-            "name":"ICE AND RAIN PROTECTION"
+            "number":29,
+            "name":"Hydraulic Power",
+            "target":2
         }
     },
     {
-        "model":"inspection.inspectionprogram",
+        "model":"inspection.inspectiontask",
         "pk":26,
         "fields":{
-            "number":31,
-            "name":"INDICATING / RECORDING SYSTEM"
+            "number":30,
+            "name":"Ice And Rain Protection",
+            "target":2
         }
     },
     {
-        "model":"inspection.inspectionprogram",
+        "model":"inspection.inspectiontask",
         "pk":27,
         "fields":{
-            "number":32,
-            "name":"LANDING GEAR"
+            "number":31,
+            "name":"Indicating / Recording System",
+            "target":2
         }
     },
     {
-        "model":"inspection.inspectionprogram",
+        "model":"inspection.inspectiontask",
         "pk":28,
         "fields":{
-            "number":33,
-            "name":"LIGHTS"
+            "number":32,
+            "name":"Landing Gear",
+            "target":2
         }
     },
     {
-        "model":"inspection.inspectionprogram",
+        "model":"inspection.inspectiontask",
         "pk":29,
         "fields":{
-            "number":34,
-            "name":"NAVIGATION"
+            "number":33,
+            "name":"Lights",
+            "target":2
         }
     },
     {
-        "model":"inspection.inspectionprogram",
+        "model":"inspection.inspectiontask",
         "pk":30,
         "fields":{
-            "number":35,
-            "name":"OXYGEN"
+            "number":34,
+            "name":"Navigation",
+            "target":2
         }
     },
     {
-        "model":"inspection.inspectionprogram",
+        "model":"inspection.inspectiontask",
         "pk":31,
         "fields":{
-            "number":36,
-            "name":"PNEUMATIC"
+            "number":35,
+            "name":"Oxygen",
+            "target":2
         }
     },
     {
-        "model":"inspection.inspectionprogram",
+        "model":"inspection.inspectiontask",
         "pk":32,
         "fields":{
-            "number":37,
-            "name":"VACUUM"
+            "number":36,
+            "name":"Pneumatic",
+            "target":2
         }
     },
     {
-        "model":"inspection.inspectionprogram",
+        "model":"inspection.inspectiontask",
         "pk":33,
         "fields":{
-            "number":38,
-            "name":"WATER / WASTE"
+            "number":37,
+            "name":"Vacuum",
+            "target":2
         }
     },
     {
-        "model":"inspection.inspectionprogram",
+        "model":"inspection.inspectiontask",
         "pk":34,
         "fields":{
-            "number":39,
-            "name":"ELECTRICAL - ELECTRONIC PANELS AND MULTIPURPOSE COMPONENTS"
+            "number":38,
+            "name":"Water / Waste",
+            "target":2
         }
     },
     {
-        "model":"inspection.inspectionprogram",
+        "model":"inspection.inspectiontask",
         "pk":35,
         "fields":{
-            "number":40,
-            "name":"MULTISYSTEM"
+            "number":39,
+            "name":"Electrical - Electronic Panels And Multipurpose Components",
+            "target":2
         }
     },
     {
-        "model":"inspection.inspectionprogram",
+        "model":"inspection.inspectiontask",
         "pk":36,
         "fields":{
-            "number":41,
-            "name":"WATER BALLAST"
+            "number":40,
+            "name":"Multisystem",
+            "target":2
         }
     },
     {
-        "model":"inspection.inspectionprogram",
+        "model":"inspection.inspectiontask",
         "pk":37,
         "fields":{
-            "number":42,
-            "name":"INTEGRATED MODULAR AVIONICS"
+            "number":41,
+            "name":"Water Ballast",
+            "target":2
         }
     },
     {
-        "model":"inspection.inspectionprogram",
+        "model":"inspection.inspectiontask",
         "pk":38,
         "fields":{
-            "number":44,
-            "name":"CABIN SYSTEMS"
+            "number":42,
+            "name":"Integrated Modular Avionics",
+            "target":2
         }
     },
     {
-        "model":"inspection.inspectionprogram",
+        "model":"inspection.inspectiontask",
         "pk":39,
         "fields":{
-            "number":45,
-            "name":"DIAGNOSTIC AND MAINTENANCE SYSTEM"
+            "number":44,
+            "name":"Cabin Systems",
+            "target":2
         }
     },
     {
-        "model":"inspection.inspectionprogram",
+        "model":"inspection.inspectiontask",
         "pk":40,
         "fields":{
-            "number":46,
-            "name":"INFORMATION SYSTEMS"
+            "number":45,
+            "name":"Diagnostic And Maintenance System",
+            "target":2
         }
     },
     {
-        "model":"inspection.inspectionprogram",
+        "model":"inspection.inspectiontask",
         "pk":41,
         "fields":{
-            "number":47,
-            "name":"NITROGEN GENERATION SYSTEM"
+            "number":46,
+            "name":"Information Systems",
+            "target":2
         }
     },
     {
-        "model":"inspection.inspectionprogram",
+        "model":"inspection.inspectiontask",
         "pk":42,
         "fields":{
-            "number":48,
-            "name":"IN FLIGHT FUEL DISPENSING"
+            "number":47,
+            "name":"Nitrogen Generation System",
+            "target":2
         }
     },
     {
-        "model":"inspection.inspectionprogram",
+        "model":"inspection.inspectiontask",
         "pk":43,
         "fields":{
-            "number":49,
-            "name":"AIRBORNE AUXILIARY POWER"
+            "number":48,
+            "name":"In Flight Fuel Dispensing",
+            "target":2
         }
     },
     {
-        "model":"inspection.inspectionprogram",
+        "model":"inspection.inspectiontask",
         "pk":44,
         "fields":{
-            "number":50,
-            "name":"CARGO AND ACCESSORY COMPARTMENTS"
+            "number":49,
+            "name":"Airborne Auxiliary Power",
+            "target":2
         }
     },
     {
-        "model":"inspection.inspectionprogram",
+        "model":"inspection.inspectiontask",
         "pk":45,
         "fields":{
-            "number":51,
-            "name":"STANDARD PRACTICES AND STRUCTURES - GENERAL"
+            "number":50,
+            "name":"Cargo And Accessory Compartments",
+            "target":2
         }
     },
     {
-        "model":"inspection.inspectionprogram",
+        "model":"inspection.inspectiontask",
         "pk":46,
         "fields":{
-            "number":52,
-            "name":"DOORS"
+            "number":51,
+            "name":"Standard Practices And Structures - General",
+            "target":2
         }
     },
     {
-        "model":"inspection.inspectionprogram",
+        "model":"inspection.inspectiontask",
         "pk":47,
         "fields":{
-            "number":53,
-            "name":"FUSELAGE"
+            "number":52,
+            "name":"Doors",
+            "target":2
         }
     },
     {
-        "model":"inspection.inspectionprogram",
+        "model":"inspection.inspectiontask",
         "pk":48,
         "fields":{
-            "number":54,
-            "name":"NACELLES/PYLONS"
+            "number":53,
+            "name":"Fuselage",
+            "target":2
         }
     },
     {
-        "model":"inspection.inspectionprogram",
+        "model":"inspection.inspectiontask",
         "pk":49,
         "fields":{
-            "number":55,
-            "name":"STABILIZERS"
+            "number":54,
+            "name":"Nacelles/pylons",
+            "target":2
         }
     },
     {
-        "model":"inspection.inspectionprogram",
+        "model":"inspection.inspectiontask",
         "pk":50,
         "fields":{
-            "number":56,
-            "name":"WINDOWS"
+            "number":55,
+            "name":"Stabilizers",
+            "target":2
         }
     },
     {
-        "model":"inspection.inspectionprogram",
+        "model":"inspection.inspectiontask",
         "pk":51,
         "fields":{
-            "number":57,
-            "name":"WINGS"
+            "number":56,
+            "name":"Windows",
+            "target":2
         }
     },
     {
-        "model":"inspection.inspectionprogram",
+        "model":"inspection.inspectiontask",
         "pk":52,
         "fields":{
-            "number":60,
-            "name":"STANDARD PRACTICES - PROP./ROTOR"
+            "number":57,
+            "name":"Wings",
+            "target":2
         }
     },
     {
-        "model":"inspection.inspectionprogram",
+        "model":"inspection.inspectiontask",
         "pk":53,
         "fields":{
-            "number":61,
-            "name":"PROPELLERS"
+            "number":60,
+            "name":"Standard Practices - Prop./rotor",
+            "target":3
         }
     },
     {
-        "model":"inspection.inspectionprogram",
+        "model":"inspection.inspectiontask",
         "pk":54,
         "fields":{
-            "number":62,
-            "name":"ROTOR(S)"
+            "number":61,
+            "name":"Propellers",
+            "target":3
         }
     },
     {
-        "model":"inspection.inspectionprogram",
+        "model":"inspection.inspectiontask",
         "pk":55,
         "fields":{
-            "number":63,
-            "name":"ROTOR DRIVE(S)"
+            "number":62,
+            "name":"Rotor(s)",
+            "target":3
         }
     },
     {
-        "model":"inspection.inspectionprogram",
+        "model":"inspection.inspectiontask",
         "pk":56,
         "fields":{
-            "number":64,
-            "name":"TAIL ROTOR"
+            "number":63,
+            "name":"Rotor Drive(s)",
+            "target":3
         }
     },
     {
-        "model":"inspection.inspectionprogram",
+        "model":"inspection.inspectiontask",
         "pk":57,
         "fields":{
-            "number":65,
-            "name":"TAIL ROTOR DRIVE"
+            "number":64,
+            "name":"Tail Rotor",
+            "target":3
         }
     },
     {
-        "model":"inspection.inspectionprogram",
+        "model":"inspection.inspectiontask",
         "pk":58,
         "fields":{
-            "number":66,
-            "name":"FOLDING BLADES/PYLON"
+            "number":65,
+            "name":"Tail Rotor Drive",
+            "target":3
         }
     },
     {
-        "model":"inspection.inspectionprogram",
+        "model":"inspection.inspectiontask",
         "pk":59,
         "fields":{
-            "number":67,
-            "name":"ROTORS FLIGHT CONTROL"
+            "number":66,
+            "name":"Folding Blades/pylon",
+            "target":3
         }
     },
     {
-        "model":"inspection.inspectionprogram",
+        "model":"inspection.inspectiontask",
         "pk":60,
         "fields":{
-            "number":70,
-            "name":"STANDARD PRACTICES ENGINE"
+            "number":67,
+            "name":"Rotors Flight Control",
+            "target":3
         }
     },
     {
-        "model":"inspection.inspectionprogram",
+        "model":"inspection.inspectiontask",
         "pk":61,
         "fields":{
-            "number":71,
-            "name":"POWER PLANT"
+            "number":70,
+            "name":"Standard Practices Engine",
+            "target":4
         }
     },
     {
-        "model":"inspection.inspectionprogram",
+        "model":"inspection.inspectiontask",
         "pk":62,
         "fields":{
-            "number":72,
-            "name":"ENGINE GENERAL"
+            "number":71,
+            "name":"Power Plant",
+            "target":4
         }
     },
     {
-        "model":"inspection.inspectionprogram",
+        "model":"inspection.inspectiontask",
         "pk":63,
         "fields":{
-            "number":73,
-            "name":"ENGINE FUEL AND CONTROL"
+            "number":72,
+            "name":"Engine General",
+            "target":4
         }
     },
     {
-        "model":"inspection.inspectionprogram",
+        "model":"inspection.inspectiontask",
         "pk":64,
         "fields":{
-            "number":74,
-            "name":"ENGINE IGNITION"
+            "number":73,
+            "name":"Engine Fuel And Control",
+            "target":4
         }
     },
     {
-        "model":"inspection.inspectionprogram",
+        "model":"inspection.inspectiontask",
         "pk":65,
         "fields":{
-            "number":75,
-            "name":"ENGINE BLEED AIR"
+            "number":74,
+            "name":"Engine Ignition",
+            "target":4
         }
     },
     {
-        "model":"inspection.inspectionprogram",
+        "model":"inspection.inspectiontask",
         "pk":66,
         "fields":{
-            "number":76,
-            "name":"ENGINE CONTROL"
+            "number":75,
+            "name":"Engine Bleed Air",
+            "target":4
         }
     },
     {
-        "model":"inspection.inspectionprogram",
+        "model":"inspection.inspectiontask",
         "pk":67,
         "fields":{
-            "number":77,
-            "name":"ENGINE INDICATING"
+            "number":76,
+            "name":"Engine Control",
+            "target":4
         }
     },
     {
-        "model":"inspection.inspectionprogram",
+        "model":"inspection.inspectiontask",
         "pk":68,
         "fields":{
-            "number":78,
-            "name":"ENGINE EXHAUST SYSTEM"
+            "number":77,
+            "name":"Engine Indicating",
+            "target":4
         }
     },
     {
-        "model":"inspection.inspectionprogram",
+        "model":"inspection.inspectiontask",
         "pk":69,
         "fields":{
-            "number":79,
-            "name":"ENGINE OIL"
+            "number":78,
+            "name":"Engine Exhaust System",
+            "target":4
         }
     },
     {
-        "model":"inspection.inspectionprogram",
+        "model":"inspection.inspectiontask",
         "pk":70,
         "fields":{
-            "number":80,
-            "name":"ENGINE STARTING"
+            "number":79,
+            "name":"Engine Oil",
+            "target":4
         }
     },
     {
-        "model":"inspection.inspectionprogram",
+        "model":"inspection.inspectiontask",
         "pk":71,
         "fields":{
-            "number":81,
-            "name":"TURBINES (RECIPROCATING ENGINES)"
+            "number":80,
+            "name":"Engine Starting",
+            "target":4
         }
     },
     {
-        "model":"inspection.inspectionprogram",
+        "model":"inspection.inspectiontask",
         "pk":72,
         "fields":{
-            "number":82,
-            "name":"WATER INJECTION"
+            "number":81,
+            "name":"Turbines (Reciprocating Engines)",
+            "target":4
         }
     },
     {
-        "model":"inspection.inspectionprogram",
+        "model":"inspection.inspectiontask",
         "pk":73,
         "fields":{
-            "number":83,
-            "name":"ACCESSORY GEARBOXES"
+            "number":82,
+            "name":"Water Injection",
+            "target":4
         }
     },
     {
-        "model":"inspection.inspectionprogram",
+        "model":"inspection.inspectiontask",
         "pk":74,
         "fields":{
-            "number":84,
-            "name":"PROPULSION AUGMENTATION"
+            "number":83,
+            "name":"Accessory Gearboxes",
+            "target":4
         }
     },
     {
-        "model":"inspection.inspectionprogram",
+        "model":"inspection.inspectiontask",
         "pk":75,
         "fields":{
-            "number":85,
-            "name":"FUEL CELL SYSTEMS"
+            "number":84,
+            "name":"Propulsion Augmentation",
+            "target":4
         }
     },
     {
-        "model":"inspection.inspectionprogram",
+        "model":"inspection.inspectiontask",
         "pk":76,
         "fields":{
-            "number":91,
-            "name":"CHARTS"
+            "number":85,
+            "name":"Fuel Cell Systems",
+            "target":4
         }
     },
     {
-        "model":"inspection.inspectionprogram",
+        "model":"inspection.inspectiontask",
         "pk":77,
         "fields":{
+            "number":91,
+            "name":"Charts",
+            "target":4
+        }
+    },
+    {
+        "model":"inspection.inspectiontask",
+        "pk":78,
+        "fields":{
             "number":92,
-            "name":"ELECTRICAL SYSTEM INSTALLATION"
+            "name":"Electrical System Installation",
+            "target":4
         }
     }
 ]
