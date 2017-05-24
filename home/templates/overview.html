@@ -101,6 +101,7 @@
                             <td>{{ aircraft.reported_date | date:"d-M-Y" }}</td>
                             <td>{{ aircraft.airframe.reported_hours }}</td>
                             <td>{{ aircraft.airframe.reported_landings }}</td>
+                            {% comment %}
                             {% if aircraft.next_inspection_due %}
                                 <td>{{ aircraft.next_inspection_due.1 | date:"d-M-Y" }}</td>
                                 <td>{{ aircraft.next_inspection_due.1 | duestatus }}</td>
@@ -108,6 +109,9 @@
                                 <td>-</td>
                                 <td></td>
                             {% endif %}
+                            {% endcomment %}
+                            <td>-</td>
+                            <td></td>
                         </tr>
                     {% endfor %}
                 </tbody>

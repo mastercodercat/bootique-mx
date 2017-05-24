@@ -101,33 +101,33 @@ class Aircraft(models.Model):
     def __unicode__(self):
         return self.reg
 
-    @property
-    def inspections(self):
-        if self.inspection_program is None:
-            return []
-        else:
-            return self.inspection_program.inspection_set.all().prefetch_related('aircraftinspectionrecord_set')
+    # @property
+    # def inspections(self):
+    #     if self.inspection_program is None:
+    #         return []
+    #     else:
+    #         return self.inspection_program.inspection_set.all().prefetch_related('aircraftinspectionrecord_set')
 
-    @property
-    def next_inspection_due(self):
-        inspections = self.inspections
-        _next_inspection_due = None
-        _next_inspection_due_date = None
-        for inspection in inspections:
-            inspection_records = inspection.aircraftinspectionrecord_set.order_by('-inspection_date').all()
-            if not inspection_records:
-                _next_inspection_due = inspection
-                _next_inspection_due_date = datetime_now_utc()
-            else:
-                last_record = inspection_records[0]
-                next_due_date = last_record.inspection_date + (timedelta(days=inspection.interval) if inspection.interval_unit == 'days' else timedelta(hours=inspection.interval))
-                if _next_inspection_due_date is None or next_due_date < _next_inspection_due_date:
-                    _next_inspection_due_date = next_due_date
-                    _next_inspection_due = inspection
+    # @property
+    # def next_inspection_due(self):
+    #     inspections = self.inspections
+    #     _next_inspection_due = None
+    #     _next_inspection_due_date = None
+    #     for inspection in inspections:
+    #         inspection_records = inspection.aircraftinspectionrecord_set.order_by('-inspection_date').all()
+    #         if not inspection_records:
+    #             _next_inspection_due = inspection
+    #             _next_inspection_due_date = datetime_now_utc()
+    #         else:
+    #             last_record = inspection_records[0]
+    #             next_due_date = last_record.inspection_date + (timedelta(days=inspection.interval) if inspection.interval_unit == 'days' else timedelta(hours=inspection.interval))
+    #             if _next_inspection_due_date is None or next_due_date < _next_inspection_due_date:
+    #                 _next_inspection_due_date = next_due_date
+    #                 _next_inspection_due = inspection
 
-        if _next_inspection_due is None:
-            return (inspections[0], datetime_now_utc()) if inspections else None
-        return (_next_inspection_due, _next_inspection_due_date)
+    #     if _next_inspection_due is None:
+    #         return (inspections[0], datetime_now_utc()) if inspections else None
+    #     return (_next_inspection_due, _next_inspection_due_date)
 
 
 class Airframe(models.Model):
@@ -179,17 +179,3 @@ class Propeller(models.Model):
     @property
     def next_inspection_time(self):
         return self.last_inspection_time + timedelta(days=90)
-
-
-class AircraftInspectionRecord(models.Model):
-    aircraft = models.ForeignKey(Aircraft, null=True, blank=False)
-    inspection = models.ForeignKey(Inspection, null=True, blank=False)
-
-    target = models.CharField(max_length=1, choices=Inspection.INSPECTION_TARGET_CHOICES) # redundance field of inspection.target for performance
-    inspection_date = models.DateTimeField(blank=True)
-
-    class Meta:
-        db_table = 'aircraft_inspection_record'
-
-    def __unicode__(self):
-        return self.name

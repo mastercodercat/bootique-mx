@@ -3,7 +3,7 @@ from __future__ import unicode_literals
 from django.db import models
 
 
-class Inspection(models.Model):
+class InspectionTask(models.Model):
     name = models.CharField(max_length=100, blank=True)
     INSPECTION_TARGET_CHOICES = (
         (1, 'Aircraft'),
@@ -18,7 +18,7 @@ class Inspection(models.Model):
     inspection_program = models.ForeignKey('InspectionProgram', null=True, blank=False)
 
     class Meta:
-        db_table = 'inspection'
+        db_table = 'inspection_task'
 
     def __unicode__(self):
         return self.name
@@ -37,6 +37,7 @@ class Inspection(models.Model):
 
 
 class InspectionProgram(models.Model):
+    number = models.IntegerField(null=False, blank=False)
     name = models.CharField(max_length=100, blank=True)
 
     class Meta:

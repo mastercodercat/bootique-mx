@@ -18,15 +18,15 @@ def overview(request):
     threshold_count = 0
     coming_due_count = 0
 
-    for aircraft in aircrafts:
-        if aircraft.next_inspection_due is not None:
-            next_due_date = aircraft.next_inspection_due[1]
-            if is_past_due(next_due_date):
-                past_due_count += 1
-            elif is_within_threshold(next_due_date):
-                threshold_count += 1
-            else:
-                coming_due_count += 1
+    # for aircraft in aircrafts:
+    #     if aircraft.next_inspection_due is not None:
+    #         next_due_date = aircraft.next_inspection_due[1]
+    #         if is_past_due(next_due_date):
+    #             past_due_count += 1
+    #         elif is_within_threshold(next_due_date):
+    #             threshold_count += 1
+    #         else:
+    #             coming_due_count += 1
 
     context = {
         'aircrafts': aircrafts,
@@ -50,9 +50,11 @@ def aircraft_details(request, reg=''):
 @inspection_readable_required
 def aircraft_task_list(request, reg=''):
     aircraft = get_object_or_404(Aircraft.objects.select_related('inspection_program'), reg=reg)
+    inspection_programs = InspectionProgram.objects.all()
 
     context = {
         'aircraft': aircraft,
+        'inspection_programs': inspection_programs,
     }
     return render(request, 'task_list.html', context)
 

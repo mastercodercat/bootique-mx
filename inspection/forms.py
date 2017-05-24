@@ -11,7 +11,7 @@ class InspectionProgramForm(ModelForm):
 
 class InspectionForm(ModelForm):
     class Meta:
-        model = Inspection
+        model = InspectionTask
         fields = '__all__'
         exclude = ('inspection_program', )
 

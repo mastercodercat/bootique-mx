@@ -54,7 +54,6 @@ Run all the commands in the following order:
 `python manage.py loaddata roles.json`
 `python manage.py loaddata inspection.json`
 `python manage.py loaddata aircraft.json`
-`python manage.py loaddata aircraft_inspection_record.json`
 `python manage.py loaddata airframes.json`
 `python manage.py loaddata engines.json`
 `python manage.py loaddata propellers.json`

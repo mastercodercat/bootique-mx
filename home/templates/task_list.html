@@ -27,13 +27,9 @@
             <h3>Task List</h3>
         </div>
         <div class="ibox-content">
-            {% if aircraft.inspection_program %}
-                {% for inspection in aircraft.inspection_program.inspection_set.all %}
-                    <h5>{{ inspection.name }}</h5>
-                {% endfor %}
-            {% else %}
-                Aircraft doesn't have an inspection program assigned.
-            {% endif %}
+            {% for inspection_program in inspection_programs %}
+                <h5>{{ inspection_program.number }} - {{ inspection_program.name }} ({{ inspection_program.inspectiontask_set.count }})</h5>
+            {% endfor %}
         </div>
     </div>
 {% endblock %}
