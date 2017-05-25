@@ -51,6 +51,15 @@ def shell():
 
 
 @task
+def psql():
+    """
+    Create django admin account
+    """
+    with cd(PROJECT_ROOT):
+        run('docker-compose exec --user postgres db psql')
+
+
+@task
 def bootstrap():
     """
     Setup server environment using docker
