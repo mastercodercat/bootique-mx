@@ -69,6 +69,7 @@ def aircraft_task(request, reg='', task_id=None):
     context = {
         'aircraft': aircraft,
         'inspection_task': inspection_task,
+        'inspection_task_name': str(inspection_task),
     }
     return render(request, 'task.html', context)
 

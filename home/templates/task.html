@@ -2,10 +2,10 @@
 {% load staticfiles %}
 {% load formatter %}
 
-{% block head_title %}Aircraft {{ aircraft.reg }} {{ inspection_task.name }}{% endblock %}
+{% block head_title %}Aircraft {{ aircraft.reg }}: {{ inspection_task_name }}{% endblock %}
 
 {% block page_title %}
-    Aircraft {{ aircraft.reg }} {{ inspection_task.name }}
+    Aircraft {{ aircraft.reg }}: {{ inspection_task_name }}
 {% endblock %}
 
 {% block breadcrumb %}
@@ -20,7 +20,7 @@
             <a href="{% url 'home:aircraft_task_list' reg=aircraft.reg %}">Task List</a>
         </li>
         <li class="active">
-            <span>{{ inspection_task.name }}</span>
+            <span>{{ inspection_task_name }}</span>
         </li>
     </ol>
 {% endblock %}
@@ -28,10 +28,80 @@
 {% block content %}
     <div class="ibox">
         <div class="ibox-title">
-            <h3>{{ inspection_task.name }}</h3>
+            <h3>{{ inspection_task_name }}</h3>
         </div>
         <div class="ibox-content">
-            Task Content
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>PN & SN</th>
+                        <th>Unit</th>
+                        <th>Interval</th>
+                        <th>C/W</th>
+                        <th>TSX/Adj.</th>
+                        <th>Next Due</th>
+                        <th>Max. Limit</th>
+                        <th>Remaining</th>
+                        <th>Est.Due</th>
+                        <th>Time Accrued</th>
+                        <th style="width: 1%;"><i class="fa fa-paperclip"></i></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td colspan="10">
+                            <strong class="uppercase">
+                                21-20/127" Operational Test ECS Emergency Shut-off System ECS Emer Shut-off Value - Operational Test
+                            </strong>
+                            <div class="pull-right">Service ATA:21</div>
+                        </td>
+                        <td>
+                            <a href="#">
+                                <i class="fa fa-paperclip"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>MOS</td>
+                        <td>12<sup>s</sup></td>
+                        <td>17-Dec-16</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td>1.7</td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>HRS</td>
+                        <td></td>
+                        <td>7273</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td>183.9</td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>AFL</td>
+                        <td></td>
+                        <td>6397</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td>156</td>
+                        <td></td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
     </div>
 {% endblock %}
