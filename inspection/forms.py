@@ -9,12 +9,18 @@ class InspectionProgramForm(ModelForm):
         model = InspectionProgram
         fields = '__all__'
 
-class InspectionForm(ModelForm):
+class AddTaskForm(forms.Form):
+    inspection_task = forms.ModelChoiceField(
+        queryset=InspectionTask.objects.all(),
+        label='Inspection Task',
+        empty_label='(Not assigned)',
+        required=True
+    )
+
     class Meta:
-        model = InspectionTask
-        fields = '__all__'
-        exclude = ('inspection_program', )
+        fields = ('inspection_task',)
 
     def __init__(self, *args, **kwargs):
-        super(InspectionForm, self).__init__(*args, **kwargs)
-        self.fields['target'].widget.attrs['class'] = 'select2 m-b'
+        inspection_tasks = kwargs.pop('inspection_tasks')
+        super(AddTaskForm, self).__init__(*args, **kwargs)
+        self.fields['inspection_task'].queryset = inspection_tasks

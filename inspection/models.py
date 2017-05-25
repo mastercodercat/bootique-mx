@@ -2,6 +2,8 @@ from __future__ import unicode_literals
 
 from django.db import models
 
+from common.helpers import *
+
 
 class InspectionTask(models.Model):
     number = models.IntegerField(null=False, blank=False)
@@ -18,12 +20,12 @@ class InspectionTask(models.Model):
         db_table = 'inspection_task'
 
     def __unicode__(self):
-        return self.name
+        return ndigits(self.number, 2) + ' - ' + self.name
 
     @property
     def target_name(self):
         target_choice_item = None
-        for item in Inspection.INSPECTION_TARGET_CHOICES:
+        for item in InspectionTask.INSPECTION_TARGET_CHOICES:
             if item[0] == self.target:
                 target_choice_item = item
                 break

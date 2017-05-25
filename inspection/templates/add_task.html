@@ -2,10 +2,10 @@
 {% load staticfiles %}
 {% load addclass %}
 
-{% block head_title %}Create Inspection{% endblock %}
+{% block head_title %}Add Task{% endblock %}
 
 {% block page_title %}
-    Create Inspection
+    Add Task
 {% endblock %}
 
 {% block breadcrumb %}
@@ -17,7 +17,7 @@
             <a href="{% url 'inspection:inspection_program_details' program_id=inspection_program.id %}">{{ inspection_program.name }}</a>
         </li>
         <li class="active">
-            <strong>Create Inspection</strong>
+            <strong>Add Task</strong>
         </li>
     </ol>
 {% endblock %}
@@ -25,7 +25,7 @@
 {% block content %}
     <div class="ibox">
         <div class="ibox-title">
-            <h3>Create New Inspection</h3>
+            <h3>Add Task</h3>
         </div>
         <div class="ibox-content">
             <div class="row">
@@ -42,7 +42,7 @@
                             </div>
                         {% endfor %}
                         <div class="text-right m-t-lg">
-                            <button class="btn btn-primary" type="submit">Create</button>
+                            <button class="btn btn-primary" type="submit">Add</button>
                         </div>
                     </form>
                 </div>

@@ -25,7 +25,7 @@
         </div>
         <div class="ibox-content">
             <div class="m-b">
-                <a href="{% url 'inspection:create_inspection' program_id=inspection_program.id %}" class="btn btn-w-m btn-primary">Create Inspection</a>
+                <a href="{% url 'inspection:add_inspection_task' program_id=inspection_program.id %}" class="btn btn-w-m btn-primary">Add Inspection Task</a>
             </div>
             <table id="inspection-program-inspections-table" class="datatable table table-stripped toggle-arrow-tiny"
                 data-name="inspection_program_inspections_table"
@@ -36,18 +36,14 @@
                         <th data-sortable="false"><input type="checkbox" class="select-all"></th>
                         <th>Name</th>
                         <th>Target</th>
-                        <th>Interval</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for inspection in inspection_program.inspection_set.all %}
+                    {% for inspection_task in inspection_tasks %}
                         <tr>
                             <td></td>
-                            <td>
-                                <a href="#">{{ inspection.name }}</a>
-                            </td>
-                            <td>{{ inspection.target_name }}</td>
-                            <td>{{ inspection.interval }} {{ inspection.interval_unit }}</td>
+                            <td>{{ inspection_task.name }}</td>
+                            <td>{{ inspection_task.target_name }}</td>
                         </tr>
                     {% endfor %}
                 </tbody>

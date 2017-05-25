@@ -57,3 +57,9 @@ def can_write_gantt(user):
         return user.userprofile.role.can_write_gantt
     except:
         return False
+
+def ndigits(value, digits = 1):
+    s = str(value)
+    while len(s) < digits:
+        s = '0' + s
+    return s

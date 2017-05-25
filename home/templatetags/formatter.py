@@ -1,11 +1,10 @@
 from django import template
 from django.utils.safestring import mark_safe
 
+from common.helpers import *
+
 register = template.Library()
 
 @register.filter(name='ndigits')
-def ndigits(value, digits = 1):
-    s = str(value)
-    while len(s) < digits:
-        s = '0' + s
-    return s
+def ndigits_filter(value, digits = 1):
+    return ndigits(value, digits)

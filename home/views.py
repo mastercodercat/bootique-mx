@@ -98,7 +98,7 @@ def aircraft_assign_program(request, reg=''):
             inspection_program = form.cleaned_data.get('inspection_program')
             aircraft.inspection_program = inspection_program
             aircraft.save()
-            return redirect('home:aircraft_detail', reg=aircraft.reg)
+            return redirect('home:aircraft_task_list', reg=aircraft.reg)
 
     context = {
         'aircraft': aircraft,

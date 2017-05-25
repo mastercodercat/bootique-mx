@@ -7,7 +7,7 @@ def aircraft_in_types(context, reg = ''):
     aircraft_context_data = []
     aircraft_types = AircraftType.objects.all()
     for aircraft_type in aircraft_types:
-        aircraft_in_type = aircraft_type.aircraft_set.all()
+        aircraft_in_type = aircraft_type.aircraft_set.all().order_by('reg')
         aircraft_count = len(aircraft_in_type)
         if aircraft_count > 0:
             aircraft_context_data.append({
