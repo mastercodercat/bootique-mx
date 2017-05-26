@@ -53,6 +53,12 @@ module.exports = {
                 ]
             },
             {
+                test: /\.vue$/,
+                use: [
+                    { loader: 'vue-loader' }
+                ]
+            },
+            {
                 test: /\.css$/,
                 loader: ExtractTextPlugin.extract({ fallback: 'style-loader', use: 'css-loader' })
             },
@@ -94,6 +100,11 @@ module.exports = {
         //tells webpack where to look for modules
         modules: ['node_modules'],
         //extensions that should be used to resolve modules
-        extensions: ['.js', '.css', '.scss']
+        extensions: ['.js', '.css', '.scss'],
+        alias: {
+            'vue': 'vue/dist/vue.common.js',
+            '@frontend': path.resolve(__dirname, '../frontend'),
+            '@frontend_components': path.resolve(__dirname, '../frontend/vue/components'),
+        }
     }
 }

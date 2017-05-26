@@ -32,20 +32,6 @@ class InspectionTask(models.Model):
         return target_choice_item[1] if target_choice_item else ''
 
 
-class InspectionComponent(models.Model):
-    name = models.CharField(max_length=100, blank=True)
-    interval = models.IntegerField(default=0)
-    interval_unit = models.CharField(max_length=10, default='hours')
-
-    inspection_task = models.ForeignKey('InspectionTask', null=True, blank=False)
-
-    class Meta:
-        db_table = 'inspection_component'
-
-    def __unicode__(self):
-        return self.name
-
-
 class InspectionProgram(models.Model):
     name = models.CharField(max_length=100, blank=True)
 
@@ -56,3 +42,18 @@ class InspectionProgram(models.Model):
 
     def __unicode__(self):
         return self.name
+
+
+class InspectionComponent(models.Model):
+    pn = models.CharField(max_length=30, blank=True)
+    sn = models.CharField(max_length=30, blank=True)
+    name = models.CharField(max_length=100, blank=True)
+
+    inspection_task = models.ForeignKey('InspectionTask', null=True, blank=False)
+
+    class Meta:
+        db_table = 'inspection_component'
+
+    def __unicode__(self):
+        return self.name
+

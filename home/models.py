@@ -179,3 +179,30 @@ class Propeller(models.Model):
     @property
     def next_inspection_time(self):
         return self.last_inspection_time + timedelta(days=90)
+
+
+class InspectionComponentSubItem(models.Model):
+    TYPE_MOS = 1
+    TYPE_HRS = 2
+    TYPE_AFL = 3
+    TYPE_STRINGS = ('', 'MOS', 'HRS', 'AFL')
+    INSPECTION_COMPONENT_SUB_ITEM_TYPE_CHOICES = (
+        (TYPE_MOS, TYPE_STRINGS[TYPE_MOS]),
+        (TYPE_HRS, TYPE_STRINGS[TYPE_HRS]),
+        (TYPE_AFL, TYPE_STRINGS[TYPE_AFL]),
+    )
+
+    type = models.IntegerField(default=1, choices=INSPECTION_COMPONENT_SUB_ITEM_TYPE_CHOICES)
+    interval = models.IntegerField(null=False, blank=False)
+    CW = models.CharField(max_length=50, null=False, blank=True, default='')
+    TSX_adj = models.CharField(max_length=50, null=False, blank=True, default='')
+    max_limit = models.CharField(max_length=50, null=False, blank=True, default='')
+
+    aircraft = models.ForeignKey(Aircraft, null=True, blank=False)
+    inspection_component = models.ForeignKey(InspectionComponent, null=True, blank=False)
+
+    class Meta:
+        db_table = 'inspection_component_sub_item'
+
+    def __unicode__(self):
+        return InspectionComponentSubItem.TYPE_STRINGS[self.type]

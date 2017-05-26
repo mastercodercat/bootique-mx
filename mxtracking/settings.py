@@ -40,6 +40,8 @@ INSTALLED_APPS = [
     'allauth.socialaccount.providers.google',
     # Django webpack loader
     'webpack_loader',
+    # Django REST Framework
+    'rest_framework',
 ]
 
 MIDDLEWARE = [
@@ -166,6 +168,18 @@ WEBPACK_LOADER = {
         'BUNDLE_DIR_NAME': 'bundles/',
         'STATS_FILE': os.path.join(BASE_DIR, 'webpack/webpack-stats.json'),
     }
+}
+
+# Rest Framework
+
+REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
+    'PAGE_SIZE': 100,
+    'DEFAULT_PARSER_CLASSES': (
+        'rest_framework.parsers.JSONParser',
+        'rest_framework.parsers.FormParser',
+        'rest_framework.parsers.MultiPartParser',
+    )
 }
 
 

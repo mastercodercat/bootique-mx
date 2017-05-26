@@ -10,6 +10,7 @@ module.exports = {
         '../frontend/js/gantt.js',
         '../frontend/js/comingduelist.js',
         '../frontend/js/hobbsform.js',
+        '../frontend/js/vue-init.js',
     ],
 
     /* Style bundles */

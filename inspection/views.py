@@ -12,7 +12,7 @@ def index(request):
     context = {
         'inspection_programs': inspection_programs,
     }
-    return render(request, 'index.html', context)
+    return render(reques, 'index.html', context)
 
 @login_required
 def inspection_program_details(request, program_id=None):
