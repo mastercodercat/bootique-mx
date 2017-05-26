@@ -6,14 +6,21 @@ from common.helpers import *
 
 
 class InspectionTask(models.Model):
+    TARGET_AIRCRAFT = 1
+    TARGET_AIRFRAME = 2
+    TARGET_PROPELLER = 3
+    TARGET_ENGINE = 4
+    TARGET_STRINGS = ('', 'Aircraft', 'Airframe', 'Propeller', 'Engine')
+    INSPECTION_TARGET_CHOICES = (
+        (TARGET_AIRCRAFT, TARGET_STRINGS[TARGET_AIRCRAFT]),
+        (TARGET_AIRFRAME, TARGET_STRINGS[TARGET_AIRFRAME]),
+        (TARGET_PROPELLER, TARGET_STRINGS[TARGET_PROPELLER]),
+        (TARGET_ENGINE, TARGET_STRINGS[TARGET_ENGINE]),
+    )
+
     number = models.IntegerField(null=False, blank=False)
     name = models.CharField(max_length=100, blank=True)
-    INSPECTION_TARGET_CHOICES = (
-        (1, 'Aircraft'),
-        (2, 'Airframe'),
-        (3, 'Propeller'),
-        (4, 'Engine'),
-    )
+
     target = models.IntegerField(default=1, choices=INSPECTION_TARGET_CHOICES)
 
     class Meta:

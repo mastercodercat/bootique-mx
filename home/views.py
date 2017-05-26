@@ -111,7 +111,7 @@ def aircraft_assign_program(request, reg=''):
 
             for inspection_task in inspection_program.inspection_tasks.order_by('id'):
                 for inspection_component in inspection_task.inspectioncomponent_set.order_by('id'):
-                    for ic_type in InspectionComponentSubItem.INSPECTION_COMPONENT_SUB_ITEM_TYPE_CHOICES:
+                    for ic_type in InspectionComponentSubItem.TYPE_CHOICES:
                         type = ic_type[0]
                         try:
                             inspection_component_sub_item = InspectionComponentSubItem.objects.get(

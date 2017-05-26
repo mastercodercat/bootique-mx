@@ -186,13 +186,13 @@ class InspectionComponentSubItem(models.Model):
     TYPE_HRS = 2
     TYPE_AFL = 3
     TYPE_STRINGS = ('', 'MOS', 'HRS', 'AFL')
-    INSPECTION_COMPONENT_SUB_ITEM_TYPE_CHOICES = (
+    TYPE_CHOICES = (
         (TYPE_MOS, TYPE_STRINGS[TYPE_MOS]),
         (TYPE_HRS, TYPE_STRINGS[TYPE_HRS]),
         (TYPE_AFL, TYPE_STRINGS[TYPE_AFL]),
     )
 
-    type = models.IntegerField(default=1, choices=INSPECTION_COMPONENT_SUB_ITEM_TYPE_CHOICES)
+    type = models.IntegerField(default=1, choices=TYPE_CHOICES)
     interval = models.IntegerField(null=False, blank=False)
     CW = models.CharField(max_length=50, null=False, blank=True, default='')
     TSX_adj = models.CharField(max_length=50, null=False, blank=True, default='')
