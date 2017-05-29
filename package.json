@@ -9,7 +9,9 @@
   ],
   "scripts": {
     "watch": "webpack-dev-server --config webpack/webpack.config.js --port 8080",
-    "build": "npm install && NODE_ENV=production ./node_modules/.bin/webpack --config webpack/webpack.config.js"
+    "build": "npm install && NODE_ENV=production ./node_modules/.bin/webpack --config webpack/webpack.config.js",
+    "test": "python manage.py test",
+    "coverage_test": "coverage run --source='.' manage.py test && coverage report"
   },
   "dependencies": {
     "axios": "^0.16.1",
