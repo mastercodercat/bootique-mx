@@ -43,7 +43,7 @@
             aircraftReg: '{{ aircraft.reg }}',
             inspectionTaskId: {{ inspection_task.id }},
             loadApiUrl: "{% url 'home:api_aircraft_task_list' reg=aircraft.reg task_id=inspection_task.id %}",
-            updateCellApiUrl: '',
+            updateCellApiUrl: "{% url 'home:api_aircraft_task_list' reg=aircraft.reg task_id=inspection_task.id %}",
         });
     </script>
 {% endblock %}

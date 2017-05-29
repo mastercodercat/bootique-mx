@@ -16,12 +16,12 @@
             </tr>
         </thead>
         <tbody>
-            <template v-for="taskItem in taskItems">
+            <template v-for="taskComponent in taskComponents">
                 <tr>
                     <td colspan="10">
                         <strong class="uppercase">
-                            {{ taskItem.pn }}/{{ taskItem.sn }}
-                            {{ taskItem.name }}
+                            {{ taskComponent.pn }}/{{ taskComponent.sn }}
+                            {{ taskComponent.name }}
                         </strong>
                         <div class="pull-right">Service ATA:{{ task.number }}</div>
                     </td>
@@ -31,22 +31,20 @@
                         </a>
                     </td>
                 </tr>
-                <tr v-for="subItem in taskItem.inspectioncomponentsubitem_set">
+                <tr class="edit-row" v-for="subItem in taskComponent.sub_items">
                     <td></td>
                     <td>{{ subItem.type }}</td>
                     <td class="edit-cell">
-                        <input type="text" :value="subItem.interval" />
+                        <input type="text" v-model="subItem.interval" v-on:change="changeValue(taskComponent, subItem, 'interval')" />
                     </td>
                     <td class="edit-cell">
-                        <input type="text" :value="subItem.CW" />
+                        <input type="text" v-model="subItem.CW" v-on:change="changeValue(taskComponent, subItem, 'CW')" />
                     </td>
                     <td class="edit-cell">
-                        <input type="text" :value="subItem.TSX_adj" />
+                        <input type="text" v-model="subItem.TSX_adj" v-on:change="changeValue(taskComponent, subItem, 'TSX_adj')" />
                     </td>
                     <td></td>
-                    <td class="edit-cell">
-                        <input type="text" :value="subItem.max_limit" />
-                    </td>
+                    <td></td>
                     <td></td>
                     <td></td>
                     <td>1.7</td>
@@ -64,20 +62,41 @@ export default {
     data() {
         return {
             task: {},
-            taskItems: [],
+            taskComponents: [],
         }
     },
     mounted() {
         this.$http.get(this.loadApiUrl, {})
         .then((response) => {
-            this.task = response.body.task;
-            this.taskItems = response.body.components;
+            this.task = response.data.task;
+            this.taskComponents = response.data.components;
         });
     },
+    methods: {
+        changeValue(taskComponent, subItem, field) {
+            const value = subItem[field];
+
+            this.$http.post(this.updateCellApiUrl, {
+                component_id: taskComponent.id,
+                sub_item_id: subItem.id,
+                field,
+                value: subItem[field],
+            })
+            .then((response) => {
+                const { data } = response;
+                if (!data.success) {
+                    alert(data.message);
+                }
+            });
+        }
+    }
 }
 </script>
 
 <style>
+.edit-row td {
+    background-color: #fbfbfc;
+}
 .edit-cell {
     padding: 0 !important;
 }

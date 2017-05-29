@@ -5,10 +5,9 @@ from django.views.generic import TemplateView
 from datetime import timedelta
 
 from rest_framework.views import APIView
-from rest_framework.decorators import api_view, permission_classes, authentication_classes
 from rest_framework.response import Response
 from rest_framework.authentication import SessionAuthentication
-from rest_framework.permissions import IsAuthenticated, IsAdminUser
+from rest_framework.permissions import IsAuthenticated
 
 from home.models import *
 from home.forms import *
@@ -138,6 +137,8 @@ def aircraft_assign_program(request, reg=''):
 
 
 class AircraftInspectionTaskView(APIView):
+    authentication_classes = (SessionAuthentication,)
+    permission_classes = (IsAuthenticated,)
 
     def get(self, request, reg='', task_id=None):
         aircraft = get_object_or_404(Aircraft, reg=reg)
@@ -153,4 +154,42 @@ class AircraftInspectionTaskView(APIView):
             'task': task_data,
             'components': components_data,
         })
+
+    def post(self, request, reg='', task_id=None):
+        aircraft = get_object_or_404(Aircraft, reg=reg)
+        inspection_task = get_object_or_404(InspectionTask, pk=task_id)
+
+        response = {
+            'success': False,
+        }
+
+        component_id = request.data.get('component_id')
+        sub_item_id = request.data.get('sub_item_id')
+        field = request.data.get('field')
+        value = request.data.get('value')
+
+        try:
+            inspection_component = inspection_task.inspectioncomponent_set.get(pk=component_id)
+        except Exception as e:
+            print(str(e))
+            response['message'] = 'Invalid task component id'
+            return Response(response)
+
+        try:
+            inspection_component_sub_item = inspection_component.inspectioncomponentsubitem_set.get(pk=sub_item_id)
+        except Exception as e:
+            print(str(e))
+            response['message'] = 'Invalid task component sub item id'
+            return Response(response)
+
+        try:
+            setattr(inspection_component_sub_item, field, value)
+            inspection_component_sub_item.save()
+        except Exception as e:
+            print(str(e))
+            response['message'] = 'Failed to save data'
+            return Response(response)
+
+        response['success'] = True
+        return Response(response)
 

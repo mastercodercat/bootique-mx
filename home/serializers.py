@@ -9,7 +9,7 @@ class InspectionTaskSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = InspectionTask
-        fields = ('number', 'name', 'target')
+        fields = ('id', 'number', 'name', 'target')
 
     def get_target(self, obj):
         return InspectionTask.TARGET_STRINGS[obj.target]
@@ -20,15 +20,19 @@ class InspectionComponentSubItemSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = InspectionComponentSubItem
-        fields = ('type', 'interval', 'CW', 'TSX_adj', 'max_limit')
+        fields = ('id', 'type', 'interval', 'CW', 'TSX_adj', 'max_limit')
 
     def get_type(self, obj):
         return InspectionComponentSubItem.TYPE_STRINGS[obj.type]
 
 
 class InspectionComponentSerializer(serializers.ModelSerializer):
-    inspectioncomponentsubitem_set = InspectionComponentSubItemSerializer(many=True, read_only=True)
+    sub_items = serializers.SerializerMethodField()
 
     class Meta:
         model = InspectionComponent
-        fields = ('pn', 'sn', 'name', 'inspectioncomponentsubitem_set')
+        fields = ('id', 'pn', 'sn', 'name', 'sub_items')
+    
+    def get_sub_items(self, obj):
+        query_set = obj.inspectioncomponentsubitem_set.order_by('type')
+        return InspectionComponentSubItemSerializer(query_set, many=True).data
