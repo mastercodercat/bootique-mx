@@ -3,18 +3,21 @@ from django.contrib.auth.decorators import login_required
 
 from inspection.models import *
 from inspection.forms import *
+from common.decorators import *
 
 
 @login_required
+@inspection_readable_required
 def index(request):
     inspection_programs = InspectionProgram.objects.all()
 
     context = {
         'inspection_programs': inspection_programs,
     }
-    return render(reques, 'index.html', context)
+    return render(request, 'index.html', context)
 
 @login_required
+@inspection_readable_required
 def inspection_program_details(request, program_id=None):
     inspection_program = get_object_or_404(InspectionProgram, pk=program_id)
     inspection_tasks = inspection_program.inspection_tasks.all()
@@ -26,6 +29,7 @@ def inspection_program_details(request, program_id=None):
     return render(request, 'program.html', context)
 
 @login_required
+@inspection_readable_required
 def create_inspection_program(request):
     form = InspectionProgramForm(request.POST or None)
     if request.method == 'POST':
@@ -39,6 +43,7 @@ def create_inspection_program(request):
     return render(request, 'create_program.html', context)
 
 @login_required
+@inspection_readable_required
 def add_inspection_task(request, program_id=None):
     inspection_program = get_object_or_404(InspectionProgram, pk=program_id)
 

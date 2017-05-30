@@ -19,7 +19,7 @@ class InspectionTask(models.Model):
     )
 
     number = models.IntegerField(null=False, blank=False)
-    name = models.CharField(max_length=100, blank=True)
+    name = models.CharField(max_length=100, blank=False)
 
     target = models.IntegerField(default=1, choices=INSPECTION_TARGET_CHOICES)
 
@@ -40,7 +40,7 @@ class InspectionTask(models.Model):
 
 
 class InspectionProgram(models.Model):
-    name = models.CharField(max_length=100, blank=True)
+    name = models.CharField(max_length=100, blank=False)
 
     inspection_tasks = models.ManyToManyField(InspectionTask)
 
@@ -52,9 +52,9 @@ class InspectionProgram(models.Model):
 
 
 class InspectionComponent(models.Model):
-    pn = models.CharField(max_length=30, blank=True)
-    sn = models.CharField(max_length=30, blank=True)
-    name = models.CharField(max_length=100, blank=True)
+    pn = models.CharField(max_length=30, blank=False)
+    sn = models.CharField(max_length=30, blank=False)
+    name = models.CharField(max_length=100, blank=False)
 
     inspection_task = models.ForeignKey('InspectionTask', null=True, blank=False)
 
