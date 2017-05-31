@@ -202,8 +202,8 @@ class ViewsTestCase(TestCase):
         # case of invalid field name
         response = self.api_client.post(api_url, {
             'component_id': 1,
-            'sub_item_id': 99,
-            'field': 'interval',
+            'sub_item_id': existing_ic_sub_item.id,
+            'field': 'nonexistingfield',
             'value': 100,
         })
         response_data = json.loads(response.content)

@@ -5,14 +5,14 @@ from django.db.models import Q, Sum
 
 
 class Tail(models.Model):
-    number = models.CharField(max_length=20, blank=True)
+    number = models.CharField(max_length=20, blank=True, unique=True)
 
     def __unicode__(self):
         return self.number
 
 
 class Line(models.Model):
-    name = models.CharField(max_length=100, blank=True)
+    name = models.CharField(max_length=100, blank=True, unique=True)
 
     def __unicode__(self):
         return self.name

@@ -171,22 +171,20 @@ class AircraftInspectionTaskView(APIView):
         try:
             inspection_component = inspection_task.inspectioncomponent_set.get(pk=component_id)
         except Exception as e:
-            print(str(e))
             response['message'] = 'Invalid task component id'
             return Response(response)
 
         try:
             inspection_component_sub_item = inspection_component.inspectioncomponentsubitem_set.get(pk=sub_item_id)
         except Exception as e:
-            print(str(e))
             response['message'] = 'Invalid task component sub item id'
             return Response(response)
 
         try:
+            InspectionComponentSubItem._meta.get_field(field)
             setattr(inspection_component_sub_item, field, value)
             inspection_component_sub_item.save()
         except Exception as e:
-            print(str(e))
             response['message'] = 'Failed to save data'
             return Response(response)
 

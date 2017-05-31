@@ -146,12 +146,9 @@ def delete_tail(request, tail_id=None):
     }
     if request.method == 'DELETE':
         try:
-            if tail_id:
-                tail = Tail.objects.get(pk=tail_id)
-                tail.delete()
-                result['success'] = True
-            else:
-                result['error'] = 'Tail id should be specified'
+            tail = Tail.objects.get(pk=tail_id)
+            tail.delete()
+            result['success'] = True
         except:
             result['error'] = 'Error occurred while deleting tail'
     else:
@@ -693,19 +690,19 @@ def api_move_assignment(request):
                 pass
 
             assignment.tail = tail
-            if start_time_str:
-                if assignment.status == Assignment.STATUS_UNSCHEDULED_FLIGHT:
-                    assignment.flight.departure_datetime = start_time
-                    assignment.flight.arrival_datetime = end_time
-                    assignment.flight.save()
-
-                    assignment.flight.hobbs.hobbs_time = start_time
-                    assignment.flight.hobbs.save()
-
-                assignment.start_time = start_time
-                assignment.end_time = end_time
-            assignment.save()
             try:
+                if start_time_str:
+                    if assignment.status == Assignment.STATUS_UNSCHEDULED_FLIGHT:
+                        assignment.flight.departure_datetime = start_time
+                        assignment.flight.arrival_datetime = end_time
+                        assignment.flight.save()
+
+                        assignment.flight.hobbs.hobbs_time = start_time
+                        assignment.flight.hobbs.save()
+
+                    assignment.start_time = start_time
+                    assignment.end_time = end_time
+                assignment.save()
                 assignment.flight.hobbs.tail = tail
                 assignment.flight.hobbs.save()
             except ObjectDoesNotExist:
@@ -767,9 +764,12 @@ def api_resize_assignment(request):
             assignment.flight.arrival_datetime = end_time
             assignment.flight.save()
 
-            assignment.flight.hobbs.hobbs_time = start_time
-            assignment.flight.hobbs.hobbs = assignment.flight.length / 3600
-            assignment.flight.hobbs.save()
+            try:
+                assignment.flight.hobbs.hobbs_time = start_time
+                assignment.flight.hobbs.hobbs = assignment.flight.length / 3600
+                assignment.flight.hobbs.save()
+            except ObjectDoesNotExist:
+                pass
 
     except Exception as e:
         result['error'] = str(e)
@@ -800,7 +800,7 @@ def str_to_datetime(str):
 
 @login_required
 @gantt_writable_required
-def api_upload_csv(request):
+def api_upload_csv(request): # pragma: no cover
     result = {
         'success': False,
     }
