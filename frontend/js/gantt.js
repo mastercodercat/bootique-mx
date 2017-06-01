@@ -1,5 +1,7 @@
 var interact = require('interactjs');
 var Utils = require('./utils.js');
+var Cookies = require('js-cookie');
+var moment = require('moment-timezone');
 
 var ganttLengthSeconds = 14 * 24 * 3600;
 
@@ -23,6 +25,7 @@ function RoutePlanningGantt(options) {
         && this.options.startDate
         && this.options.endDate
     ) {
+        this.setupTimezone();
         if (!this.options.readOnly) {
             this.initInteractables();
             this.initEventHandlers();
@@ -31,7 +34,7 @@ function RoutePlanningGantt(options) {
         this.displayNowIndicator(this.options.flightTemplateTable);
         this.loadData();
     } else {
-        console.error('Invalid table element')
+        console.error('Invalid table initialization parameters')
     }
 }
 
@@ -210,6 +213,66 @@ RoutePlanningGantt.prototype.alertErrorIfAny = function(response, singular) {
             alert(errors);
         }
     }
+}
+
+RoutePlanningGantt.prototype.setupTimezone = function() {
+    var self = this;
+    var timezone = Cookies.get('gantt-timezone');
+
+    if (!timezone) {
+        timezone = self.options.timezoneSelect.val();
+    } else {
+        self.options.timezoneSelect.val(timezone);
+    }
+    self.updateTimezone(timezone);
+
+    self.options.timezoneSelect.on('change', function() {
+        var timezone = $(this).val();
+        self.updateTimezone(timezone);
+    });
+}
+
+RoutePlanningGantt.prototype.initDateLabels = function() {
+    var self = this;
+    var days = self.options.days;
+    var hours = self.options.hours;
+    var oneUnit = days > 1 ? 24 : hours;
+    var timezone = self.timezone;
+
+    function initTableDateLabels($headRow) {
+        // Big units
+        var $rowBigUnits = $headRow.find('.row-line.big-units');
+        var date = new Date(self.options.startDate.getTime());
+        $rowBigUnits.children('.unit').each(function() {
+            $(this).html(moment(date).tz(timezone).format('ddd MM/DD/YYYY'));
+            date.setSeconds(date.getSeconds() + oneUnit * 3600);
+        });
+
+        // Small units
+        var $row = $headRow.find('.row-line.small-units');
+        var date = new Date(self.options.startDate.getTime());
+        if (days > 1 || hours >= 12) {
+            $row.children('.unit').each(function() {
+                $(this).html(moment(date).tz(timezone).format('HH'));
+                date.setSeconds(date.getSeconds() + unit);
+            });
+        } else {
+            $row.children('.unit').each(function() {
+                $(this).html(moment(date).tz(timezone).format('HH:mm'));
+                date.setSeconds(date.getSeconds() + unit);
+            });
+        }
+    }
+    initTableDateLabels(self.options.flightAssignmentTable.find('.head'));
+    initTableDateLabels(self.options.flightTemplateTable.find('.head'));
+}
+
+RoutePlanningGantt.prototype.updateTimezone = function(timezone) {
+    var self = this;
+
+    self.timezone = timezone;
+    Cookies.set('gantt-timezone', timezone);
+    this.initDateLabels();
 }
 
 RoutePlanningGantt.prototype.initInteractables = function() {

@@ -18,6 +18,15 @@
 
 {% block content %}
     <div class="gantt loading{% if days > 1 %} small-cells{% endif %}{% if days > 3 %} no-flight-number{% endif %}">
+        <div class="clearfix m-b-md"><!-- Time zone selector -->
+            <label>Timezone:</label>
+            <select id="gantt-timezone" class="form-control" style="max-width: 350px;">
+                <option value="US/Eastern" selected>UTC-5: Eastern Standard Time (EST)</option>
+                <option value="US/Central">UTC-6: Central Standard Time (CST)</option>
+                <option value="US/Mountain">UTC-7: Mountain Standard Time (MST)</option>
+                <option value="US/Pacific">UTC-8: Pacific Standard Time (PST)</option>
+            </select>
+        </div>
         <div class="clearfix m-b-md"><!-- Top controls -->
             <div class="unit-control btn-group">
                 <a class="btn btn-white{% if mode == '1' %} active{% endif %}"
@@ -262,46 +271,11 @@
         /* Calculate start date */
 
         var startDate = new Date({{ start_tmstmp }} * 1000);
-        // startDate.setHours(0);
-        // startDate.setMinutes(0);
-        // startDate.setSeconds(0);
-        // startDate.setMilliseconds(0);
 
         /* Calculate end date */
 
         var endDate = new Date(startDate.getTime() - 1000);
         endDate.setDate(endDate.getDate() + 14);
-
-        /* Fill table date/time labels */
-
-        var oneUnit = days > 1 ? 24 : hours;
-        $('.head').each(function() {
-            // Big units
-            var $rowBigUnits = $(this).find('.row-line.big-units');
-            var date = new Date(startDate.getTime());
-            $rowBigUnits.children('.unit').each(function() {
-                $(this).html(Utils.weekDayString(date.getDay()).substr(0, 3) + ' ' +
-                    (date.getMonth() + 1) + '/' +
-                    date.getDate() + '/' +
-                    date.getFullYear());
-                date.setSeconds(date.getSeconds() + oneUnit * 3600);
-            });
-
-            // Small units
-            var $row = $(this).find('.row-line.small-units');
-            var date = new Date(startDate.getTime());
-            if (days > 1 || hours >= 12) {
-                $row.children('.unit').each(function() {
-                    $(this).html(Utils.formatTo2Digits(date.getHours()));
-                    date.setSeconds(date.getSeconds() + unit);
-                });
-            } else {
-                $row.children('.unit').each(function() {
-                    $(this).html(Utils.formatTo2Digits(date.getHours()) + ':' + Utils.formatTo2Digits(date.getMinutes()));
-                    date.setSeconds(date.getSeconds() + unit);
-                });
-            }
-        });
 
         /* Date pickers init */
 
@@ -386,6 +360,7 @@
             flightAssignmentTable: $('#flight-assignment-table'),
             flightTemplateTable: $('#flight-template-table'),
             unscheduledFlightForm: $('#unscheduled-flight-modal'),
+            timezoneSelect: $('#gantt-timezone'),
             loadDataAPIUrl: "{% url 'routeplanning:api_load_data' %}",
             assignFlightAPIUrl: "{% url 'routeplanning:api_assign_flight' %}",
             assignStatusAPIUrl: "{% url 'routeplanning:api_assign_status' %}",
@@ -394,6 +369,8 @@
             resizeAssignmentAPIUrl: "{% url 'routeplanning:api_resize_assignment' %}",
             startDate: startDate,
             endDate: endDate,
+            days: days,
+            hours: hours,
             unit: unit,
             readOnly: readOnly,
             tablesWrapperSelector: '.cover',
