@@ -23,7 +23,7 @@ from common.decorators import *
 @login_required
 @gantt_readable_required
 def index(request):
-    mode = request.GET.get('mode') if request.GET.get('mode') else '1'
+    mode = request.GET.get('mode') if request.GET.get('mode') else '4'
     start_tmstmp = request.GET.get('start')
     end_tmstmp = request.GET.get('end')
 

@@ -262,10 +262,10 @@
         /* Calculate start date */
 
         var startDate = new Date({{ start_tmstmp }} * 1000);
-        startDate.setHours(0);
-        startDate.setMinutes(0);
-        startDate.setSeconds(0);
-        startDate.setMilliseconds(0);
+        // startDate.setHours(0);
+        // startDate.setMinutes(0);
+        // startDate.setSeconds(0);
+        // startDate.setMilliseconds(0);
 
         /* Calculate end date */
 
@@ -319,12 +319,14 @@
         $('#date-form').on('submit', function() {
             if ($('#start_date').val()) {
                 var startDate = new Date($('#start_date').val());
+                startDate.setUTCHours(0)
                 $('#start_tmstmp').val(parseInt(startDate.getTime() / 1000));
             } else {
                 $('#start_tmstmp').val('');
             }
             if ($('#end_date').val()) {
                 var endDate = new Date($('#end_date').val());
+                endDate.setUTCHours(0)
                 $('#end_tmstmp').val(parseInt(endDate.getTime() / 1000));
             } else {
                 $('#end_tmstmp').val('');
