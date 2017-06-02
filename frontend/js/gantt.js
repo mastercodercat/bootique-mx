@@ -75,9 +75,9 @@ RoutePlanningGantt.prototype.placeBar = function($row, pos, length, object) {
         $bar.find('.org').html(object.origin);
         $bar.find('.dest').html(object.destination);
         date = new Date(object.departure_datetime);
-        $bar.find('.departure').html(Utils.formatDate(date));
+        $bar.find('.departure').html(moment(date).tz(self.timezone).format('MM/DD/YYYY HH:mm:ss'));
         date = new Date(object.arrival_datetime);
-        $bar.find('.arrival').html(Utils.formatDate(date));
+        $bar.find('.arrival').html(moment(date).tz(self.timezone).format('MM/DD/YYYY HH:mm:ss'));
 
         $row.append($bar);
     } else if (object.status == 3) {
@@ -90,9 +90,9 @@ RoutePlanningGantt.prototype.placeBar = function($row, pos, length, object) {
         $bar.find('.org').html(object.origin);
         $bar.find('.dest').html(object.destination);
         date = new Date(object.departure_datetime);
-        $bar.find('.departure').html(Utils.formatDate(date));
+        $bar.find('.departure').html(moment(date).tz(self.timezone).format('MM/DD/YYYY HH:mm:ss'));
         date = new Date(object.arrival_datetime);
-        $bar.find('.arrival').html(Utils.formatDate(date));
+        $bar.find('.arrival').html(moment(date).tz(self.timezone).format('MM/DD/YYYY HH:mm:ss'));
 
         $row.append($bar);
     } else {
@@ -135,12 +135,13 @@ RoutePlanningGantt.prototype.setFlightHobbsInfo = function($bar, actualHobbs, ne
 }
 
 RoutePlanningGantt.prototype.setStatusBarInfo = function($bar, object) {
+    var self = this;
     var $info = $bar.find('.info');
     var date;
     date = new Date(object.start_time);
-    $info.find('.start').html(Utils.formatDate(date));
+    $info.find('.start').html(moment(date).tz(self.timezone).format('MM/DD/YYYY HH:mm:ss'));
     date = new Date(object.end_time);
-    $info.find('.end').html(Utils.formatDate(date));
+    $info.find('.end').html(moment(date).tz(self.timezone).format('MM/DD/YYYY HH:mm:ss'));
 }
 
 RoutePlanningGantt.prototype.placeStatusBar = function($bar, $row, object) {
@@ -273,6 +274,34 @@ RoutePlanningGantt.prototype.updateTimezone = function(timezone) {
     self.timezone = timezone;
     Cookies.set('gantt-timezone', timezone);
     this.initDateLabels();
+
+    self.options.flightTemplateTable.find('.bar').each(function() {
+        var $bar = $(this);
+        var flightId = $bar.data('flight-id');
+        var flightNumber = $bar.data('flight-number');
+
+        if (self.templates[flightNumber] && self.templates[flightNumber][flightId]) {
+            var flight = self.templates[flightNumber][flightId];
+            $bar.find('.departure').html(moment(flight.departure_datetime).tz(self.timezone).format('MM/DD/YYYY HH:mm:ss'));
+            $bar.find('.arrival').html(moment(flight.arrival_datetime).tz(self.timezone).format('MM/DD/YYYY HH:mm:ss'));
+        }
+    });
+
+    self.options.flightAssignmentTable.find('.bar').each(function() {
+        var $bar = $(this);
+        var assignmentId = $bar.data('assignment-id');
+
+        if (self.assignments[assignmentId]) {
+            var assignment = self.assignments[assignmentId];
+            if (assignment.status == 2) {
+                $bar.find('.start').html(moment(assignment.start_time).tz(self.timezone).format('MM/DD/YYYY HH:mm:ss'));
+                $bar.find('.end').html(moment(assignment.end_time).tz(self.timezone).format('MM/DD/YYYY HH:mm:ss'));
+            } else {
+                $bar.find('.departure').html(moment(assignment.start_time).tz(self.timezone).format('MM/DD/YYYY HH:mm:ss'));
+                $bar.find('.arrival').html(moment(assignment.end_time).tz(self.timezone).format('MM/DD/YYYY HH:mm:ss'));
+            }
+        }
+    });
 }
 
 RoutePlanningGantt.prototype.initInteractables = function() {
@@ -881,9 +910,9 @@ RoutePlanningGantt.prototype.loadData = function(assignmentsOnly = false) {
         },
     })
     .then(function(data) {
-        self.assignments = [];
+        self.assignments = {};
         data.assignments.forEach(function(assignment) {
-            self.assignments.push(assignment);
+            self.assignments[assignment.id] = assignment;
         });
 
         if (!assignmentsOnly) {
@@ -891,9 +920,9 @@ RoutePlanningGantt.prototype.loadData = function(assignmentsOnly = false) {
             self.templates = {};
             data.templates.forEach(function(template) {
                 if (!(template.number in self.templates)) {
-                    self.templates[template.number] = []
+                    self.templates[template.number] = {}
                 }
-                self.templates[template.number].push(template);
+                self.templates[template.number][template.id] = template;
             });
             self.refreshTemplateTable();
         }
@@ -915,8 +944,8 @@ RoutePlanningGantt.prototype.refreshTemplateTable = function() {
 
     for (var flightNumber in self.templates) {
         templates = self.templates[flightNumber];
-        for(var index in templates) {
-            template = templates[index];
+        for(var id in templates) {
+            template = templates[id];
             arrivalDateTime = new Date(template.arrival_datetime);
             departureDateTime = new Date(template.departure_datetime);
 
@@ -928,7 +957,8 @@ RoutePlanningGantt.prototype.refreshTemplateTable = function() {
             if ($bar) {
                 $bar
                     .attr('data-departure-time', departureDateTime.toISOString())
-                    .attr('data-flight-id', template.id);
+                    .attr('data-flight-id', template.id)
+                    .attr('data-flight-number', template.number);
                 if (self.checkIfAssigned(template.id)) {
                     $bar.addClass('assigned');
                 } else {
@@ -942,9 +972,8 @@ RoutePlanningGantt.prototype.refreshTemplateTable = function() {
 RoutePlanningGantt.prototype.refreshAssignmentTable = function() {
     var self = this;
 
-    var asgnCount = self.assignments.length;
-    for (var i = 0; i < asgnCount; i++) {
-        var assignment = self.assignments[i];
+    for (var assignmentId in self.assignments) {
+        var assignment = self.assignments[assignmentId];
         var $row = self.options.flightAssignmentTable.find('.row-line[data-tail-number="' + assignment.tail + '"]');
         var startTime = new Date(assignment.start_time);
         var endTime = new Date(assignment.end_time);
