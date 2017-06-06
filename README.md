@@ -19,6 +19,8 @@ Project has deployment setup to deploy using fabric and docker on staging/produc
 - To test production environment on local, run these command:
     `docker-compose -f docker-compose.yml -f docker-compose-dev.yml build`
     `docker-compose -f docker-compose.yml -f docker-compose-dev.yml up -d`
+- Coverage test on back end:
+    `npm run test:coverage`
 
 ## Local development
 
