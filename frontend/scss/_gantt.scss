@@ -122,11 +122,15 @@ $popover-text-color: #333;
     }
     .page-control {
         float: right;
-        margin-left: 30px;
+        margin-left: 20px;
+    }
+    .current-datetime-button-container {
+        float: right;
+        margin-left: 15px;
     }
     .date-range-control {
         float: right;
-        margin-left: 20px;
+        margin-left: 15px;
     }
     .timezone-control {
         float: right;
