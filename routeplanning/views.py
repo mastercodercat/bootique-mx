@@ -34,14 +34,6 @@ def index(request):
     hours_options = { '1': 3, '2': 6, '3': 12, '4': 24, '5': 24, '6': 6, }      # Hours mark count
     units_per_hour_options = { '1': 4, '2': 2, '3': 1, '4': 1, '5': 1, '6': 0.25, }
 
-    # if request.GET.get('days'):
-    #     days = int(request.GET.get('days'))
-    #     days = 14 if days > 14 else days
-    #     days = 1 if days < 1 else days
-    #     if days > 3:
-    #         mode = '6'
-    # else:
-    #     days = days_options[mode]
     days = days_options[mode]
 
     hours = hours_options[mode]

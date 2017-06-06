@@ -290,8 +290,6 @@
             $('#end_date').val(Utils.formatTo2Digits(endDate.getMonth() + 1) + '/' + Utils.formatTo2Digits(endDate.getDate()) + '/' + endDate.getFullYear());
         {% endif %}
 
-        // initDatepickers();
-
         /* Date form */
 
         $('#date-form').on('submit', function() {
@@ -355,6 +353,38 @@
                     pos = Math.ceil(pos);
                 }
                 $cover.scrollLeft(pos * timeWindowWidth);
+            }
+        });
+
+        /* Current date/time button */
+
+        var windowLengths = [3, 6, 12, 24, 72, 168];
+
+        $('#btn-now').on('click', function() {
+            var now = new Date();
+            var mode = {{ mode }};
+            var windowLength = windowLengths[mode - 1];
+
+            if (now >= startDate && now < endDate) {
+                var diffSeconds = (now - startDate) / 1000;
+                var windowPage = parseInt(diffSeconds / 3600 / windowLength);
+
+                var $cover = $('.cover');
+                var timeWindowWidth = $cover.width() - 90;
+
+                $cover.scrollLeft(windowPage * timeWindowWidth);
+            }
+            else {
+                var baseUrl = '{% url 'routeplanning:index' %}?mode=' + mode;
+                var newStartDate = new Date(now.getTime());
+                newStartDate.setUTCDate(1);
+                newStartDate.setUTCHours(0); newStartDate.setUTCMinutes(0); newStartDate.setUTCSeconds(0);
+
+                var diffSeconds = (now - newStartDate) / 1000;
+                var windowStartSeconds = parseInt(diffSeconds / 3600 / windowLength) * windowLength * 3600;
+                newStartDate.setUTCSeconds(windowStartSeconds);
+
+                window.location.href = baseUrl + '&start=' + parseInt(newStartDate.getTime() / 1000);
             }
         });
 
