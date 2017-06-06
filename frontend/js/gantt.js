@@ -17,6 +17,7 @@ function RoutePlanningGantt(options) {
     this.mode = 1;
     this.templates = {};
     this.assignments = [];
+    this.revision = 0;
 
     this.options = options;
 
@@ -883,6 +884,12 @@ RoutePlanningGantt.prototype.initEventHandlers = function() {
 
         self.options.unscheduledFlightForm.modal('hide');
     });
+
+    // Revision selector
+    $('#revisions').on('change', function() {
+        self.revision = $(this).val();
+        self.loadData();
+    });
 }
 
 RoutePlanningGantt.prototype.checkIfAssigned = function(flightId) {
@@ -897,9 +904,9 @@ RoutePlanningGantt.prototype.checkIfAssigned = function(flightId) {
 
 RoutePlanningGantt.prototype.loadData = function(assignmentsOnly = false) {
     var self = this;
-
     var startDate = this.options.startDate;
     var endDate = this.options.endDate;
+
     $.ajax({
         url: this.options.loadDataAPIUrl,
         method: 'GET',
@@ -907,6 +914,7 @@ RoutePlanningGantt.prototype.loadData = function(assignmentsOnly = false) {
             startdate: startDate.getTime() / 1000,
             enddate: endDate.getTime() / 1000,
             assignments_only: assignmentsOnly,
+            revision: self.revision,
         },
     })
     .then(function(data) {
@@ -1007,6 +1015,7 @@ RoutePlanningGantt.prototype.assignFlight = function(flightData) {
         data: {
             csrfmiddlewaretoken: self.options.csrfToken,
             flight_data: JSON.stringify(flightData),
+            revision: self.revision,
         },
     });
 }
@@ -1030,6 +1039,7 @@ RoutePlanningGantt.prototype.assignStatus = function(tailNumber, status, startTi
             end_time: endTime.toISOString(),
             origin: origin,
             destination: destination,
+            revision: self.revision,
         },
     });
 }
@@ -1048,6 +1058,7 @@ RoutePlanningGantt.prototype.removeAssignment = function(assignmentIdsToRemove) 
         data: {
             csrfmiddlewaretoken: self.options.csrfToken,
             assignment_data: JSON.stringify(assignmentIdsToRemove),
+            revision: self.revision,
         },
     });
 }

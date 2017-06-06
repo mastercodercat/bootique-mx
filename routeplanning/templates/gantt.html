@@ -18,6 +18,23 @@
 
 {% block content %}
     <div class="gantt loading{% if days > 1 %} small-cells{% endif %}{% if days > 3 %} no-flight-number{% endif %}">
+        {% if request.user|can_write_gantt %}
+            <div class="m-b-md">
+                <label>Revision:</label>
+                <div class="revision-controls">
+                    <select id="revisions" class="form-control" style="max-width: 350px;">
+                        <option value="0" selected>(New Draft)</option>
+                        {% for revision in revisions %}
+                            <option value="{{ revision.id }}">{{ revision.published_datetime }}</option>
+                        {% endfor %}
+                    </select>
+                    <button class="btn btn-danger">Delete This Version</button>
+                    <button class="btn btn-default">Clear Changes</button>
+                    <button class="btn btn-primary">Publish Current Revision</button>
+                </div>
+            </div>
+        {% endif %}
+        <label>Date/Time controls:</label>
         <div class="clearfix m-b-md"><!-- Top controls -->
             <div class="unit-control btn-group">
                 <a class="btn btn-white{% if mode == '1' %} active{% endif %}"
@@ -83,7 +100,9 @@
         <!-- Status bar sources, remove area -->
         {% if request.user|can_write_gantt %}
             <div class="status-bars disabled clearfix">
-                <div class="clearfix">Drag and drop: </div>
+                <div class="clearfix">
+                    <label>Drag and drop: </label>
+                </div>
                 <div class="bar-container">
                     <div class="bar status-bar maintenance status-prototype" draggable="true" data-status="2">
                         <span>Maintenance</span>

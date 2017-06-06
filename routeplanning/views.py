@@ -71,6 +71,7 @@ def index(request):
         'next_start_tmstmp': int(start_tmstmp) + table_length_in_secs,
         'csrf_token': csrf.get_token(request),
         'window_at_end': request.GET.get('window_at_end') or 0,
+        'revisions': Revision.objects.all(),
     }
     return render(request, 'gantt.html', context)
 
@@ -390,6 +391,26 @@ def api_load_data(request):
     start_time = datetime.fromtimestamp(int(request.GET.get('startdate')), tz=utc)
     end_time = datetime.fromtimestamp(int(request.GET.get('enddate')), tz=utc)
     assignments_only = request.GET.get('assignments_only')
+    revision_id = request.GET.get('revision')
+
+    if revision_id:
+        try:
+            revision = Revision.objects.get(pk=revision_id)
+        except Revision.DoesNotExist:
+            result['error'] = 'Revision not found'
+            return JsonResponse(result, safe=False, status=500)
+    else:
+        revision = None
+
+    if not can_write_gantt(request.user):
+        if not revision:    # Current draft gantt
+            return HttpResponseForbidden()
+        else:
+            latest_published_datetime = Revision.objects.all().aggregate(Max('published_datetime'))
+            if not latest_published_datetime:
+                return HttpResponseForbidden()
+            if revision.latest_published_datetime != latest_published_datetime:
+                revision = Revision.objects.filter(published_datetime=latest_published_datetime).first()
 
     # Data for template flights on Lines
 
@@ -417,7 +438,7 @@ def api_load_data(request):
     # Data for assignments on Tails
 
     assignments_data = []
-    assignments = Assignment.objects.select_related('flight', 'tail').filter(
+    assignments = Assignment.get_revision_assignments(revision).select_related('flight', 'tail').filter(
         (Q(start_time__gte=start_time) & Q(start_time__lte=end_time)) |
         (Q(end_time__gte=start_time) & Q(end_time__lte=end_time)) |
         (Q(start_time__lte=start_time) & Q(end_time__gte=end_time))
@@ -465,9 +486,21 @@ def api_assign_flight(request):
 
     try:
         flight_data = json.loads(request.POST.get('flight_data'))
+        revision_id = request.POST.get('revision')
     except:
         result['error'] = 'Invalid parameters'
         return JsonResponse(result, safe=False, status=400)
+
+    if revision_id:
+        try:
+            revision = Revision.objects.get(pk=revision_id)
+            if revision:
+                revision.check_draft_created()
+        except Revision.DoesNotExist:
+            result['error'] = 'Revision not found'
+            return JsonResponse(result, safe=False, status=500)
+    else:
+        revision = None
 
     for data in flight_data:
         try:
@@ -496,6 +529,7 @@ def api_assign_flight(request):
                 flight=flight,
                 tail=tail
             )
+            assignment.apply_revision(revision)
             assignment.save()
 
             hobbs = Hobbs(
@@ -536,9 +570,21 @@ def api_assign_status(request):
         status = int(request.POST.get('status'))
         origin = request.POST.get('origin') or ''     # used for unscheduled flight assignments
         destination = request.POST.get('destination') or ''   # used for unscheduled flight assignments
+        revision_id = request.POST.get('revision')
     except:
         result['error'] = 'Invalid parameters'
         return JsonResponse(result, safe=False, status=400)
+
+    if revision_id:
+        try:
+            revision = Revision.objects.get(pk=revision_id)
+            if revision:
+                revision.check_draft_created()
+        except Revision.DoesNotExist:
+            result['error'] = 'Revision not found'
+            return JsonResponse(result, safe=False, status=500)
+    else:
+        revision = None
 
     try:
         tail = Tail.objects.get(number=tail_number)
@@ -580,6 +626,7 @@ def api_assign_status(request):
 
             assignment.flight = flight
 
+        assignment.apply_revision(revision)
         assignment.save()
 
     except Exception as e:
@@ -604,9 +651,21 @@ def api_remove_assignment(request):
 
     try:
         assignment_ids = json.loads(request.POST.get('assignment_data'))
+        revision_id = request.POST.get('revision')
     except:
         result['error'] = 'Invalid parameters'
         return JsonResponse(result, safe=False, status=400)
+
+    if revision_id:
+        try:
+            revision = Revision.objects.get(pk=revision_id)
+            if revision:
+                revision.check_draft_created()
+        except Revision.DoesNotExist:
+            result['error'] = 'Revision not found'
+            return JsonResponse(result, safe=False, status=500)
+    else:
+        revision = None
 
     for assignment_id in assignment_ids:
         try:
@@ -1047,3 +1106,115 @@ def api_coming_due_list(request):
     result['success'] = True
     result['hobbs_list'] = hobbs_list
     return JsonResponse(result, safe=False)
+
+@login_required
+@gantt_writable_required
+def api_publish_revision(request):
+    result = {
+        'success': False,
+    }
+
+    if request.method != 'POST':
+        result['error'] = 'Only POST method is allowed'
+        return JsonResponse(result, safe=False)
+
+    revision_id = request.POST.get('revision')
+
+    if revision_id:
+        try:
+            revision = Revision.objects.get(pk=revision_id)
+        except Revision.DoesNotExist:
+            result['error'] = 'Revision not found'
+            return JsonResponse(result, safe=False, status=500)
+    else:
+        revision = None
+
+    try:
+        new_revision = Revision(published_datetime=datetime_now_utc(), has_draft=False)
+        new_revision.save()
+
+        if not revision or revision.has_draft:
+            Assignment.get_revision_assignments(revision).filter(is_draft=True).update(revision=new_revision, is_draft=False)
+        else:
+            revision_assignments = Assignment.get_revision_assignments(revision).filter(is_draft=False)
+            for assignment in revision_assignments:
+                assignment.pk = None
+                assignment.is_draft = False
+                assignment.revision = new_revision
+                assignment.save()
+    except Exception as e:
+        result['error'] = str(e)
+        return JsonResponse(result, safe=False, status=500)
+
+    result['success'] = True
+    return JsonResponse(result, safe=False)
+
+@login_required
+@gantt_writable_required
+def api_clear_revision(request):
+    result = {
+        'success': False,
+    }
+
+    if request.method != 'POST':
+        result['error'] = 'Only POST method is allowed'
+        return JsonResponse(result, safe=False)
+
+    revision_id = request.POST.get('revision')
+
+    if revision_id:
+        try:
+            revision = Revision.objects.get(pk=revision_id)
+        except Revision.DoesNotExist:
+            result['error'] = 'Revision not found'
+            return JsonResponse(result, safe=False, status=500)
+    else:
+        revision = None
+
+    try:
+        Assignment.get_revision_assignments(revision).filter(is_draft=True).delete()
+
+        if revision:
+            revision.has_draft = False
+            revision.save()
+    except Exception as e:
+        result['error'] = str(e)
+        return JsonResponse(result, safe=False, status=500)
+
+    result['success'] = True
+    return JsonResponse(result, safe=False)
+
+@login_required
+@gantt_writable_required
+def api_delete_revision(request):
+    result = {
+        'success': False,
+    }
+
+    if request.method != 'POST':
+        result['error'] = 'Only POST method is allowed'
+        return JsonResponse(result, safe=False)
+
+    revision_id = request.POST.get('revision')
+
+    if revision_id:
+        try:
+            revision = Revision.objects.get(pk=revision_id)
+        except Revision.DoesNotExist:
+            result['error'] = 'Revision not found'
+            return JsonResponse(result, safe=False, status=500)
+    else:
+        revision = None
+
+    try:
+        Assignment.get_revision_assignments(revision).delete()
+
+        if revision:
+            revision.delete()
+    except Exception as e:
+        result['error'] = str(e)
+        return JsonResponse(result, safe=False, status=500)
+
+    result['success'] = True
+    return JsonResponse(result, safe=False)
+

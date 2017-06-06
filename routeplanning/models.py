@@ -66,6 +66,27 @@ class Flight(models.Model):
             return None
 
 
+class Revision(models.Model):
+    published_datetime = models.DateTimeField(null=False, blank=False)
+    has_draft = models.BooleanField(default=False)
+
+    def __unicode__(self):
+        return self.number
+
+    def check_draft_created(self):
+        if not self.has_draft:
+            self.has_draft = True
+            self.save()
+            revision_assignments = Assignment.objects.filter(revision=self)
+            # save original objects as draft because front end has already ids for these assignments
+            revision_assignments.update(is_draft=True)
+            for assignment in revision_assignments:
+                # clone object and save as original revision assignment
+                assignment.pk = None
+                assignment.is_draft = False
+                assignment.save()
+
+
 class Assignment(models.Model):
     STATUS_FLIGHT = 1
     STATUS_MAINTENANCE = 2
@@ -81,9 +102,11 @@ class Assignment(models.Model):
     start_time = models.DateTimeField(null=False, blank=False)
     end_time = models.DateTimeField(null=False, blank=False)
     status = models.IntegerField(default=STATUS_FLIGHT, choices=STATUS_CHOICES)
+    is_draft = models.BooleanField(default=False)
 
     flight = models.OneToOneField(Flight, null=True, blank=False, on_delete=models.PROTECT)
     tail = models.ForeignKey(Tail, null=True, blank=False, on_delete=models.PROTECT)
+    revision = models.ForeignKey(Revision, null=True, blank=False, on_delete=models.PROTECT)
 
     def __unicode__(self):
         if self.status == Assignment.STATUS_FLIGHT:
@@ -94,6 +117,13 @@ class Assignment(models.Model):
             return 'Unscheduled Flight'
         else:
             return 'Other'
+
+    @classmethod
+    def get_revision_assignments(cls, revision):
+        if not revision or not revision.has_draft:
+            return cls.objects.filter(revision=revision)
+        else:
+            return cls.objects.filter(revision=revision).filter(is_draft=True)
 
     @classmethod
     def is_duplicated(cls, tail, start_time, end_time, exclude_check_assignment=None):
@@ -156,6 +186,12 @@ class Assignment(models.Model):
         if exclude_check_assignment:
             query = query.exclude(pk=exclude_check_assignment.id)
         return query.all()
+
+    def apply_revision(self, revision):
+        if revision and revision.has_draft:
+            self.is_draft = True
+        self.revision = revision
+
 
 class Hobbs(models.Model):
     TYPE_ACTUAL = 1

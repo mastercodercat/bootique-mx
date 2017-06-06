@@ -117,6 +117,14 @@ $popover-text-color: #333;
         }
     }
 
+    .revision-controls {
+        > select,
+        > button {
+            display: inline-block;
+            margin-right: 5px;
+            vertical-align: top;
+        }
+    }
     .unit-control {
         float: left;
     }
