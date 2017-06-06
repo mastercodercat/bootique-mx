@@ -18,15 +18,6 @@
 
 {% block content %}
     <div class="gantt loading{% if days > 1 %} small-cells{% endif %}{% if days > 3 %} no-flight-number{% endif %}">
-        <div class="clearfix m-b-md"><!-- Time zone selector -->
-            <label>Timezone:</label>
-            <select id="gantt-timezone" class="form-control" style="max-width: 350px;">
-                <option value="US/Eastern" selected>UTC-5: Eastern Standard Time (EST)</option>
-                <option value="US/Central">UTC-6: Central Standard Time (CST)</option>
-                <option value="US/Mountain">UTC-7: Mountain Standard Time (MST)</option>
-                <option value="US/Pacific">UTC-8: Pacific Standard Time (PST)</option>
-            </select>
-        </div>
         <div class="clearfix m-b-md"><!-- Top controls -->
             <div class="unit-control btn-group">
                 <a class="btn btn-white{% if mode == '1' %} active{% endif %}"
@@ -74,6 +65,14 @@
                         <input type="submit" class="btn btn-primary" value="Search" />
                     </form>
                 </div>
+            </div>
+            <div class="timezone-control">
+                <select id="gantt-timezone" class="form-control" style="display: inline-block;">
+                    <option value="US/Eastern" selected>EST</option>
+                    <option value="US/Central">CST</option>
+                    <option value="US/Mountain">MST</option>
+                    <option value="US/Pacific">PST</option>
+                </select>
             </div>
         </div>
         <!-- Status bar sources, remove area -->
