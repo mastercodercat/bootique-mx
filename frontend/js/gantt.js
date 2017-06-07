@@ -920,8 +920,21 @@ RoutePlanningGantt.prototype.initEventHandlers = function() {
 
     $('#delete-revision').on('click', function() {
         self.deleteRevision()
-        .then(function() {
-            alert('deleted');
+        .then(function(response) {
+            if (response.success) {
+                $('#revisions').children('option:not(:first-child)').remove()
+                for(var index in response.revisions) {
+                    var revision = response.revisions[index];
+                    $('#revisions').append($('<option value="' + revision.id + '">' + revision.published + '</option>'));
+                }
+                if (response.revisions.length > 0) {
+                    self.revision = response.revisions[0].id;
+                } else {
+                    self.revision = 0;
+                }
+                $('#revisions').val(self.revision);
+                self.loadData();
+            }
         });
     });
 }

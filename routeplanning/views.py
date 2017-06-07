@@ -1248,11 +1248,12 @@ def api_delete_revision(request):
 
     try:
         revision_assignments = Assignment.get_revision_assignments(revision)
-        for assignment in revision_assignments:
-            try:
-                assignment.flight.hobbs.delete()
-            except:
-                pass
+        # TODO: should be hobbs removed too?
+        # for assignment in revision_assignments:
+        #     try:
+        #         assignment.flight.hobbs.delete()
+        #     except:
+        #         pass
         revision_assignments.delete()
 
         if revision:
@@ -1262,5 +1263,11 @@ def api_delete_revision(request):
         return JsonResponse(result, safe=False, status=500)
 
     result['success'] = True
+    result['revisions'] = []
+    for revision in Revision.objects.order_by('-published_datetime'):
+        result['revisions'].append({
+            'id': revision.id,
+            'published': str(revision.published_datetime),
+        })
     return JsonResponse(result, safe=False)
 
