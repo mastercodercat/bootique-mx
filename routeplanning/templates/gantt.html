@@ -28,9 +28,9 @@
                             <option value="{{ revision.id }}">{{ revision.published_datetime }}</option>
                         {% endfor %}
                     </select>
-                    <button class="btn btn-danger">Delete This Version</button>
-                    <button class="btn btn-default">Clear Changes</button>
-                    <button class="btn btn-primary">Publish Current Revision</button>
+                    <button id="delete-revision" class="btn btn-danger">Delete This Version</button>
+                    <button id="clear-revision" class="btn btn-default">Clear Changes</button>
+                    <button id="publish-revision" class="btn btn-primary">Publish Current Revision</button>
                 </div>
             </div>
         {% endif %}
@@ -420,6 +420,9 @@
             moveAssignmentAPIUrl: "{% url 'routeplanning:api_move_assignment' %}",
             removeAssignmentAPIUrl: "{% url 'routeplanning:api_remove_assignment' %}",
             resizeAssignmentAPIUrl: "{% url 'routeplanning:api_resize_assignment' %}",
+            publishRevisionAPIUrl: "{% url 'routeplanning:api_publish_revision' %}",
+            clearRevisionAPIUrl: "{% url 'routeplanning:api_clear_revision' %}",
+            deleteRevisionAPIUrl: "{% url 'routeplanning:api_delete_revision' %}",
             startDate: startDate,
             endDate: endDate,
             days: days,

@@ -886,9 +886,43 @@ RoutePlanningGantt.prototype.initEventHandlers = function() {
     });
 
     // Revision selector
+
     $('#revisions').on('change', function() {
         self.revision = $(this).val();
         self.loadData();
+    });
+
+    // Revision buttons
+
+    $('#publish-revision').on('click', function() {
+        self.publishRevision()
+        .then(function(response) {
+            if (response.success) {
+                self.revision = response.revision;
+                $('#revisions').children('option:not(:first-child)').remove()
+                for(var index in response.revisions) {
+                    var revision = response.revisions[index];
+                    $('#revisions').append($('<option value="' + revision.id + '">' + revision.published + '</option>'));
+                }
+                $('#revisions').val(self.revision);
+            }
+        });
+    });
+
+    $('#clear-revision').on('click', function() {
+        self.clearRevision()
+        .then(function(response) {
+            if (response.success) {
+                self.loadData();
+            }
+        });
+    });
+
+    $('#delete-revision').on('click', function() {
+        self.deleteRevision()
+        .then(function() {
+            alert('deleted');
+        });
     });
 }
 
@@ -1077,6 +1111,7 @@ RoutePlanningGantt.prototype.moveAssignment = function(assignmentData) {
         data: {
             csrfmiddlewaretoken: self.options.csrfToken,
             assignment_data: JSON.stringify(assignmentData),
+            revision: self.revision,
         },
     });
 }
@@ -1084,8 +1119,8 @@ RoutePlanningGantt.prototype.moveAssignment = function(assignmentData) {
 RoutePlanningGantt.prototype.resizeAssignment = function(assignmentId, pos, diffSeconds) {
     var self = this;
 
-    if (!self.options.moveAssignmentAPIUrl) {
-        console.error('Move assignment API URL not configured');
+    if (!self.options.resizeAssignmentAPIUrl) {
+        console.error('Resize assignment API URL not configured');
         return;
     }
 
@@ -1095,8 +1130,63 @@ RoutePlanningGantt.prototype.resizeAssignment = function(assignmentId, pos, diff
         data: {
             csrfmiddlewaretoken: self.options.csrfToken,
             assignment_id: assignmentId,
+            revision: self.revision,
             position: pos,
             diff_seconds: diffSeconds,
+        },
+    });
+}
+
+RoutePlanningGantt.prototype.publishRevision = function() {
+    var self = this;
+
+    if (!self.options.publishRevisionAPIUrl) {
+        console.error('Publish revision API URL not configured');
+        return;
+    }
+
+    return $.ajax({
+        method: 'POST',
+        url: self.options.publishRevisionAPIUrl,
+        data: {
+            csrfmiddlewaretoken: self.options.csrfToken,
+            revision: self.revision,
+        },
+    });
+}
+
+RoutePlanningGantt.prototype.clearRevision = function() {
+    var self = this;
+
+    if (!self.options.clearRevisionAPIUrl) {
+        console.error('Clear revision API URL not configured');
+        return;
+    }
+
+    return $.ajax({
+        method: 'POST',
+        url: self.options.clearRevisionAPIUrl,
+        data: {
+            csrfmiddlewaretoken: self.options.csrfToken,
+            revision: self.revision,
+        },
+    });
+}
+
+RoutePlanningGantt.prototype.deleteRevision = function() {
+    var self = this;
+
+    if (!self.options.deleteRevisionAPIUrl) {
+        console.error('Delete revision API URL not configured');
+        return;
+    }
+
+    return $.ajax({
+        method: 'POST',
+        url: self.options.deleteRevisionAPIUrl,
+        data: {
+            csrfmiddlewaretoken: self.options.csrfToken,
+            revision: self.revision,
         },
     });
 }

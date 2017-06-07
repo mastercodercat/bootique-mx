@@ -71,7 +71,7 @@ def index(request):
         'next_start_tmstmp': int(start_tmstmp) + table_length_in_secs,
         'csrf_token': csrf.get_token(request),
         'window_at_end': request.GET.get('window_at_end') or 0,
-        'revisions': Revision.objects.all(),
+        'revisions': Revision.objects.order_by('-published_datetime'),
     }
     return render(request, 'gantt.html', context)
 
@@ -393,11 +393,13 @@ def api_load_data(request):
     assignments_only = request.GET.get('assignments_only')
     revision_id = request.GET.get('revision')
 
-    if revision_id:
+    if int(revision_id):
         try:
             revision = Revision.objects.get(pk=revision_id)
         except Revision.DoesNotExist:
-            result['error'] = 'Revision not found'
+            result = {
+                'error': 'Revision not found',
+            }
             return JsonResponse(result, safe=False, status=500)
     else:
         revision = None
@@ -491,7 +493,7 @@ def api_assign_flight(request):
         result['error'] = 'Invalid parameters'
         return JsonResponse(result, safe=False, status=400)
 
-    if revision_id:
+    if int(revision_id):
         try:
             revision = Revision.objects.get(pk=revision_id)
             if revision:
@@ -575,7 +577,7 @@ def api_assign_status(request):
         result['error'] = 'Invalid parameters'
         return JsonResponse(result, safe=False, status=400)
 
-    if revision_id:
+    if int(revision_id):
         try:
             revision = Revision.objects.get(pk=revision_id)
             if revision:
@@ -656,7 +658,7 @@ def api_remove_assignment(request):
         result['error'] = 'Invalid parameters'
         return JsonResponse(result, safe=False, status=400)
 
-    if revision_id:
+    if int(revision_id):
         try:
             revision = Revision.objects.get(pk=revision_id)
             if revision:
@@ -701,9 +703,21 @@ def api_move_assignment(request):
 
     try:
         assignment_data = json.loads(request.POST.get('assignment_data'))
+        revision_id = request.POST.get('revision')
     except:
         result['error'] = 'Invalid parameters'
         return JsonResponse(result, safe=False, status=400)
+
+    if int(revision_id):
+        try:
+            revision = Revision.objects.get(pk=revision_id)
+            if revision:
+                revision.check_draft_created()
+        except Revision.DoesNotExist:
+            result['error'] = 'Revision not found'
+            return JsonResponse(result, safe=False, status=500)
+    else:
+        revision = None
 
     for data in assignment_data:
         try:
@@ -753,6 +767,7 @@ def api_move_assignment(request):
 
                     assignment.start_time = start_time
                     assignment.end_time = end_time
+                assignment.apply_revision(revision)
                 assignment.save()
                 assignment.flight.hobbs.tail = tail
                 assignment.flight.hobbs.save()
@@ -782,11 +797,23 @@ def api_resize_assignment(request):
 
     try:
         assignment_id = request.POST.get('assignment_id')
+        revision_id = request.POST.get('revision')
         pos = request.POST.get('position')  # start or end
         diff_seconds = round(float(request.POST.get('diff_seconds')) / 300.0) * 300.0     # changed time in seconds
     except:
         result['error'] = 'Invalid parameters'
         return JsonResponse(result, safe=False, status=400)
+
+    if int(revision_id):
+        try:
+            revision = Revision.objects.get(pk=revision_id)
+            if revision:
+                revision.check_draft_created()
+        except Revision.DoesNotExist:
+            result['error'] = 'Revision not found'
+            return JsonResponse(result, safe=False, status=500)
+    else:
+        revision = None
 
     try:
         assignment = Assignment.objects.get(pk=assignment_id)
@@ -808,6 +835,7 @@ def api_resize_assignment(request):
 
         assignment.start_time = start_time
         assignment.end_time = end_time
+        assignment.apply_revision(revision)
         assignment.save()
 
         if assignment.status == Assignment.STATUS_UNSCHEDULED_FLIGHT:
@@ -1120,7 +1148,7 @@ def api_publish_revision(request):
 
     revision_id = request.POST.get('revision')
 
-    if revision_id:
+    if int(revision_id):
         try:
             revision = Revision.objects.get(pk=revision_id)
         except Revision.DoesNotExist:
@@ -1142,11 +1170,23 @@ def api_publish_revision(request):
                 assignment.is_draft = False
                 assignment.revision = new_revision
                 assignment.save()
+
+        if revision and revision.has_draft:
+            revision.has_draft = False
+            revision.save()
     except Exception as e:
         result['error'] = str(e)
         return JsonResponse(result, safe=False, status=500)
 
     result['success'] = True
+    result['revision'] = new_revision.id
+    result['revisions'] = []
+    for revision in Revision.objects.order_by('-published_datetime'):
+        result['revisions'].append({
+            'id': revision.id,
+            'published': str(revision.published_datetime),
+        })
+
     return JsonResponse(result, safe=False)
 
 @login_required
@@ -1162,7 +1202,7 @@ def api_clear_revision(request):
 
     revision_id = request.POST.get('revision')
 
-    if revision_id:
+    if int(revision_id):
         try:
             revision = Revision.objects.get(pk=revision_id)
         except Revision.DoesNotExist:
@@ -1197,7 +1237,7 @@ def api_delete_revision(request):
 
     revision_id = request.POST.get('revision')
 
-    if revision_id:
+    if int(revision_id):
         try:
             revision = Revision.objects.get(pk=revision_id)
         except Revision.DoesNotExist:
@@ -1207,7 +1247,13 @@ def api_delete_revision(request):
         revision = None
 
     try:
-        Assignment.get_revision_assignments(revision).delete()
+        revision_assignments = Assignment.get_revision_assignments(revision)
+        for assignment in revision_assignments:
+            try:
+                assignment.flight.hobbs.delete()
+            except:
+                pass
+        revision_assignments.delete()
 
         if revision:
             revision.delete()

@@ -104,7 +104,7 @@ class Assignment(models.Model):
     status = models.IntegerField(default=STATUS_FLIGHT, choices=STATUS_CHOICES)
     is_draft = models.BooleanField(default=False)
 
-    flight = models.OneToOneField(Flight, null=True, blank=False, on_delete=models.PROTECT)
+    flight = models.ForeignKey(Flight, null=True, blank=False, on_delete=models.PROTECT)
     tail = models.ForeignKey(Tail, null=True, blank=False, on_delete=models.PROTECT)
     revision = models.ForeignKey(Revision, null=True, blank=False, on_delete=models.PROTECT)
 
@@ -188,7 +188,9 @@ class Assignment(models.Model):
         return query.all()
 
     def apply_revision(self, revision):
-        if revision and revision.has_draft:
+        if revision and not revision.has_draft:
+            self.is_draft = False
+        else:
             self.is_draft = True
         self.revision = revision
 

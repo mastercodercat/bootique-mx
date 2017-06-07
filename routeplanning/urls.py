@@ -30,6 +30,9 @@ urlpatterns = [
     url(r'^api/flight/getpage/*$', views.api_flight_get_page, name='api_flight_get_page'),
     url(r'^api/hobbs/(?P<hobbs_id>[0-9]+)/*$', views.api_get_hobbs, name='api_get_hobbs'),
     url(r'^api/hobbs/(?P<hobbs_id>[0-9]+)/remove/*$', views.api_delete_actual_hobbs, name='api_delete_actual_hobbs'),
+    url(r'^api/revision/publish/*$', views.api_publish_revision, name='api_publish_revision'),
+    url(r'^api/revision/clear/*$', views.api_clear_revision, name='api_clear_revision'),
+    url(r'^api/revision/delete/*$', views.api_delete_revision, name='api_delete_revision'),
 
     url(r'^$', views.index, name='index'),
 ]
