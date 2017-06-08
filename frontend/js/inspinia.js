@@ -205,6 +205,7 @@ $(document).ready(function () {
         forceParse: false,
         calendarWeeks: true,
         autoclose: true,
+        orientation: "bottom",
     });
 
     // Init clockpickers

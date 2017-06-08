@@ -940,9 +940,8 @@ RoutePlanningGantt.prototype.initEventHandlers = function() {
 }
 
 RoutePlanningGantt.prototype.checkIfAssigned = function(flightId) {
-    var assignmentCount = this.assignments.length;
-    for (var i = 0; i < assignmentCount; i++) {
-        if (this.assignments[i].flight_id == flightId) {
+    for (var id in this.assignments) {
+        if (this.assignments[id].flight_id == flightId) {
             return true;
         }
     }
