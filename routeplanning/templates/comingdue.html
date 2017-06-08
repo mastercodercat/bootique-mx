@@ -161,6 +161,7 @@
 {% block pagejs %}
     <script type="text/javascript">
         var csrfToken = "{{ csrf_token }}";
+        var revision = {{ revision_id }};
 
         var comingDueList = new ComingDueList({
             tailId: {{ tail.id }},
@@ -168,6 +169,7 @@
             comingDueListAPI: '{% url 'routeplanning:api_coming_due_list' %}',
             deleteActualHobbsAPI: '{% url 'routeplanning:api_delete_actual_hobbs' hobbs_id=0 %}',
             apiCSRFToken: csrfToken,
+            revision: revision,
             {% if request.user|can_write_gantt %}
                 writeable: true,
             {% else %}

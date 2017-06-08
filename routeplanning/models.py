@@ -234,14 +234,14 @@ class Hobbs(models.Model):
             .first()
 
     @classmethod
-    def get_projected_value(cls, tail, datetime):
+    def get_projected_value(cls, tail, datetime, revision):
         latest_actual_hobbs = cls.get_last_actual_hobbs(tail, datetime)
         projected_hobbs_value = latest_actual_hobbs.hobbs if latest_actual_hobbs else 0
 
-        ### TODO: select assignments in consideration of revision
         if latest_actual_hobbs:
             assignments_after = Assignment.objects.filter(start_time__gt=latest_actual_hobbs.hobbs_time) \
-                .filter(start_time__lte=datetime)
+                .filter(start_time__lte=datetime) \
+                .filter(revision=revision)
         else:
             assignments_after = Assignment.objects.all()
 

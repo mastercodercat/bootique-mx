@@ -150,12 +150,13 @@ def delete_tail(request, tail_id=None):
 
 @login_required
 @gantt_writable_required
-def coming_due(request, tail_id=None):
+def coming_due(request, tail_id=None, revision_id=None):
     tail = Tail.objects.get(pk=tail_id)
 
     context = {
         'tail': tail,
         'tails': [],
+        'revision_id': revision_id if revision_id else 0,
         'csrf_token': csrf.get_token(request),
     }
     return render(request, 'comingdue.html', context)
@@ -450,7 +451,7 @@ def api_load_data(request):
             'end_time': assignment.end_time,
             'status': assignment.status,
             'tail': assignment.tail.number,
-            'actual_hobbs': Hobbs.get_projected_value(assignment.tail, assignment.end_time),
+            'actual_hobbs': Hobbs.get_projected_value(assignment.tail, assignment.end_time, revision),
             'next_due_hobbs': Hobbs.get_next_due_value(assignment.tail, assignment.end_time),
         }
 
@@ -532,7 +533,7 @@ def api_assign_flight(request):
 
             result['assigned_flights'][flight_id] = {
                 'assignment_id': assignment.id,
-                'actual_hobbs': Hobbs.get_projected_value(tail, assignment.end_time),
+                'actual_hobbs': Hobbs.get_projected_value(tail, assignment.end_time, revision),
                 'next_due_hobbs': Hobbs.get_next_due_value(tail, assignment.end_time),
             }
         except Exception as e:
@@ -1031,16 +1032,26 @@ def api_coming_due_list(request):
         tail_id = request.POST.get('tail_id')
         start_time = dateutil.parser.parse(request.POST.get('start'))
         days = int(request.POST.get('days'))
+        revision_id = request.POST.get('revision')
     except:
         result['error'] = 'Invalid parameters'
         return JsonResponse(result, safe=False, status=400)
+
+    if revision_id:
+        try:
+            revision = Revision.objects.get(pk=revision_id)
+        except Revision.DoesNotExist:
+            result['error'] = 'Revision not found'
+            return JsonResponse(result, safe=False, status=400)
+    else:
+        revision = None
 
     try:
         tail = Tail.objects.get(pk=tail_id)
 
         hobbs_list = []
 
-        projected_hobbs_value = Hobbs.get_projected_value(tail, start_time)
+        projected_hobbs_value = Hobbs.get_projected_value(tail, start_time, revision)
         last_actual_hobbs = Hobbs.get_last_actual_hobbs(tail, start_time)
         projected_next_due_hobbs = Hobbs.get_next_due(tail, start_time)
         projected_next_due_hobbs_value = 0
@@ -1061,9 +1072,9 @@ def api_coming_due_list(request):
                 'object': hobbs,
             })
 
-        ### TODO: select assignments in consideration of revision
         assignments = Assignment.objects.filter(start_time__gte=start_time) \
             .filter(start_time__lt=end_time) \
+            .filter(revision=revision) \
             .select_related('flight') \
             .order_by('start_time')
         for assignment in assignments:

@@ -885,12 +885,21 @@ RoutePlanningGantt.prototype.initEventHandlers = function() {
         self.options.unscheduledFlightForm.modal('hide');
     });
 
-    // Revision selector
+    // Revision selector, coming due page links
 
+    function setTailLinks() {
+        $('.coming-due-page-link').each(function() {
+            var $link = $(this);
+            var tailId = $link.data('tail-id');
+            $link.attr('href', 'tail/' + tailId + '/revision/' + self.revision + '/comingdue/');
+        });
+    }
     $('#revisions').on('change', function() {
         self.revision = $(this).val();
+        setTailLinks();
         self.loadData();
     });
+    setTailLinks();
 
     // Revision buttons
 

@@ -7,7 +7,7 @@ urlpatterns = [
     url(r'^tail/add/*$', views.add_tail, name='add_tail'),
     url(r'^tail/(?P<tail_id>[0-9]+)/*$', views.edit_tail, name='edit_tail'),
     url(r'^tail/(?P<tail_id>[0-9]+)/delete/*$', views.delete_tail, name='delete_tail'),
-    url(r'^tail/(?P<tail_id>[0-9]+)/comingdue/*$', views.coming_due, name='coming_due'),
+    url(r'^tail/(?P<tail_id>[0-9]+)/revision/(?P<revision_id>[0-9]+)/comingdue/*$', views.coming_due, name='coming_due'),
 
     url(r'^line/add/*$', views.add_line, name='add_line'),
     url(r'^line/(?P<line_id>[0-9]+)/*$', views.edit_line, name='edit_line'),

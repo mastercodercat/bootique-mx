@@ -49,6 +49,7 @@ ComingDueList.prototype.refresh = function() {
         tail_id: self.options.tailId,
         start: self.firstWeekDay().toISOString(),
         days: 7,
+        revision: self.options.revision,
     };
     $.ajax({
         url: self.options.comingDueListAPI,

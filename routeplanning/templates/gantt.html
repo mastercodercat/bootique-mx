@@ -177,7 +177,7 @@
                 </div>
                 {% for tail in tails %}
                     <div class="axis-cell tail">
-                        <a href="{% url 'routeplanning:coming_due' tail_id=tail.id %}">{{ tail.number }}</a>
+                        <a class="coming-due-page-link" href="#" data-tail-id="{{ tail.id }}">{{ tail.number }}</a>
                     </div>
                 {% endfor %}
                 <div class="label-cell">
