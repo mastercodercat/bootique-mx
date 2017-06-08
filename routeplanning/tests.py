@@ -445,6 +445,7 @@ class ViewsTestCase(TestCase):
         response = self.client.get(api_url, {
             'startdate': 1494799200,
             'enddate': 1496008800,
+            'revision': 0,
         })
         data = json.loads(response.content)
         self.assertEqual(response.status_code, 200)
@@ -462,7 +463,8 @@ class ViewsTestCase(TestCase):
             'flight_data': json.dumps([{
                 'flight': 13069,
                 'tail': 'N455BC',
-            }])
+            }]),
+            'revision': 0,
         })
         data = json.loads(response.content)
         self.assertEqual(data['success'], True)
@@ -473,7 +475,8 @@ class ViewsTestCase(TestCase):
             'flight_data': json.dumps([{
                 'flight': 13072,
                 'tail': 'N455BC',
-            }])
+            }]),
+            'revision': 0,
         })
         data = json.loads(response.content)
         self.assertEqual(data['physically_invalid'], True)
@@ -482,7 +485,8 @@ class ViewsTestCase(TestCase):
             'flight_data': json.dumps([{
                 'flight': 13262,
                 'tail': 'N455BC',
-            }])
+            }]),
+            'revision': 0,
         })
         data = json.loads(response.content)
         self.assertEqual(data['success'], True)
@@ -499,6 +503,7 @@ class ViewsTestCase(TestCase):
             'start_time': '2017-05-24 17:30:00+00',
             'end_time': '2017-05-24 18:00:00+00',
             'status': 2,
+            'revision': 0,
         })
         data = json.loads(response.content)
         self.assertEqual(response.status_code, 200)
@@ -513,6 +518,7 @@ class ViewsTestCase(TestCase):
             'status': 3,
             'origin': 'LAX',
             'destination': 'MCE',
+            'revision': 0,
         })
         data = json.loads(response.content)
         self.assertEqual(response.status_code, 200)
@@ -523,6 +529,7 @@ class ViewsTestCase(TestCase):
             'start_time': '2017-05-24 17:50:00+00',
             'end_time': '2017-05-24 18:50:00+00',
             'status': 2,
+            'revision': 0,
         })
         data = json.loads(response.content)
         self.assertEqual(response.status_code, 200)
@@ -535,6 +542,7 @@ class ViewsTestCase(TestCase):
             'status': 3,
             'origin': 'LAX',
             'destination': 'OAK',
+            'revision': 0,
         })
         data = json.loads(response.content)
         self.assertEqual(response.status_code, 200)
@@ -547,6 +555,7 @@ class ViewsTestCase(TestCase):
 
         response = self.client.post(api_url, {
             'assignment_data': '[450, 451]',
+            'revision': 0,
         })
         data = json.loads(response.content)
         self.assertEqual(response.status_code, 200)
@@ -565,6 +574,7 @@ class ViewsTestCase(TestCase):
                 'tail': 'N584JV',
                 'start_time': '2017-05-25T11:00:00Z',
             }]),
+            'revision': 0,
         })
         data = json.loads(response.content)
         self.assertEqual(response.status_code, 200)
@@ -578,6 +588,7 @@ class ViewsTestCase(TestCase):
                 'tail': 'N584JV',
                 'start_time': '2017-05-25T12:30:00Z',
             }]),
+            'revision': 0,
         })
         data = json.loads(response.content)
         self.assertEqual(response.status_code, 200)
@@ -594,6 +605,7 @@ class ViewsTestCase(TestCase):
                 'tail': 'N584JV',
                 'start_time': '2017-05-26T12:30:00Z',
             }]),
+            'revision': 0,
         })
         data = json.loads(response.content)
         self.assertEqual(response.status_code, 200)
@@ -610,6 +622,7 @@ class ViewsTestCase(TestCase):
             'assignment_id': 451,
             'position': 'start',
             'diff_seconds': 600,
+            'revision': 0,
         })
         data = json.loads(response.content)
         self.assertEqual(response.status_code, 200)
@@ -619,6 +632,7 @@ class ViewsTestCase(TestCase):
             'assignment_id': 451,
             'position': 'end',
             'diff_seconds': 600,
+            'revision': 0,
         })
         data = json.loads(response.content)
         self.assertEqual(response.status_code, 200)
@@ -628,6 +642,7 @@ class ViewsTestCase(TestCase):
             'assignment_id': 451,
             'position': 'start',
             'diff_seconds': 18000,
+            'revision': 0,
         })
         data = json.loads(response.content)
         self.assertEqual(response.status_code, 200)

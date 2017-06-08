@@ -152,13 +152,9 @@ def delete_tail(request, tail_id=None):
 @gantt_writable_required
 def coming_due(request, tail_id=None):
     tail = Tail.objects.get(pk=tail_id)
-    flights = []
-    for assignment in tail.assignment_set.order_by('start_time').all():
-        flights.append(assignment.flight)
 
     context = {
         'tail': tail,
-        'flights': flights,
         'tails': [],
         'csrf_token': csrf.get_token(request),
     }
@@ -454,7 +450,7 @@ def api_load_data(request):
             'end_time': assignment.end_time,
             'status': assignment.status,
             'tail': assignment.tail.number,
-            'actual_hobbs': Hobbs.get_projected_actual_value(assignment.tail, assignment.end_time),
+            'actual_hobbs': Hobbs.get_projected_value(assignment.tail, assignment.end_time),
             'next_due_hobbs': Hobbs.get_next_due_value(assignment.tail, assignment.end_time),
         }
 
@@ -534,18 +530,9 @@ def api_assign_flight(request):
             assignment.apply_revision(revision)
             assignment.save()
 
-            hobbs = Hobbs(
-                type=Hobbs.TYPE_ACTUAL,
-                hobbs_time=flight.departure_datetime,
-                hobbs=flight.length / 3600,
-                flight=flight,
-                tail=tail
-            )
-            hobbs.save()
-
             result['assigned_flights'][flight_id] = {
                 'assignment_id': assignment.id,
-                'actual_hobbs': Hobbs.get_projected_actual_value(tail, assignment.end_time),
+                'actual_hobbs': Hobbs.get_projected_value(tail, assignment.end_time),
                 'next_due_hobbs': Hobbs.get_next_due_value(tail, assignment.end_time),
             }
         except Exception as e:
@@ -617,15 +604,6 @@ def api_assign_status(request):
             )
             flight.save()
 
-            hobbs = Hobbs(
-                type=Hobbs.TYPE_ACTUAL,
-                hobbs_time=flight.departure_datetime,
-                hobbs=flight.length / 3600,
-                flight=flight,
-                tail=tail
-            )
-            hobbs.save()
-
             assignment.flight = flight
 
         assignment.apply_revision(revision)
@@ -675,10 +653,6 @@ def api_remove_assignment(request):
             assignment.delete()
             if assignment.status == Assignment.STATUS_UNSCHEDULED_FLIGHT:
                 assignment.flight.delete()
-            try:
-                assignment.flight.hobbs.delete()
-            except ObjectDoesNotExist:
-                pass
 
             result['removed_assignments'].append(assignment_id)
         except Exception as e:
@@ -762,15 +736,10 @@ def api_move_assignment(request):
                         assignment.flight.arrival_datetime = end_time
                         assignment.flight.save()
 
-                        assignment.flight.hobbs.hobbs_time = start_time
-                        assignment.flight.hobbs.save()
-
                     assignment.start_time = start_time
                     assignment.end_time = end_time
                 assignment.apply_revision(revision)
                 assignment.save()
-                assignment.flight.hobbs.tail = tail
-                assignment.flight.hobbs.save()
             except ObjectDoesNotExist:
                 pass
 
@@ -842,13 +811,6 @@ def api_resize_assignment(request):
             assignment.flight.departure_datetime = start_time
             assignment.flight.arrival_datetime = end_time
             assignment.flight.save()
-
-            try:
-                assignment.flight.hobbs.hobbs_time = start_time
-                assignment.flight.hobbs.hobbs = assignment.flight.length / 3600
-                assignment.flight.hobbs.save()
-            except ObjectDoesNotExist:
-                pass
 
     except Exception as e:
         result['error'] = str(e)
@@ -1024,35 +986,27 @@ def api_save_hobbs(request):
         hobbs_value = request.POST.get('hobbs')
         hobbs_datetime = dateutil.parser.parse(request.POST.get('datetime'))
 
-        flight_id = request.POST.get('flight_id')
-        if int(hobbs_type) == Hobbs.TYPE_ACTUAL and not flight_id:
-            raise Exception('Invalid parameters')
-
         if hobbs_id:
             hobbs = Hobbs.objects.get(pk=hobbs_id)
+        elif int(hobbs_type) == Hobbs.TYPE_ACTUAL:
+            hobbs = Hobbs.objects.filter(hobbs_time=hobbs_datetime).filter(type=Hobbs.TYPE_ACTUAL).first()
         else:
             hobbs = None
 
         if hobbs and hobbs.type != int(hobbs_type):
             raise Exception('Invalid parameters')
-    except:
+    except Exception as e:
         result['error'] = 'Invalid parameters'
         return JsonResponse(result, safe=False, status=400)
 
     try:
         tail = Tail.objects.get(pk=tail_id)
-        if flight_id:
-            flight = Flight.objects.get(pk=flight_id)
-        else:
-            flight = None
         if not hobbs:
             hobbs = Hobbs()
             hobbs.type = hobbs_type
         hobbs.hobbs_time = hobbs_datetime
         hobbs.hobbs = hobbs_value
         hobbs.tail = tail
-        if flight:
-            hobbs.flight = flight
         hobbs.save()
     except Exception as e:
         result['error'] = str(e)
@@ -1086,7 +1040,8 @@ def api_coming_due_list(request):
 
         hobbs_list = []
 
-        projected_actual_hobbs_value = Hobbs.get_projected_actual_value(tail, start_time)
+        projected_hobbs_value = Hobbs.get_projected_value(tail, start_time)
+        last_actual_hobbs = Hobbs.get_last_actual_hobbs(tail, start_time)
         projected_next_due_hobbs = Hobbs.get_next_due(tail, start_time)
         projected_next_due_hobbs_value = 0
         projected_next_due_hobbs_id = 0
@@ -1094,36 +1049,59 @@ def api_coming_due_list(request):
             projected_next_due_hobbs_value = projected_next_due_hobbs.hobbs
             projected_next_due_hobbs_id = projected_next_due_hobbs.id
 
-        for _ in xrange(days):
-            end_time = start_time + timedelta(days=1)
+        end_time = start_time + timedelta(days=days)
 
-            hobbs_set = Hobbs.get_hobbs(tail, start_time, end_time)
-            for hobbs in hobbs_set:
+        stream = []
+
+        hobbs_set = Hobbs.get_hobbs(tail, start_time, end_time)
+        for hobbs in hobbs_set:
+            stream.append({
+                'datetime': hobbs.hobbs_time,
+                'type': 'hobbs',
+                'object': hobbs,
+            })
+
+        ### TODO: select assignments in consideration of revision
+        assignments = Assignment.objects.filter(start_time__gte=start_time) \
+            .filter(start_time__lt=end_time) \
+            .select_related('flight') \
+            .order_by('start_time')
+        for assignment in assignments:
+            stream.append({
+                'datetime': assignment.start_time,
+                'type': 'assignment',
+                'object': assignment,
+            })
+
+        stream = sorted(stream, key=lambda object: object['datetime'])
+        for object in stream:
+            if object['type'] == 'hobbs':
+                hobbs = object['object']
                 if hobbs.type == Hobbs.TYPE_ACTUAL:
-                    projected_actual_hobbs_value += hobbs.hobbs
-                    hobbs_list.append({
-                        'day': start_time,
-                        'actual': projected_actual_hobbs_value,
-                        'next_due': projected_next_due_hobbs_value,
-                        'actual_hobbs_id': hobbs.id,
-                        'next_due_hobbs_id': projected_next_due_hobbs_id,
-                        'flight_id': hobbs.flight.id,
-                        'flight': str(hobbs.flight),
-                    })
+                    projected_hobbs_value = hobbs.hobbs
+                    last_actual_hobbs = hobbs
                 elif hobbs.type == Hobbs.TYPE_NEXT_DUE:
                     projected_next_due_hobbs_value = hobbs.hobbs
                     projected_next_due_hobbs_id = hobbs.id
-
-            start_time = end_time
+            elif object['type'] == 'assignment':
+                assignment = object['object']
+                if last_actual_hobbs.hobbs_time < assignment.start_time:
+                    projected_hobbs_value += assignment.length / 3600
+                hobbs_list.append({
+                    'day': assignment.start_time,
+                    'projected': projected_hobbs_value,
+                    'next_due': projected_next_due_hobbs_value,
+                    'next_due_hobbs_id': projected_next_due_hobbs_id,
+                    'flight': str(assignment.flight),
+                    'start_time_tmstmp': totimestamp(assignment.start_time),
+                })
 
         if len(hobbs_list) == 0:
             hobbs_list.append({
                 'day': '',
-                'actual': projected_actual_hobbs_value,
+                'projected': projected_hobbs_value,
                 'next_due': projected_next_due_hobbs_value,
-                'actual_hobbs_id': 0,
                 'next_due_hobbs_id': projected_next_due_hobbs_id,
-                'flight_id': 0,
                 'flight': '',
             })
 
@@ -1248,12 +1226,6 @@ def api_delete_revision(request):
 
     try:
         revision_assignments = Assignment.get_revision_assignments(revision)
-        # TODO: should be hobbs removed too?
-        # for assignment in revision_assignments:
-        #     try:
-        #         assignment.flight.hobbs.delete()
-        #     except:
-        #         pass
         revision_assignments.delete()
 
         if revision:

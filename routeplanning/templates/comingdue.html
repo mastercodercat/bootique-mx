@@ -70,22 +70,6 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="row">
-                            <div class="col-md-6 col-sm-12">
-                                <div class="form-group">
-                                    <label class="col-sm-3 control-label" for="actual-hobbs-flight">Flight</label>
-                                    <div class="col-sm-9">
-                                        <select id="actual-hobbs-flight" class="form-control hobbs-flight" name="flight_id">
-                                            {% for flight in flights %}
-                                                <option value="{{ flight.id }}">
-                                                    {{ flight.number }}: {{ flight.origin }}-{{ flight.destination }} at {{ flight.departure_datetime|localtime|date:"n/d/Y H:i:s" }}
-                                                </option>
-                                            {% endfor %}
-                                        </select>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
                         {% if request.user|can_write_gantt %}
                             <div class="text-right m-t-lg">
                                 <button class="btn btn-default save-and-add-another" type="button">Save and add another</button>

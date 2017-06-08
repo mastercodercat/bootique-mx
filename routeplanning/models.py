@@ -118,6 +118,10 @@ class Assignment(models.Model):
         else:
             return 'Other'
 
+    @property
+    def length(self):
+        return (self.end_time - self.start_time).total_seconds()
+
     @classmethod
     def get_revision_assignments(cls, revision):
         if not revision or not revision.has_draft:
@@ -209,7 +213,6 @@ class Hobbs(models.Model):
     hobbs = models.FloatField(default=0.0, blank=False)
 
     tail = models.ForeignKey(Tail, null=True, blank=False, on_delete=models.PROTECT)
-    flight = models.OneToOneField(Flight, null=True, blank=False, on_delete=models.PROTECT)
 
     def __unicode__(self):
         return 'Hobbs of ' + self.tail.number + ' on date ' + self.hobbs_time.strftime("%F")
@@ -220,16 +223,32 @@ class Hobbs(models.Model):
             .filter(hobbs_time__lt=end_time) \
             .filter(tail=tail) \
             .order_by('hobbs_time') \
-            .select_related('flight') \
             .all()
 
     @classmethod
-    def get_projected_actual_value(cls, tail, datetime):
-        result = cls.objects.filter(hobbs_time__lt=datetime) \
+    def get_last_actual_hobbs(cls, tail, datetime):
+        return cls.objects.filter(hobbs_time__lte=datetime) \
             .filter(tail=tail) \
             .filter(type=Hobbs.TYPE_ACTUAL) \
-            .aggregate(Sum('hobbs'))
-        return result['hobbs__sum'] if result and result['hobbs__sum'] else 0
+            .order_by('-hobbs_time') \
+            .first()
+
+    @classmethod
+    def get_projected_value(cls, tail, datetime):
+        latest_actual_hobbs = cls.get_last_actual_hobbs(tail, datetime)
+        projected_hobbs_value = latest_actual_hobbs.hobbs if latest_actual_hobbs else 0
+
+        ### TODO: select assignments in consideration of revision
+        if latest_actual_hobbs:
+            assignments_after = Assignment.objects.filter(start_time__gt=latest_actual_hobbs.hobbs_time) \
+                .filter(start_time__lte=datetime)
+        else:
+            assignments_after = Assignment.objects.all()
+
+        for assignment in assignments_after:
+            projected_hobbs_value += assignment.length / 3600
+
+        return projected_hobbs_value
 
     @classmethod
     def get_next_due(cls, tail, datetime):

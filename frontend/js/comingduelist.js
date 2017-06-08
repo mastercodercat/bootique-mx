@@ -6,6 +6,7 @@ function ComingDueList(options) {
     this.options = options;
     this.$table = $(options.listSelector);
     this.anchorDate = new Date();
+    this.hobbsList = [];
 
     this.init();
     this.refresh();
@@ -58,6 +59,8 @@ ComingDueList.prototype.refresh = function() {
         if (response.success) {
             self.$table.empty();
 
+            self.hobbsList = response.hobbs_list;
+
             var $thead = $('<thead />');
             $thead.append('<th><strong>Date</strong></th>');
             $thead.append('<th><strong>Flight</strong></th>');
@@ -70,8 +73,9 @@ ComingDueList.prototype.refresh = function() {
             self.$table.append($thead);
 
             var lastDay = '';
+            var index = 0;
             for (var hobbs of response.hobbs_list) {
-                var $tr = $('<tr data-actual-hobbs-id="' + hobbs.actual_hobbs_id + '" data-next-due-hobbs-id="' + hobbs.next_due_hobbs_id + '" />');
+                var $tr = $('<tr data-index="' + (index++) + '" data-next-due-hobbs-id="' + hobbs.next_due_hobbs_id + '" />');
                 if (hobbs.day != lastDay) {
                     $tr.append('<td>' + self.formatHobbsDate(new Date(hobbs.day)) + '</td>');
                     lastDay = hobbs.day;
@@ -79,10 +83,10 @@ ComingDueList.prototype.refresh = function() {
                     $tr.append('<td></td>');
                 }
                 $tr.append('<td>' + hobbs.flight + '</td>');
-                $tr.append('<td>' + hobbs.actual.toFixed(1) + '</td>');
+                $tr.append('<td>' + hobbs.projected.toFixed(1) + '</td>');
                 $tr.append('<td>' + hobbs.next_due.toFixed(1) + '</td>');
-                $tr.append('<td>' + (hobbs.next_due - hobbs.actual).toFixed(1) + '</td>');
-                if (self.options.writeable && hobbs.actual_hobbs_id) {
+                $tr.append('<td>' + (hobbs.next_due - hobbs.projected).toFixed(1) + '</td>');
+                if (self.options.writeable && hobbs.flight.length > 0) {
                     $tr.append('<td style="padding-bottom: 3px;">' +
                         '<a href="javascript:;" class="btn btn-primary btn-xs btn-edit-hobbs"><i class="fa fa-fw fa-edit"></i></a> ' +
                         '<a href="javascript:;" class="btn-delete-flight btn btn-danger btn-xs btn-delete-hobbs"><i class="fa fa-fw fa-trash"></i></a>' +
@@ -100,36 +104,40 @@ ComingDueList.prototype.init = function() {
     self.$table.on('click', '.btn-edit-hobbs', function(e) {
         e.preventDefault();
         var $tr = $(this).closest('tr');
-        if (self.actualHobbsForm) {
-            var actualHobbsId = $tr.data('actual-hobbs-id');
-            self.actualHobbsForm.load(actualHobbsId);
+        var index = $tr.data('index');
+        var hobbs = self.hobbsList[index];
+        if (hobbs) {
+            if (self.actualHobbsForm) {
+                self.actualHobbsForm.setValues(new Date(hobbs.start_time_tmstmp * 1000), hobbs.projected);
+            }
         }
         if (self.nextDueHobbsForm) {
-            var actualHobbsId = $tr.data('next-due-hobbs-id');
-            self.nextDueHobbsForm.load(actualHobbsId);
+            var nextDueHobbsId = $tr.data('next-due-hobbs-id');
+            self.nextDueHobbsForm.load(nextDueHobbsId);
         }
     });
 
     self.$table.on('click', '.btn-delete-hobbs', function(e) {
         e.preventDefault();
-        var $tr = $(this).closest('tr');
-        var actualHobbsId = $tr.data('actual-hobbs-id');
-        if (actualHobbsId) {
-            var apiUrl = self.options.deleteActualHobbsAPI.replace('0', actualHobbsId);
+        /// TODO: What does this delete do?
+        // var $tr = $(this).closest('tr');
+        // var actualHobbsId = $tr.data('actual-hobbs-id');
+        // if (actualHobbsId) {
+        //     var apiUrl = self.options.deleteActualHobbsAPI.replace('0', actualHobbsId);
 
-            $.ajax({
-                method: 'POST',
-                url: apiUrl,
-                data: {
-                    csrfmiddlewaretoken: self.options.apiCSRFToken,
-                },
-            })
-            .then(function(response) {
-                if (response.success) {
-                    self.refresh();
-                }
-            });
-        }
+        //     $.ajax({
+        //         method: 'POST',
+        //         url: apiUrl,
+        //         data: {
+        //             csrfmiddlewaretoken: self.options.apiCSRFToken,
+        //         },
+        //     })
+        //     .then(function(response) {
+        //         if (response.success) {
+        //             self.refresh();
+        //         }
+        //     });
+        // }
     });
 }
 

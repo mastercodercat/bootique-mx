@@ -56,9 +56,18 @@ HobbsForm.prototype.load = function(hobbsId) {
             self.$form.find('.hobbs-date').closest('.input-group.date').datepicker('update', hobbsDate);
             self.$form.find('.hobbs-time').val(hobbsDate.getHours() + ':' + hobbsDate.getMinutes());
             self.$form.find('.hobbs-value').val(hobbs.fields.hobbs);
-            self.$form.find('.hobbs-flight').val(hobbs.fields.flight);
         }
     });
+}
+
+HobbsForm.prototype.setValues = function(datetime, projectedHobbs) {
+    var self = this;
+
+    self.$form.find('.hobbs-id').val('');
+    var hobbsDate = new Date(datetime);
+    self.$form.find('.hobbs-date').closest('.input-group.date').datepicker('update', hobbsDate);
+    self.$form.find('.hobbs-time').val(hobbsDate.getHours() + ':' + hobbsDate.getMinutes());
+    self.$form.find('.hobbs-value').val(projectedHobbs);
 }
 
 HobbsForm.prototype.submitForm = function() {
@@ -80,9 +89,6 @@ HobbsForm.prototype.submitForm = function() {
     formData['tail_id'] = tmpData['tail_id'];
     formData['type'] = tmpData['type'];
     formData['hobbs'] = tmpData['value'];
-    if (tmpData['flight_id']) {
-        formData['flight_id'] = tmpData['flight_id']
-    }
     var datetime = new Date(tmpData['date']);
     var timeparts = tmpData['time'].split(':');
     datetime.setHours(parseInt(timeparts[0]));
@@ -107,7 +113,6 @@ HobbsForm.prototype.submitForm = function() {
                 self.$form.find('.hobbs-date').val('');
                 self.$form.find('.hobbs-time').val('');
                 self.$form.find('.hobbs-value').val('');
-                self.$form.find('.hobbs-flight').val('');
             }
             if (actionAfterSave != 'save' && self.options.comingDueList) {
                 self.options.comingDueList.refresh();
