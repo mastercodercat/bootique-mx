@@ -938,6 +938,7 @@ def api_upload_csv(request): # pragma: no cover
 
 @login_required
 @gantt_readable_required
+@api_view(['GET'])
 def api_get_hobbs(request, hobbs_id=None):
     result = {
         'success': False,
@@ -946,11 +947,11 @@ def api_get_hobbs(request, hobbs_id=None):
     try:
         hobbs = Hobbs.objects.filter(pk=hobbs_id)
     except:
-        return JsonResponse(result, safe=False, status=400)
+        return Response(result, status=400)
 
     result['success'] = True
     result['hobbs'] = serializers.serialize("json", hobbs)
-    return JsonResponse(result, safe=False)
+    return Response(result)
 
 @login_required
 @gantt_writable_required
@@ -973,34 +974,32 @@ def api_delete_actual_hobbs(request, hobbs_id=None):
 
 @login_required
 @gantt_writable_required
+@api_view(['POST'])
 def api_save_hobbs(request):
     result = {
         'success': False,
     }
 
-    if request.method != 'POST':
-        result['error'] = 'Only POST method is allowed'
-        return JsonResponse(result, safe=False)
-
     try:
-        tail_id = request.POST.get('tail_id')
-        hobbs_id = request.POST.get('id')
-        hobbs_type = request.POST.get('type')
-        hobbs_value = request.POST.get('hobbs')
-        hobbs_datetime = dateutil.parser.parse(request.POST.get('datetime'))
+        tail_id = request.data.get('tail_id')
+        hobbs_id = request.data.get('id')
+        hobbs_type = int(request.data.get('type'))
+        hobbs_value = request.data.get('hobbs')
+        hobbs_datetime = dateutil.parser.parse(request.data.get('datetime'))
 
         if hobbs_id:
             hobbs = Hobbs.objects.get(pk=hobbs_id)
-        elif int(hobbs_type) == Hobbs.TYPE_ACTUAL:
+        elif hobbs_type == Hobbs.TYPE_ACTUAL:
             hobbs = Hobbs.objects.filter(hobbs_time=hobbs_datetime).filter(type=Hobbs.TYPE_ACTUAL).first()
         else:
             hobbs = None
 
-        if hobbs and hobbs.type != int(hobbs_type):
+        if hobbs and hobbs.type != hobbs_type:
             raise Exception('Invalid parameters')
     except Exception as e:
+        print(str(e))
         result['error'] = 'Invalid parameters'
-        return JsonResponse(result, safe=False, status=400)
+        return Response(result, status=400)
 
     try:
         tail = Tail.objects.get(pk=tail_id)
@@ -1013,11 +1012,11 @@ def api_save_hobbs(request):
         hobbs.save()
     except Exception as e:
         result['error'] = str(e)
-        return JsonResponse(result, safe=False, status=500)
+        return Response(result, status=500)
 
     result['success'] = True
     result['hobbs_id'] = hobbs.id
-    return JsonResponse(result, safe=False)
+    return Response(result)
 
 @login_required
 @gantt_readable_required

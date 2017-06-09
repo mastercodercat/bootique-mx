@@ -53,6 +53,7 @@ export default {
         }
     },
     mounted() {
+        this.$on('refresh-coming-due-list', this.refresh);
         this.refresh();
     },
     methods: {

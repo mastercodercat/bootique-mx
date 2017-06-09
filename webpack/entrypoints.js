@@ -8,8 +8,6 @@ module.exports = {
         '../frontend/js/datatables.js',
         '../frontend/js/utils.js',
         '../frontend/js/gantt.js',
-        '../frontend/js/comingduelist.js',
-        '../frontend/js/hobbsform.js',
         '../frontend/js/vue-init.js',
     ],
 

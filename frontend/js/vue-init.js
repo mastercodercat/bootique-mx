@@ -34,7 +34,8 @@ window.initComingDueListPage = function(elemSelector, params) {
             tail-number="${params.tailNumber}"
             revision="${params.revision}"
             coming-due-list-api="${params.comingDueListAPI}"
-            delete-actual-hobbs-api="${params.deleteActualHobbsAPI}"
+            load-hobbs-api-base="${params.loadHobbsAPIBase}"
+            save-hobbs-api="${params.saveHobbsAPI}"
             url-to-redirect-after-save="${params.urlToRedirectAfterSave}"
             writable="${params.writable}" />`,
         components: { ComingDueListPage }

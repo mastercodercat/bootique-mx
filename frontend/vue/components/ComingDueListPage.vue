@@ -7,6 +7,12 @@
                 </div>
                 <div class="ibox-content">
                     <hobbs-form
+                        type="1"
+                        :tail-id="tailId"
+                        :writable="writable"
+                        :save-hobbs-api="saveHobbsApi"
+                        :url-to-redirect-after-save="urlToRedirectAfterSave"
+                        @refresh-coming-due-list="refreshComingDueList"
                         ref="actualHobbsForm" />
                 </div>
             </div>
@@ -16,6 +22,13 @@
                 </div>
                 <div class="ibox-content">
                     <hobbs-form
+                        type="2"
+                        :tail-id="tailId"
+                        :writable="writable"
+                        :load-hobbs-api-base="loadHobbsApiBase"
+                        :save-hobbs-api="saveHobbsApi"
+                        :url-to-redirect-after-save="urlToRedirectAfterSave"
+                        @refresh-coming-due-list="refreshComingDueList"
                         ref="nextDueHobbsForm" />
                 </div>
             </div>
@@ -32,7 +45,8 @@
                         :writable="writable"
                         :coming-due-list-api="comingDueListApi"
                         @load-actual-hobbs="loadActualHobbs"
-                        @load-next-due-hobbs="loadNextDueHobbs" />
+                        @load-next-due-hobbs="loadNextDueHobbs"
+                        ref="comingDueList" />
                 </div>
             </div>
         </div>
@@ -45,8 +59,8 @@ import HobbsForm from '@frontend_components/HobbsForm.vue';
 
 export default {
     name: 'ComingDueListPages',
-    props: ['tail-id', 'tail-number', 'revision', 'coming-due-list-api', 'delete-actual-hobbs-api',
-        'url-to-redirect-after-save', 'writable'],
+    props: ['tail-id', 'tail-number', 'revision', 'coming-due-list-api', 'save-hobbs-api',
+        'load-hobbs-api-base', 'url-to-redirect-after-save', 'writable'],
     components: {
         'coming-due-list': ComingDueList,
         'hobbs-form': HobbsForm,
@@ -62,6 +76,9 @@ export default {
         loadNextDueHobbs(hobbsId) {
             this.$refs.nextDueHobbsForm.$emit('load-hobbs', hobbsId);
         },
+        refreshComingDueList() {
+            this.$refs.comingDueList.$emit('refresh-coming-due-list');
+        }
     }
 }
 </script>
