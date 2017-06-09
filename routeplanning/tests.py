@@ -243,6 +243,7 @@ class ViewsTestCase(TestCase):
         tail = Tail.objects.first()
         view_url = reverse('routeplanning:coming_due', kwargs={
             'tail_id': tail.id,
+            'revision_id': 0,
         })
 
         self.guest_attempt(view_url)

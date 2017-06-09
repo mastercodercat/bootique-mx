@@ -25,7 +25,7 @@
                     <select id="revisions" class="form-control" style="max-width: 350px;">
                         <option value="0" selected>(New Draft)</option>
                         {% for revision in revisions %}
-                            <option value="{{ revision.id }}">{{ revision.published_datetime }}</option>
+                            <option value="{{ revision.id }}">{{ revision.published_datetime|date:'m/d/Y H:i:s' }}</option>
                         {% endfor %}
                     </select>
                     <button id="delete-revision" class="btn btn-danger">Delete This Version</button>

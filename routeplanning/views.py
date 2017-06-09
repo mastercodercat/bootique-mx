@@ -1171,7 +1171,7 @@ def api_publish_revision(request):
     for revision in Revision.objects.order_by('-published_datetime'):
         result['revisions'].append({
             'id': revision.id,
-            'published': str(revision.published_datetime),
+            'published': revision.published_datetime.strftime('%m/%d/%Y %H:%M:%S'),
         })
 
     return JsonResponse(result, safe=False)
@@ -1248,7 +1248,7 @@ def api_delete_revision(request):
     for revision in Revision.objects.order_by('-published_datetime'):
         result['revisions'].append({
             'id': revision.id,
-            'published': str(revision.published_datetime),
+            'published': revision.published_datetime.strftime('%m/%d/%Y %H:%M:%S'),
         })
     return JsonResponse(result, safe=False)
 
