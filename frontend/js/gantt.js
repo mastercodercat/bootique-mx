@@ -76,9 +76,9 @@ RoutePlanningGantt.prototype.placeBar = function($row, pos, length, object) {
         $bar.find('.org').html(object.origin);
         $bar.find('.dest').html(object.destination);
         date = new Date(object.departure_datetime);
-        $bar.find('.departure').html(moment(date).tz(self.timezone).format('MM/DD/YYYY HH:mm:ss'));
+        $bar.find('.departure').html(self.convertDateToTimezone(date).format('MM/DD/YYYY HH:mm:ss'));
         date = new Date(object.arrival_datetime);
-        $bar.find('.arrival').html(moment(date).tz(self.timezone).format('MM/DD/YYYY HH:mm:ss'));
+        $bar.find('.arrival').html(self.convertDateToTimezone(date).format('MM/DD/YYYY HH:mm:ss'));
 
         $row.append($bar);
     } else if (object.status == 3) {
@@ -91,9 +91,9 @@ RoutePlanningGantt.prototype.placeBar = function($row, pos, length, object) {
         $bar.find('.org').html(object.origin);
         $bar.find('.dest').html(object.destination);
         date = new Date(object.departure_datetime);
-        $bar.find('.departure').html(moment(date).tz(self.timezone).format('MM/DD/YYYY HH:mm:ss'));
+        $bar.find('.departure').html(self.convertDateToTimezone(date).format('MM/DD/YYYY HH:mm:ss'));
         date = new Date(object.arrival_datetime);
-        $bar.find('.arrival').html(moment(date).tz(self.timezone).format('MM/DD/YYYY HH:mm:ss'));
+        $bar.find('.arrival').html(self.convertDateToTimezone(date).format('MM/DD/YYYY HH:mm:ss'));
 
         $row.append($bar);
     } else {
@@ -140,9 +140,9 @@ RoutePlanningGantt.prototype.setStatusBarInfo = function($bar, object) {
     var $info = $bar.find('.info');
     var date;
     date = new Date(object.start_time);
-    $info.find('.start').html(moment(date).tz(self.timezone).format('MM/DD/YYYY HH:mm:ss'));
+    $info.find('.start').html(self.convertDateToTimezone(date).format('MM/DD/YYYY HH:mm:ss'));
     date = new Date(object.end_time);
-    $info.find('.end').html(moment(date).tz(self.timezone).format('MM/DD/YYYY HH:mm:ss'));
+    $info.find('.end').html(self.convertDateToTimezone(date).format('MM/DD/YYYY HH:mm:ss'));
 }
 
 RoutePlanningGantt.prototype.placeStatusBar = function($bar, $row, object) {
@@ -219,18 +219,18 @@ RoutePlanningGantt.prototype.alertErrorIfAny = function(response, singular) {
 
 RoutePlanningGantt.prototype.setupTimezone = function() {
     var self = this;
-    var timezone = Cookies.get('gantt-timezone');
+    var timezoneOffset = Cookies.get('gantt-timezone-offset');
 
-    if (!timezone) {
-        timezone = self.options.timezoneSelect.val();
+    if (!timezoneOffset) {
+        timezoneOffset = parseInt(self.options.timezoneSelect.val());
     } else {
-        self.options.timezoneSelect.val(timezone);
+        self.options.timezoneSelect.val(timezoneOffset);
     }
-    self.updateTimezone(timezone);
+    self.updateTimezone(timezoneOffset);
 
     self.options.timezoneSelect.on('change', function() {
-        var timezone = $(this).val();
-        self.updateTimezone(timezone);
+        var timezoneOffset = $(this).val();
+        self.updateTimezone(timezoneOffset);
     });
 }
 
@@ -239,14 +239,14 @@ RoutePlanningGantt.prototype.initDateLabels = function() {
     var days = self.options.days;
     var hours = self.options.hours;
     var oneUnit = days > 1 ? 24 : hours;
-    var timezone = self.timezone;
+    var timezoneOffset = self.timezoneOffset;
 
     function initTableDateLabels($headRow) {
         // Big units
         var $rowBigUnits = $headRow.find('.row-line.big-units');
         var date = new Date(self.options.startDate.getTime());
         $rowBigUnits.children('.unit').each(function() {
-            $(this).html(moment(date).tz(timezone).format('ddd MM/DD/YYYY'));
+            $(this).html(moment(date).tz('UTC').format('ddd MM/DD/YYYY'));
             date.setSeconds(date.getSeconds() + oneUnit * 3600);
         });
 
@@ -255,12 +255,12 @@ RoutePlanningGantt.prototype.initDateLabels = function() {
         var date = new Date(self.options.startDate.getTime());
         if (days > 1 || hours >= 12) {
             $row.children('.unit').each(function() {
-                $(this).html(moment(date).tz(timezone).format('HH'));
+                $(this).html(self.convertDateToTimezone(date).format('HH'));
                 date.setSeconds(date.getSeconds() + unit);
             });
         } else {
             $row.children('.unit').each(function() {
-                $(this).html(moment(date).tz(timezone).format('HH:mm'));
+                $(this).html(self.convertDateToTimezone(date).format('HH:mm'));
                 date.setSeconds(date.getSeconds() + unit);
             });
         }
@@ -269,11 +269,21 @@ RoutePlanningGantt.prototype.initDateLabels = function() {
     initTableDateLabels(self.options.flightTemplateTable.find('.head'));
 }
 
-RoutePlanningGantt.prototype.updateTimezone = function(timezone) {
+RoutePlanningGantt.prototype.convertDateToTimezone = function(date) {
+    if (typeof date === 'string') {
+        var _date = new Date(date);
+    } else {
+        var _date = new Date(date.getTime());
+    }
+    _date.setHours(parseInt(_date.getHours()) + parseInt(this.timezoneOffset));
+    return moment(_date).tz('UTC');
+}
+
+RoutePlanningGantt.prototype.updateTimezone = function(timezoneOffset) {
     var self = this;
 
-    self.timezone = timezone;
-    Cookies.set('gantt-timezone', timezone);
+    self.timezoneOffset = timezoneOffset;
+    Cookies.set('gantt-timezone-offset', timezoneOffset);
     this.initDateLabels();
 
     self.options.flightTemplateTable.find('.bar').each(function() {
@@ -283,8 +293,8 @@ RoutePlanningGantt.prototype.updateTimezone = function(timezone) {
 
         if (self.templates[flightNumber] && self.templates[flightNumber][flightId]) {
             var flight = self.templates[flightNumber][flightId];
-            $bar.find('.departure').html(moment(flight.departure_datetime).tz(self.timezone).format('MM/DD/YYYY HH:mm:ss'));
-            $bar.find('.arrival').html(moment(flight.arrival_datetime).tz(self.timezone).format('MM/DD/YYYY HH:mm:ss'));
+            $bar.find('.departure').html(self.convertDateToTimezone(flight.departure_datetime).format('MM/DD/YYYY HH:mm:ss'));
+            $bar.find('.arrival').html(self.convertDateToTimezone(flight.arrival_datetime).format('MM/DD/YYYY HH:mm:ss'));
         }
     });
 
@@ -295,11 +305,11 @@ RoutePlanningGantt.prototype.updateTimezone = function(timezone) {
         if (self.assignments[assignmentId]) {
             var assignment = self.assignments[assignmentId];
             if (assignment.status == 2) {
-                $bar.find('.start').html(moment(assignment.start_time).tz(self.timezone).format('MM/DD/YYYY HH:mm:ss'));
-                $bar.find('.end').html(moment(assignment.end_time).tz(self.timezone).format('MM/DD/YYYY HH:mm:ss'));
+                $bar.find('.start').html(self.convertDateToTimezone(assignment.start_time).format('MM/DD/YYYY HH:mm:ss'));
+                $bar.find('.end').html(self.convertDateToTimezone(assignment.end_time).format('MM/DD/YYYY HH:mm:ss'));
             } else {
-                $bar.find('.departure').html(moment(assignment.start_time).tz(self.timezone).format('MM/DD/YYYY HH:mm:ss'));
-                $bar.find('.arrival').html(moment(assignment.end_time).tz(self.timezone).format('MM/DD/YYYY HH:mm:ss'));
+                $bar.find('.departure').html(self.convertDateToTimezone(assignment.start_time).format('MM/DD/YYYY HH:mm:ss'));
+                $bar.find('.arrival').html(self.convertDateToTimezone(assignment.end_time).format('MM/DD/YYYY HH:mm:ss'));
             }
         }
     });

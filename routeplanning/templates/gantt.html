@@ -90,10 +90,15 @@
             </div>
             <div class="timezone-control">
                 <select id="gantt-timezone" class="form-control" style="display: inline-block;">
-                    <option value="US/Eastern" selected>EST</option>
-                    <option value="US/Central">CST</option>
-                    <option value="US/Mountain">MST</option>
-                    <option value="US/Pacific">PST</option>
+                    <option value="0" selected>UTC</option>
+                    <option value="-4">EDT</option>
+                    <option value="-5">EST</option>
+                    <option value="-5">CDT</option>
+                    <option value="-6">CST</option>
+                    <option value="-6">MDT</option>
+                    <option value="-7">MST</option>
+                    <option value="-7">PDT</option>
+                    <option value="-8">PST</option>
                 </select>
             </div>
         </div>
@@ -314,14 +319,18 @@
         $('#date-form').on('submit', function() {
             if ($('#start_date').val()) {
                 var startDate = new Date($('#start_date').val());
-                startDate.setUTCHours(0)
+                var _date = new Date(startDate.getTime());
+                startDate.setUTCHours(0);
+                startDate.setUTCDate(_date.getDate());
                 $('#start_tmstmp').val(parseInt(startDate.getTime() / 1000));
             } else {
                 $('#start_tmstmp').val('');
             }
             if ($('#end_date').val()) {
                 var endDate = new Date($('#end_date').val());
-                endDate.setUTCHours(0)
+                var _date = new Date(endDate.getTime());
+                endDate.setUTCHours(0);
+                endDate.setUTCDate(_date.getDate());
                 $('#end_tmstmp').val(parseInt(endDate.getTime() / 1000));
             } else {
                 $('#end_tmstmp').val('');
