@@ -13,6 +13,8 @@ from django.middleware import csrf
 from django.db.models import Q, ProtectedError, Max
 from django.conf import settings
 from django.urls import reverse
+from rest_framework.decorators import api_view, permission_classes, authentication_classes
+from rest_framework.response import Response
 
 from routeplanning.models import *
 from routeplanning.forms import *
@@ -1019,30 +1021,27 @@ def api_save_hobbs(request):
 
 @login_required
 @gantt_readable_required
+@api_view(['POST'])
 def api_coming_due_list(request):
     result = {
         'success': False,
     }
 
-    if request.method != 'POST':
-        result['error'] = 'Only POST method is allowed'
-        return JsonResponse(result, safe=False)
-
     try:
-        tail_id = request.POST.get('tail_id')
-        start_time = dateutil.parser.parse(request.POST.get('start'))
-        days = int(request.POST.get('days'))
-        revision_id = request.POST.get('revision')
+        tail_id = request.data.get('tail_id')
+        start_time = dateutil.parser.parse(request.data.get('start'))
+        days = int(request.data.get('days'))
+        revision_id = request.data.get('revision')
     except:
         result['error'] = 'Invalid parameters'
-        return JsonResponse(result, safe=False, status=400)
+        return Response(result, status=400)
 
     if revision_id:
         try:
             revision = Revision.objects.get(pk=revision_id)
         except Revision.DoesNotExist:
             result['error'] = 'Revision not found'
-            return JsonResponse(result, safe=False, status=400)
+            return Response(result, status=400)
     else:
         revision = None
 
@@ -1118,11 +1117,11 @@ def api_coming_due_list(request):
 
     except Exception as e:
         result['error'] = str(e)
-        return JsonResponse(result, safe=False, status=500)
+        return Response(result, status=500)
 
     result['success'] = True
     result['hobbs_list'] = hobbs_list
-    return JsonResponse(result, safe=False)
+    return Response(result)
 
 @login_required
 @gantt_writable_required

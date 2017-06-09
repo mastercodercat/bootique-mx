@@ -62,17 +62,6 @@ ComingDueList.prototype.refresh = function() {
 
             self.hobbsList = response.hobbs_list;
 
-            var $thead = $('<thead />');
-            $thead.append('<th><strong>Date</strong></th>');
-            $thead.append('<th><strong>Flight</strong></th>');
-            $thead.append('<th><strong>Hobbs<br>EOD</strong></th>');
-            $thead.append('<th><strong>Next Due<br>Hobbs</strong></th>');
-            $thead.append('<th><strong>Hobbs<br>Left</strong></th>');
-            if (self.options.writeable) {
-                $thead.append('<th />');
-            }
-            self.$table.append($thead);
-
             var lastDay = '';
             var index = 0;
             for (var hobbs of response.hobbs_list) {

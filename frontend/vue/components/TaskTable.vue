@@ -35,13 +35,13 @@
                     <td></td>
                     <td>{{ subItem.type }}</td>
                     <td class="edit-cell">
-                        <input type="text" v-model="subItem.interval" v-on:change="changeValue(taskComponent, subItem, 'interval')" />
+                        <input type="text" v-model="subItem.interval" @change="changeValue(taskComponent, subItem, 'interval')" />
                     </td>
                     <td class="edit-cell">
-                        <input type="text" v-model="subItem.CW" v-on:change="changeValue(taskComponent, subItem, 'CW')" />
+                        <input type="text" v-model="subItem.CW" @change="changeValue(taskComponent, subItem, 'CW')" />
                     </td>
                     <td class="edit-cell">
-                        <input type="text" v-model="subItem.TSX_adj" v-on:change="changeValue(taskComponent, subItem, 'TSX_adj')" />
+                        <input type="text" v-model="subItem.TSX_adj" @change="changeValue(taskComponent, subItem, 'TSX_adj')" />
                     </td>
                     <td></td>
                     <td></td>
