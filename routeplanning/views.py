@@ -994,6 +994,9 @@ def api_save_hobbs(request):
         else:
             hobbs = None
 
+        if hobbs and hobbs.hobbs_time != hobbs_datetime:
+            hobbs = None    # Create new hobbs item regardless of actual/next due hobbs if date/time is changed
+
         if hobbs and hobbs.type != hobbs_type:
             raise Exception('Invalid parameters')
     except Exception as e:
@@ -1030,7 +1033,7 @@ def api_coming_due_list(request):
         tail_id = request.data.get('tail_id')
         start_time = dateutil.parser.parse(request.data.get('start'))
         days = int(request.data.get('days'))
-        revision_id = request.data.get('revision')
+        revision_id = int(request.data.get('revision'))
     except:
         result['error'] = 'Invalid parameters'
         return Response(result, status=400)

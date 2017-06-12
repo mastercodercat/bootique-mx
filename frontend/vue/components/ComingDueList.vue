@@ -25,7 +25,7 @@
                     <td>{{ hobbs.projected.toFixed(1) }}</td>
                     <td>{{ hobbs.next_due.toFixed(1) }}</td>
                     <td>{{ (hobbs.next_due - hobbs.projected).toFixed(1) }}</td>
-                    <td v-if="writable" style="padding-bottom: 3px;">
+                    <td v-if="writable && hobbs.flight" style="padding-bottom: 3px;">
                         <button class="btn btn-primary btn-xs btn-edit-hobbs" @click="handleEditHobbs(hobbs)">
                             <i class="fa fa-fw fa-edit"></i>
                         </button>
