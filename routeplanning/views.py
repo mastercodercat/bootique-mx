@@ -399,7 +399,7 @@ def api_load_data(request):
             result = {
                 'error': 'Revision not found',
             }
-            return JsonResponse(result, safe=False, status=500)
+            return JsonResponse(result, safe=False, status=400)
     else:
         revision = None
 
@@ -499,7 +499,7 @@ def api_assign_flight(request):
                 revision.check_draft_created()
         except Revision.DoesNotExist:
             result['error'] = 'Revision not found'
-            return JsonResponse(result, safe=False, status=500)
+            return JsonResponse(result, safe=False, status=400)
     else:
         revision = None
 
@@ -574,7 +574,7 @@ def api_assign_status(request):
                 revision.check_draft_created()
         except Revision.DoesNotExist:
             result['error'] = 'Revision not found'
-            return JsonResponse(result, safe=False, status=500)
+            return JsonResponse(result, safe=False, status=400)
     else:
         revision = None
 
@@ -646,7 +646,7 @@ def api_remove_assignment(request):
                 revision.check_draft_created()
         except Revision.DoesNotExist:
             result['error'] = 'Revision not found'
-            return JsonResponse(result, safe=False, status=500)
+            return JsonResponse(result, safe=False, status=400)
     else:
         revision = None
 
@@ -692,7 +692,7 @@ def api_move_assignment(request):
                 revision.check_draft_created()
         except Revision.DoesNotExist:
             result['error'] = 'Revision not found'
-            return JsonResponse(result, safe=False, status=500)
+            return JsonResponse(result, safe=False, status=400)
     else:
         revision = None
 
@@ -783,7 +783,7 @@ def api_resize_assignment(request):
                 revision.check_draft_created()
         except Revision.DoesNotExist:
             result['error'] = 'Revision not found'
-            return JsonResponse(result, safe=False, status=500)
+            return JsonResponse(result, safe=False, status=400)
     else:
         revision = None
 
@@ -1140,7 +1140,7 @@ def api_publish_revision(request):
             revision = Revision.objects.get(pk=revision_id)
         except Revision.DoesNotExist:
             result['error'] = 'Revision not found'
-            return JsonResponse(result, safe=False, status=500)
+            return JsonResponse(result, safe=False, status=400)
     else:
         revision = None
 
@@ -1194,7 +1194,7 @@ def api_clear_revision(request):
             revision = Revision.objects.get(pk=revision_id)
         except Revision.DoesNotExist:
             result['error'] = 'Revision not found'
-            return JsonResponse(result, safe=False, status=500)
+            return JsonResponse(result, safe=False, status=400)
     else:
         revision = None
 
@@ -1229,7 +1229,7 @@ def api_delete_revision(request):
             revision = Revision.objects.get(pk=revision_id)
         except Revision.DoesNotExist:
             result['error'] = 'Revision not found'
-            return JsonResponse(result, safe=False, status=500)
+            return JsonResponse(result, safe=False, status=400)
     else:
         revision = None
 
