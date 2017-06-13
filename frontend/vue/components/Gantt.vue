@@ -1,6 +1,6 @@
 <template>
     <div>
-        <div :class="{ 'gantt': true, 'loading': true, 'small-cells': days > 1, 'no-flight-number': days > 3 }">
+        <div :class="{ 'gantt': true, 'loading': true, 'small-cells': days > 1, 'no-flight-number': days > 3 }" ref="gantt">
             <div class="m-b-md" v-if="writable">
                 <label>Revision:</label>
                 <div class="revision-controls">
@@ -170,7 +170,7 @@
                     </div>
                 </div>
                 <div :class="{ 'cover': true, 'loading': loading }">
-                    <div class="cover-inner">
+                    <div class="cover-inner" ref="scrollWrapper" :style="{ width: ganttWidth + 'px' }">
                         <!-- Tails table -->
                         <div class="table-wrapper">
                             <div class="now-indicator hidden"></div>
@@ -274,6 +274,15 @@ export default {
         const endDate = new Date(startDate.getTime() - 1000);
         endDate.setDate(endDate.getDate() + 14);
 
+        var ganttContainer = document.getElementById('gantt-container');
+        var timeWindowCount = this.days > 1 ? 14 / this.days : 14 * (24 / this.hours);
+        var timeWindowWidth = ganttContainer.clientWidth - 90;
+        var ganttWidth = 90 + timeWindowWidth * timeWindowCount;
+        var scrollLeft = 0;
+        if (this.windowAtEnd) {
+            scrollLeft = (timeWindowCount - 1) * timeWindowWidth;
+        }
+
         return {
             ganttLengthSeconds: 14 * 24 * 3600,
             revisions: [],
@@ -284,6 +293,7 @@ export default {
             // values to use in templates
             startDate,
             endDate,
+            ganttWidth,
             // 2-way bound models
             timezone: timezoneOffset ? timezoneOffset : 0,
         }
@@ -294,6 +304,16 @@ export default {
     },
     methods: {
         init() {
+            this.setScrollPosition();
+        },
+        setScrollPosition() {
+            var timeWindowCount = this.days > 1 ? 14 / this.days : 14 * (24 / this.hours);
+            var timeWindowWidth = this.$refs.gantt.clientWidth - 90;
+            var scrollLeft = 0;
+            if (this.windowAtEnd) {
+                scrollLeft = (timeWindowCount - 1) * timeWindowWidth;
+            }
+            this.$refs.scrollWrapper.scrollLeft = scrollLeft;
         },
         formatDate(date, dateFormat = 'MM/DD/YYYY HH:mm:ss') {
             if (typeof date === 'string') {
