@@ -119,34 +119,6 @@
                     <i class="fa fa-trash-o"></i> Drag and drop here to remove assignment
                 </div>
             </div>
-            <!-- Bar prototype -->
-            <div class="bar prototype">
-                <div class="flight-info-table-wrapper">
-                    <table class="flight-info">
-                        <tr>
-                            <td class="org"></td>
-                            <td class="number"></td>
-                            <td class="dest"></td>
-                        </tr>
-                    </table>
-                </div>
-                <div class="bar-popover">
-                    <div class="field">Flight <span class="number"></span></div>
-                    <div class="field">Origin: <span class="org"></span></div>
-                    <div class="field">Destination: <span class="dest"></span></div>
-                    <div class="field">Sched. Depature Time: <span class="departure"></span></div>
-                    <div class="field">Sched. Arrival Time: <span class="arrival"></span></div>
-                    <div class="assignment-only">
-                        <hr />
-                        <div class="field">Projected Hobbs: <span class="projected-hobbs"></span></div>
-                        <div class="field">Next Due Hobbs: <span class="next-due-hobbs"></span></div>
-                        <div class="field field-hobbs-left">Hobbs Left: <span class="hobbs-left"></span></div>
-                    </div>
-                </div>
-            </div>
-            <!-- Shadow prototype -->
-            <div class="shadow prototype">
-            </div>
 
             <div class="cover-wrapper">
                 <div class="gantt-labels">
@@ -174,7 +146,6 @@
                         <!-- Tails table -->
                         <div class="table-wrapper">
                             <div class="now-indicator hidden"></div>
-                            <div class="selection-area-indicator"></div>
                             <div id="flight-assignment-table" class="gantt-table m-b-none">
                                 <div class="head">
                                     <div class="row-line units big-units">
@@ -188,8 +159,18 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="row-line" :data-tail-number="tail.number" v-for="tail in tails">
-                                </div>
+                                <gantt-drag-select item-selector=".bar" v-model="selectedAssignmentIds">
+                                    <div class="row-line" :data-tail-number="tail.number" v-for="tail in tails">
+                                        <gantt-bar
+                                            :key="assignment.id"
+                                            :data="assignment"
+                                            :start-date="startDate"
+                                            :timezone="timezone"
+                                            :selected="!!selectedAssignmentIds[assignment.id]"
+                                            v-for="assignment in getTailAssignments(tail)">
+                                        </gantt-bar>
+                                    </div>
+                                </gantt-drag-select>
                                 <div id="reserves" class="hidden"></div>
                             </div>
                         </div>
@@ -210,8 +191,19 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="row-line" :data-line="line.id" v-for="line in lines">
-                                </div>
+                                <gantt-drag-select item-selector=".bar" v-model="selectedTemplateIds">
+                                    <div class="row-line" :data-line="line.id" v-for="line in lines">
+                                        <gantt-bar
+                                            :key="template.id"
+                                            :data="template"
+                                            :start-date="startDate"
+                                            :timezone="timezone"
+                                            :selected="!!selectedTemplateIds[template.id]"
+                                            :assigned="isAssigned(template)"
+                                            v-for="template in getLineTemplates(line)">
+                                        </gantt-bar>
+                                    </div>
+                                </gantt-drag-select>
                             </div>
                         </div>
                     </div>
@@ -257,6 +249,9 @@ import Utils from '@frontend/js/utils.js';
 import Cookies from 'js-cookie';
 import moment from 'moment-timezone';
 
+import GanttBar from '@frontend_components/GanttBar.vue';
+import GanttDragSelect from '@frontend_components/GanttDragSelect.vue';
+
 export default {
     name: 'Gantt',
     props: [
@@ -267,12 +262,12 @@ export default {
         'days', 'hours', 'unit', 'writable', 'mode',
         'start-tmstmp', 'prev-start-tmstmp', 'next-start-tmstmp', 'big-units', 'small-units'
     ],
+    components: {
+        'gantt-bar': GanttBar,
+        'gantt-drag-select': GanttDragSelect,
+    },
     data() {
         const timezoneOffset = Cookies.get('gantt-timezone-offset');
-
-        const startDate = new Date(this.startTmstmp * 1000);
-        const endDate = new Date(startDate.getTime() - 1000);
-        endDate.setDate(endDate.getDate() + 14);
 
         var ganttContainer = document.getElementById('gantt-container');
         var timeWindowCount = this.days > 1 ? 14 / this.days : 14 * (24 / this.hours);
@@ -288,14 +283,25 @@ export default {
             revisions: [],
             templates: {},
             assignments: {},
+            assignedFlightIds: {},
             revision: 0,
             loading: true,
             // values to use in templates
-            startDate,
-            endDate,
             ganttWidth,
             // 2-way bound models
             timezone: timezoneOffset ? timezoneOffset : 0,
+            selectedAssignmentIds: {},
+            selectedTemplateIds: {},
+        }
+    },
+    computed: {
+        startDate() {
+            return new Date(this.startTmstmp * 1000);
+        },
+        endDate() {
+            const endDate = new Date(this.startDate.getTime() - 1000);
+            endDate.setDate(endDate.getDate() + 14);
+            return endDate;
         }
     },
     mounted() {
@@ -339,15 +345,22 @@ export default {
                 return this.formatDate(date, 'HH:mm');
             }
         },
+        getLineTemplates(line) {
+            return this.templates[line.id] ? this.templates[line.id] : {};
+        },
+        getTailAssignments(tail) {
+            return this.assignments[tail.number] ? this.assignments[tail.number] : {};
+        },
+        isAssigned(flight) {
+            return !!this.assignedFlightIds[flight.id];
+        },
         loadData(assignmentsOnly = false) {
-            const startDate = new Date(this.startTmstmp * 1000);
-            const endDate = new Date(startDate.getTime() - 1000);
-            endDate.setDate(endDate.getDate() + 14);
+            this.loading = true;
 
             this.$http.get(this.loadDataApiUrl, {
                 params: {
-                    startdate: startDate.getTime() / 1000,
-                    enddate: endDate.getTime() / 1000,
+                    startdate: this.startDate.getTime() / 1000,
+                    enddate: this.endDate.getTime() / 1000,
                     assignments_only: assignmentsOnly,
                     revision: this.revision,
                 },
@@ -355,18 +368,30 @@ export default {
             .then((response) => {
                 const { data } = response;
 
+                /*
+                 NOTE: assignedFlightIds, assignments and templates properties are not initialized as reactive,
+                 so consider this when updating later
+                 */
+
+                this.assignedFlightIds = {};
                 this.assignments = {};
                 data.assignments.forEach((assignment) => {
-                    this.assignments[assignment.id] = assignment;
+                    if (!(assignment.tail in this.assignments)) {
+                        this.assignments[assignment.tail] = {};
+                    }
+                    this.assignments[assignment.tail][assignment.id] = assignment;
+                    if (assignment.flight_id) {
+                        this.assignedFlightIds[assignment.flight_id] = true;
+                    }
                 });
 
                 if (!assignmentsOnly) {
                     this.templates = {};
                     data.templates.forEach((template) => {
-                        if (!(template.number in this.templates)) {
-                            this.templates[template.number] = {}
+                        if (!(template.line_id in this.templates)) {
+                            this.templates[template.line_id] = {}
                         }
-                        this.templates[template.number][template.id] = template;
+                        this.templates[template.line_id][template.id] = template;
                     });
                 }
 
