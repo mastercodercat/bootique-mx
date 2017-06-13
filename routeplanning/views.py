@@ -51,15 +51,13 @@ def index(request):
 
     big_unit_colspan = units_per_hour * hours if units_per_hour > 1 else hours
     big_unit_count = 14 * (24 / hours) if days == 1 else 14
-    big_units = range(0, big_unit_count)
-    small_units = range(0, big_unit_colspan * big_unit_count)
     table_length_in_secs = 14 * 24 * 3600
 
     context = {
         'tails': tails,
         'lines': lines,
-        'big_units': big_units,
-        'small_units': small_units,
+        'big_units': big_unit_count,
+        'small_units': big_unit_colspan * big_unit_count,
         'days': days,
         'hours': hours,
         'big_unit_colspan': big_unit_colspan,

@@ -17,275 +17,7 @@
 {% endblock %}
 
 {% block content %}
-    <div class="gantt loading{% if days > 1 %} small-cells{% endif %}{% if days > 3 %} no-flight-number{% endif %}">
-        {% if request.user|can_write_gantt %}
-            <div class="m-b-md">
-                <label>Revision:</label>
-                <div class="revision-controls">
-                    <select id="revisions" class="form-control" style="max-width: 350px;">
-                        <option value="0" selected>(New Draft)</option>
-                        {% for revision in revisions %}
-                            <option value="{{ revision.id }}">{{ revision.published_datetime|date:'m/d/Y H:i:s' }}</option>
-                        {% endfor %}
-                    </select>
-                    <button id="delete-revision" class="btn btn-danger">Delete This Version</button>
-                    <button id="clear-revision" class="btn btn-default">Clear Changes</button>
-                    <button id="publish-revision" class="btn btn-primary">Publish Current Revision</button>
-                </div>
-            </div>
-        {% endif %}
-        <label>Date/Time controls:</label>
-        <div class="clearfix m-b-md"><!-- Top controls -->
-            <div class="unit-control btn-group">
-                <a class="btn btn-white{% if mode == '1' %} active{% endif %}"
-                    href="{% url 'routeplanning:index' %}?mode=1&start={{ start_tmstmp }}">3 Hours</a>
-                <a class="btn btn-white{% if mode == '2' %} active{% endif %}"
-                    href="{% url 'routeplanning:index' %}?mode=2&start={{ start_tmstmp }}">6 Hours</a>
-                <a class="btn btn-white{% if mode == '3' %} active{% endif %}"
-                    href="{% url 'routeplanning:index' %}?mode=3&start={{ start_tmstmp }}">12 Hours</a>
-                <a class="btn btn-white{% if mode == '4' %} active{% endif %}"
-                    href="{% url 'routeplanning:index' %}?mode=4&start={{ start_tmstmp }}">24 Hours</a>
-                <a class="btn btn-white{% if mode == '5' %} active{% endif %}"
-                    href="{% url 'routeplanning:index' %}?mode=5&start={{ start_tmstmp }}">3 Days</a>
-                <a class="btn btn-white{% if mode == '6' %} active{% endif %}"
-                    href="{% url 'routeplanning:index' %}?mode=6&start={{ start_tmstmp }}">7 Days</a>
-            </div>
-            <div class="page-control">
-                <a href="javascript:;" id="btn-prev-time-window" class="btn btn-white"
-                    data-prev-period-href="{% url 'routeplanning:index' %}?mode={{ mode }}&start={{ prev_start_tmstmp }}&window_at_end=1">
-                    <i class="fa fa-chevron-left"></i>
-                </a>
-                <a href="javascript:;" id="btn-next-time-window" class="btn btn-white"
-                    data-next-period-href="{% url 'routeplanning:index' %}?mode={{ mode }}&start={{ next_start_tmstmp }}">
-                    <i class="fa fa-chevron-right"></i>
-                </a>
-            </div>
-            <div class="current-datetime-button-container">
-                <a href="javascript:;" id="btn-now" class="btn btn-primary">
-                    <i class="fa fa-clock-o"></i>
-                </a>
-            </div>
-            <div class="date-range-control date-range-picker-group">
-                <div class="component-wrapper">
-                    <div class="input-group date">
-                        <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
-                        <input type="text" id="start_date" class="form-control">
-                    </div>
-                </div>
-                <div class="component-wrapper">
-                    <div class="input-group date">
-                        <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
-                        <input type="text" id="end_date" class="form-control">
-                    </div>
-                </div>
-                <div class="component-wrapper">
-                    <form id="date-form" action="{% url 'routeplanning:index' %}" method="GET">
-                        <input type="hidden" name="mode" value="{{ mode }}" />
-                        <input type="hidden" id="start_tmstmp" name="start" />
-                        <input type="hidden" id="end_tmstmp" name="end" />
-                        <!-- <input type="hidden" id="days" name="days" /> -->
-                        <input type="submit" class="btn btn-primary" value="Search" />
-                    </form>
-                </div>
-            </div>
-            <div class="timezone-control">
-                <select id="gantt-timezone" class="form-control" style="display: inline-block;">
-                    <option value="0" selected>UTC</option>
-                    <option value="-4">EDT</option>
-                    <option value="-5">EST</option>
-                    <option value="-5">CDT</option>
-                    <option value="-6">CST</option>
-                    <option value="-6">MDT</option>
-                    <option value="-7">MST</option>
-                    <option value="-7">PDT</option>
-                    <option value="-8">PST</option>
-                </select>
-            </div>
-        </div>
-        <!-- Status bar sources, remove area -->
-        {% if request.user|can_write_gantt %}
-            <div class="status-bars disabled clearfix">
-                <div class="clearfix">
-                    <label>Drag and drop: </label>
-                </div>
-                <div class="bar-container">
-                    <div class="bar status-bar maintenance status-prototype" draggable="true" data-status="2">
-                        <span>Maintenance</span>
-                        <div class="info bar-popover">
-                            <div class="field">Status: Maintenance</div>
-                            <div class="field">Sched. Start Time: <span class="start"></span></div>
-                            <div class="field">Sched. End Time: <span class="end"></span></div>
-                        </div>
-                    </div>
-                </div>
-                <div class="bar-container">
-                    <div class="bar status-bar unscheduled-flight status-prototype" draggable="true" data-status="3">
-                        <span>Unscheduled Flight</span>
-                        <div class="bar-popover">
-                            <div class="field">Unscheduled Flight</div>
-                            <div class="field">Origin: <span class="org"></span></div>
-                            <div class="field">Destination: <span class="dest"></span></div>
-                            <div class="field">Sched. Depature Time: <span class="departure"></span></div>
-                            <div class="field">Sched. Arrival Time: <span class="arrival"></span></div>
-                            <div class="assignment-only">
-                                <hr />
-                                <div class="field">Projected Hobbs: <span class="projected-hobbs"></span></div>
-                                <div class="field">Next Due Hobbs: <span class="next-due-hobbs"></span></div>
-                                <div class="field field-hobbs-left">Hobbs Left: <span class="hobbs-left"></span></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="drop-to-remove-area" id="drop-to-remove-area">
-                    <i class="fa fa-trash-o"></i> Drag and drop here to remove assignment
-                </div>
-            </div>
-        {% endif %}
-        <!-- Bar prototype -->
-        <div class="bar prototype">
-            <div class="flight-info-table-wrapper">
-                <table class="flight-info">
-                    <tr>
-                        <td class="org"></td>
-                        <td class="number"></td>
-                        <td class="dest"></td>
-                    </tr>
-                </table>
-            </div>
-            <div class="bar-popover">
-                <div class="field">Flight <span class="number"></span></div>
-                <div class="field">Origin: <span class="org"></span></div>
-                <div class="field">Destination: <span class="dest"></span></div>
-                <div class="field">Sched. Depature Time: <span class="departure"></span></div>
-                <div class="field">Sched. Arrival Time: <span class="arrival"></span></div>
-                <div class="assignment-only">
-                    <hr />
-                    <div class="field">Projected Hobbs: <span class="projected-hobbs"></span></div>
-                    <div class="field">Next Due Hobbs: <span class="next-due-hobbs"></span></div>
-                    <div class="field field-hobbs-left">Hobbs Left: <span class="hobbs-left"></span></div>
-                </div>
-            </div>
-        </div>
-        <!-- Shadow prototype -->
-        <div class="shadow prototype">
-        </div>
-
-        <div class="cover-wrapper">
-            <div class="gantt-labels">
-                <div class="label-cell">
-                    {% if request.user|can_write_gantt %}
-                        <a href="{% url 'routeplanning:add_tail' %}" class="btn btn-primary btn-circle-xs" type="button">
-                            <i class="fa fa-plus"></i>
-                        </a>
-                    {% endif %}
-                    Tails
-                </div>
-                {% for tail in tails %}
-                    <div class="axis-cell tail">
-                        <a class="coming-due-page-link" href="#" data-tail-id="{{ tail.id }}">{{ tail.number }}</a>
-                    </div>
-                {% endfor %}
-                <div class="label-cell">
-                    {% if request.user|can_write_gantt %}
-                        <a href="{% url 'routeplanning:add_line' %}" class="btn btn-primary btn-circle-xs" type="button">
-                            <i class="fa fa-plus"></i>
-                        </a>
-                    {% endif %}
-                    Lines
-                </div>
-                {% for line in lines %}
-                    <div class="axis-cell line">
-                        <a href="{% url 'routeplanning:edit_line' line_id=line.id %}">{{ line.name }}</a>
-                    </div>
-                {% endfor %}
-            </div>
-            <div class="cover loading">
-                <div class="cover-inner">
-                    <!-- Tails table -->
-                    <div class="table-wrapper">
-                        <div class="now-indicator hidden"></div>
-                        <div class="selection-area-indicator"></div>
-                        <div id="flight-assignment-table" class="gantt-table m-b-none">
-                            <div class="head">
-                                <div class="row-line units big-units">
-                                    {% for big_unit in big_units %}
-                                        <div class="unit border-right">
-                                            &nbsp;
-                                        </div>
-                                    {% endfor %}
-                                </div>
-                                <div class="row-line units small-units">
-                                    {% for small_unit in small_units %}
-                                        <div class="unit{% if days > 1 and forloop.counter|divisibleby:hours %} border-right{% endif %}">&nbsp;</div>
-                                    {% endfor %}
-                                </div>
-                            </div>
-                            {% for tail in tails %}
-                                <div class="row-line" data-tail-number="{{ tail.number }}" data-index="{{ forloop.counter|add:-1 }}">
-                                </div>
-                            {% endfor %}
-                            <div id="reserves" class="hidden"></div>
-                        </div>
-                    </div>
-                    <!-- Lines table -->
-                    <div class="table-wrapper">
-                        <div class="now-indicator hidden"></div>
-                        <div class="selection-area-indicator"></div>
-                        <div id="flight-template-table" class="gantt-table m-b-none">
-                            <div class="head">
-                                <div class="row-line units big-units">
-                                    {% for big_unit in big_units %}
-                                        <div class="unit border-right" colspan="{{ big_unit_colspan }}">
-                                            &nbsp;
-                                        </div>
-                                    {% endfor %}
-                                </div>
-                                <div class="row-line units small-units">
-                                    {% for small_unit in small_units %}
-                                        <div class="unit{% if days > 1 and forloop.counter|divisibleby:hours %} border-right{% endif %}">&nbsp;</div>
-                                    {% endfor %}
-                                </div>
-                            </div>
-                            {% for line in lines %}
-                                <div class="row-line" data-line="{{ line.id }}" data-index="{{ forloop.counter|add:-1 }}">
-                                </div>
-                            {% endfor %}
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- Unscheduled Flight modal -->
-    <div class="modal inmodal fade" id="unscheduled-flight-modal" tabindex="-1" role="dialog" aria-hidden="true">
-        <div class="modal-dialog modal-md">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
-                    <h5 class="modal-title">Create Unscheduled Flight</h5>
-                </div>
-                <div class="modal-body">
-                    <form class="form-horizontal">
-                        <div class="form-group">
-                            <label class="col-lg-2 control-label">Origin</label>
-                            <div class="col-lg-10">
-                                <input type="origin" class="form-control unscheduled-flight-origin" placeholder="Origin">
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label class="col-lg-2 control-label">Destination</label>
-                            <div class="col-lg-10">
-                                <input type="destination" class="form-control unscheduled-flight-destination" placeholder="Destination">
-                            </div>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-white" data-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary btn-save-unscheduled-flight">Save</button>
-                </div>
-            </div>
-        </div>
+    <div id="gantt-container">
     </div>
 {% endblock %}
 
@@ -416,13 +148,33 @@
             }
         });
 
+        var lines = [
+            {% for line in lines %}
+                {
+                    id: {{ line.id }},
+                    name: "{{ line.name }}",
+                },
+            {% endfor %}
+        ];
+
+        var tails = [
+            {% for tail in tails %}
+                {
+                    id: {{ tail.id }},
+                    number: "{{ tail.number }}",
+                },
+            {% endfor %}
+        ];
+
         /* Gantt table init */
 
-        var gantt = new RoutePlanningGantt({
-            flightAssignmentTable: $('#flight-assignment-table'),
-            flightTemplateTable: $('#flight-template-table'),
-            unscheduledFlightForm: $('#unscheduled-flight-modal'),
-            timezoneSelect: $('#gantt-timezone'),
+        window.initGantt('#gantt-container', {
+            lines: lines,
+            tails: tails,
+            ganttURL: "{% url 'routeplanning:index' %}",
+            addTailURL: "{% url 'routeplanning:add_tail' %}",
+            addLineURL: "{% url 'routeplanning:add_line' %}",
+            editLineURL: "{% url 'routeplanning:edit_line' line_id=0 %}",
             loadDataAPIUrl: "{% url 'routeplanning:api_load_data' %}",
             assignFlightAPIUrl: "{% url 'routeplanning:api_assign_flight' %}",
             assignStatusAPIUrl: "{% url 'routeplanning:api_assign_status' %}",
@@ -432,14 +184,16 @@
             publishRevisionAPIUrl: "{% url 'routeplanning:api_publish_revision' %}",
             clearRevisionAPIUrl: "{% url 'routeplanning:api_clear_revision' %}",
             deleteRevisionAPIUrl: "{% url 'routeplanning:api_delete_revision' %}",
-            startDate: startDate,
-            endDate: endDate,
             days: days,
             hours: hours,
             unit: unit,
-            readOnly: readOnly,
-            tablesWrapperSelector: '.cover',
-            csrfToken: "{{ csrf_token }}",
+            writable: !readOnly,
+            mode: {{ mode }},
+            startTmstmp: {{ start_tmstmp }},
+            prevStartTmstmp: {{ prev_start_tmstmp }},
+            nextStartTmstmp: {{ next_start_tmstmp }},
+            bigUnits: {{ big_units }},
+            smallUnits: {{ small_units }},
         });
     </script>
 {% endblock %}
