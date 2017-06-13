@@ -19,20 +19,29 @@ function upperToHyphenLower(match, offset, string) {
     return (offset ? '-' : '') + match.toLowerCase();
 }
 
+function processUppercaseWords(match, offset, string) {
+    var len = match.length;
+    if (len + offset == string.length) {
+        return match.substr(0, 1) + match.substr(1, len - 1).toLowerCase();
+    } else {
+        return match.substr(0, 1) + match.substr(1, len - 2).toLowerCase() + match.substr(-1, 1);
+    }
+}
+
 function generateTemplate(component, params) {
     let template = `<${component} `;
 
     for (const field in params) {
-        const prop = field.replace(/([A-Z]+)/g, upperToHyphenLower);
+        let prop = field.replace(/[A-Z]+[A-Z]/g, processUppercaseWords);
+        prop = prop.replace(/([A-Z]+)/g, upperToHyphenLower);
         const value = params[field];
         if (value.constructor === Array) {
             template += `:${prop}='${JSON.stringify(value)}' `;
         } else if (value.constructor === Number) {
             template += `:${prop}='${value}' `;
         } else {
-            template += `${prop}='${value}' `;
+            template += `${prop}="${value}" `;
         }
-        
     }
     template += '/>';
     return template

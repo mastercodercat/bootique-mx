@@ -286,8 +286,8 @@ export default {
         return {
             ganttLengthSeconds: 14 * 24 * 3600,
             revisions: [],
-            templates: [],
-            assignments: [],
+            templates: {},
+            assignments: {},
             revision: 0,
             loading: true,
             // values to use in templates
@@ -300,11 +300,11 @@ export default {
     },
     mounted() {
         this.init();
-        this.loading = false;
     },
     methods: {
         init() {
             this.setScrollPosition();
+            this.loadData();
         },
         setScrollPosition() {
             var timeWindowCount = this.days > 1 ? 14 / this.days : 14 * (24 / this.hours);
@@ -339,18 +339,38 @@ export default {
                 return this.formatDate(date, 'HH:mm');
             }
         },
-        refresh() {
-            this.$http.post(this.comingDueListApi, {
-                tail_id: this.tailId,
-                start: this.firstWeekDay().toISOString(),
-                days: 7,
-                revision: this.revision,
+        loadData(assignmentsOnly = false) {
+            const startDate = new Date(this.startTmstmp * 1000);
+            const endDate = new Date(startDate.getTime() - 1000);
+            endDate.setDate(endDate.getDate() + 14);
+
+            this.$http.get(this.loadDataApiUrl, {
+                params: {
+                    startdate: startDate.getTime() / 1000,
+                    enddate: endDate.getTime() / 1000,
+                    assignments_only: assignmentsOnly,
+                    revision: this.revision,
+                },
             })
             .then((response) => {
-                const { success, hobbs_list } = response.data;
-                if (success) {
-                    this.hobbsList = hobbs_list;
+                const { data } = response;
+
+                this.assignments = {};
+                data.assignments.forEach((assignment) => {
+                    this.assignments[assignment.id] = assignment;
+                });
+
+                if (!assignmentsOnly) {
+                    this.templates = {};
+                    data.templates.forEach((template) => {
+                        if (!(template.number in this.templates)) {
+                            this.templates[template.number] = {}
+                        }
+                        this.templates[template.number][template.id] = template;
+                    });
                 }
+
+                this.loading = false;
             });
         },
     }
