@@ -128,6 +128,19 @@ class ViewsTestCase(TestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, 404)
 
+    def prepare_revision(self):
+        Assignment.objects.update(is_draft=True)
+
+        response = self.client.post(reverse('routeplanning:api_publish_revision'), {
+            'revision': '0',
+        })
+        data = json.loads(response.content)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertEqual(len(data['revisions']), 1)
+
+        return Revision.objects.first()
+
     def test_view_index(self):
         view_url = reverse('routeplanning:index')
 
@@ -494,6 +507,20 @@ class ViewsTestCase(TestCase):
         self.assertEqual(data['duplication'], False)
         self.assertEqual(data['physically_invalid'], False)
 
+        # Testing with existing revision
+        revision = self.prepare_revision()
+        response = self.client.post(api_url, {
+            'flight_data': json.dumps([{
+                'flight': 13132,
+                'tail': 'N455BC',
+            }]),
+            'revision': revision.id,
+        })
+        data = json.loads(response.content)
+        self.assertEqual(data['success'], True)
+        self.assertEqual(data['duplication'], False)
+        self.assertEqual(data['physically_invalid'], False)
+
     def test_api_assign_status(self):
         api_url = reverse('routeplanning:api_assign_status')
 
@@ -548,6 +575,18 @@ class ViewsTestCase(TestCase):
         data = json.loads(response.content)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(data['success'], False)
+
+        # Testing with existing revision
+        revision = self.prepare_revision()
+        response = self.client.post(api_url, {
+            'tail': 'N584JV',
+            'start_time': '2017-05-25 17:50:00+00',
+            'end_time': '2017-05-25 18:50:00+00',
+            'status': 2,
+            'revision': revision.id,
+        })
+        data = json.loads(response.content)
+        self.assertEqual(data['success'], True)
 
     def test_api_remove_assignment(self):
         api_url = reverse('routeplanning:api_remove_assignment')
@@ -731,4 +770,98 @@ class ViewsTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(data['success'], True)
         self.assertNotEqual(len(data['hobbs_list']), 0)
+
+    def test_api_publish_revision(self):
+        self.force_login()
+
+        Assignment.objects.update(is_draft=True)
+
+        api_url = reverse('routeplanning:api_publish_revision')
+
+        response = self.client.post(api_url, {
+            'revision': '0',
+        })
+        data = json.loads(response.content)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertEqual(len(data['revisions']), 1)
+
+        revision = Revision.objects.first()
+        self.assertNotEqual(revision.assignment_set.count(), 0)
+
+        response = self.client.post(api_url, {
+            'revision': revision.id,
+        })
+        data = json.loads(response.content)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertEqual(len(data['revisions']), 2)
+
+        response = self.client.post(api_url, {
+            'revision': '999',
+        })
+        data = json.loads(response.content)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(data['success'], False)
+
+    def test_api_clear_revision(self):
+        self.force_login()
+
+        Assignment.objects.update(is_draft=True)
+
+        response = self.client.post(reverse('routeplanning:api_publish_revision'), {
+            'revision': '0',
+        })
+        data = json.loads(response.content)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertEqual(len(data['revisions']), 1)
+
+        revision = Revision.objects.first()
+
+        api_url = reverse('routeplanning:api_clear_revision')
+
+        response = self.client.post(api_url, {
+            'revision': revision.id,
+        })
+        data = json.loads(response.content)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertEqual(revision.assignment_set.filter(is_draft=True).count(), 0)
+
+        response = self.client.post(api_url, {
+            'revision': '999',
+        })
+        data = json.loads(response.content)
+        self.assertEqual(response.status_code, 400)
+
+    def test_api_delete_revision(self):
+        self.force_login()
+
+        Assignment.objects.update(is_draft=True)
+
+        response = self.client.post(reverse('routeplanning:api_publish_revision'), {
+            'revision': '0',
+        })
+        data = json.loads(response.content)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertEqual(len(data['revisions']), 1)
+
+        revision = Revision.objects.first()
+
+        api_url = reverse('routeplanning:api_delete_revision')
+
+        response = self.client.post(api_url, {
+            'revision': revision.id,
+        })
+        data = json.loads(response.content)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(data['success'], True)
+
+        response = self.client.post(api_url, {
+            'revision': '999',
+        })
+        data = json.loads(response.content)
+        self.assertEqual(response.status_code, 400)
 

@@ -397,7 +397,7 @@ def api_load_data(request):
             result = {
                 'error': 'Revision not found',
             }
-            return JsonResponse(result, safe=False, status=500)
+            return JsonResponse(result, safe=False, status=400)
     else:
         revision = None
 
@@ -497,7 +497,7 @@ def api_assign_flight(request):
                 revision.check_draft_created()
         except Revision.DoesNotExist:
             result['error'] = 'Revision not found'
-            return JsonResponse(result, safe=False, status=500)
+            return JsonResponse(result, safe=False, status=400)
     else:
         revision = None
 
@@ -572,7 +572,7 @@ def api_assign_status(request):
                 revision.check_draft_created()
         except Revision.DoesNotExist:
             result['error'] = 'Revision not found'
-            return JsonResponse(result, safe=False, status=500)
+            return JsonResponse(result, safe=False, status=400)
     else:
         revision = None
 
@@ -644,7 +644,7 @@ def api_remove_assignment(request):
                 revision.check_draft_created()
         except Revision.DoesNotExist:
             result['error'] = 'Revision not found'
-            return JsonResponse(result, safe=False, status=500)
+            return JsonResponse(result, safe=False, status=400)
     else:
         revision = None
 
@@ -690,7 +690,7 @@ def api_move_assignment(request):
                 revision.check_draft_created()
         except Revision.DoesNotExist:
             result['error'] = 'Revision not found'
-            return JsonResponse(result, safe=False, status=500)
+            return JsonResponse(result, safe=False, status=400)
     else:
         revision = None
 
@@ -781,7 +781,7 @@ def api_resize_assignment(request):
                 revision.check_draft_created()
         except Revision.DoesNotExist:
             result['error'] = 'Revision not found'
-            return JsonResponse(result, safe=False, status=500)
+            return JsonResponse(result, safe=False, status=400)
     else:
         revision = None
 
@@ -992,6 +992,9 @@ def api_save_hobbs(request):
         else:
             hobbs = None
 
+        if hobbs and hobbs.hobbs_time != hobbs_datetime:
+            hobbs = None    # Create new hobbs item regardless of actual/next due hobbs if date/time is changed
+
         if hobbs and hobbs.type != hobbs_type:
             raise Exception('Invalid parameters')
     except Exception as e:
@@ -1028,7 +1031,7 @@ def api_coming_due_list(request):
         tail_id = request.data.get('tail_id')
         start_time = dateutil.parser.parse(request.data.get('start'))
         days = int(request.data.get('days'))
-        revision_id = request.data.get('revision')
+        revision_id = int(request.data.get('revision'))
     except:
         result['error'] = 'Invalid parameters'
         return Response(result, status=400)
@@ -1138,7 +1141,7 @@ def api_publish_revision(request):
             revision = Revision.objects.get(pk=revision_id)
         except Revision.DoesNotExist:
             result['error'] = 'Revision not found'
-            return JsonResponse(result, safe=False, status=500)
+            return JsonResponse(result, safe=False, status=400)
     else:
         revision = None
 
@@ -1192,7 +1195,7 @@ def api_clear_revision(request):
             revision = Revision.objects.get(pk=revision_id)
         except Revision.DoesNotExist:
             result['error'] = 'Revision not found'
-            return JsonResponse(result, safe=False, status=500)
+            return JsonResponse(result, safe=False, status=400)
     else:
         revision = None
 
@@ -1227,7 +1230,7 @@ def api_delete_revision(request):
             revision = Revision.objects.get(pk=revision_id)
         except Revision.DoesNotExist:
             result['error'] = 'Revision not found'
-            return JsonResponse(result, safe=False, status=500)
+            return JsonResponse(result, safe=False, status=400)
     else:
         revision = None
 

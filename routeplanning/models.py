@@ -71,7 +71,10 @@ class Revision(models.Model):
     has_draft = models.BooleanField(default=False)
 
     def __unicode__(self):
-        return self.number
+        model_str = 'Revision at ' + str(self.published_datetime)
+        if self.has_draft:
+            model_str += ' (edited)'
+        return model_str
 
     def check_draft_created(self):
         if not self.has_draft:
