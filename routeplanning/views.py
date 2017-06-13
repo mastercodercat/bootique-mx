@@ -1097,7 +1097,7 @@ def api_coming_due_list(request):
                     projected_next_due_hobbs_id = hobbs.id
             elif object['type'] == 'assignment':
                 assignment = object['object']
-                if last_actual_hobbs.hobbs_time < assignment.start_time:
+                if not last_actual_hobbs or last_actual_hobbs.hobbs_time < assignment.start_time:
                     projected_hobbs_value += assignment.length / 3600
                 hobbs_list.append({
                     'day': assignment.start_time,
