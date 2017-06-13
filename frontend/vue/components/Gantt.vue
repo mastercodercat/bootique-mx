@@ -129,7 +129,8 @@
                         Tails
                     </div>
                     <div class="axis-cell tail" v-for="tail in tails">
-                        <a class="coming-due-page-link" href="#" :data-tail-id="tail.id">{{ tail.number }}</a>
+                        <a class="coming-due-page-link"
+                            :href="'/routeplanning/tail/' + tail.id + '/revision/' + revision + '/comingdue/'">{{ tail.number }}</a>
                     </div>
                     <div class="label-cell">
                         <a :href="addLineUrl" class="btn btn-primary btn-circle-xs" type="button" v-if="writable">
@@ -256,9 +257,10 @@ export default {
     name: 'Gantt',
     props: [
         'lines', 'tails',
-        'gantt-url', 'add-tail-url', 'add-line-url', 'edit-line-url', 'load-data-api-url',
-        'assign-flight-api-url', 'assign-status-api-url', 'move-assignment-api-url', 'remove-assignment-api-url',
-        'resize-assignment-api-url', 'publish-revision-api-url', 'clear-revision-api-url', 'delete-revision-api-url',
+        'gantt-url', 'add-tail-url', 'add-line-url', 'edit-line-url',
+        'load-data-api-url', 'assign-flight-api-url', 'assign-status-api-url', 'move-assignment-api-url',
+        'remove-assignment-api-url', 'resize-assignment-api-url', 'publish-revision-api-url',
+        'clear-revision-api-url', 'delete-revision-api-url',
         'days', 'hours', 'unit', 'writable', 'mode',
         'start-tmstmp', 'prev-start-tmstmp', 'next-start-tmstmp', 'big-units', 'small-units'
     ],
