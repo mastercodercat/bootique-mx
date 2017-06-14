@@ -1125,23 +1125,20 @@ def api_coming_due_list(request):
 
 @login_required
 @gantt_writable_required
+@api_view(['POST'])
 def api_publish_revision(request):
     result = {
         'success': False,
     }
 
-    if request.method != 'POST':
-        result['error'] = 'Only POST method is allowed'
-        return JsonResponse(result, safe=False)
-
-    revision_id = request.POST.get('revision')
+    revision_id = request.data.get('revision')
 
     if revision_id and int(revision_id) > 0:
         try:
             revision = Revision.objects.get(pk=revision_id)
         except Revision.DoesNotExist:
             result['error'] = 'Revision not found'
-            return JsonResponse(result, safe=False, status=400)
+            return Response(result, status=400)
     else:
         revision = None
 
@@ -1164,7 +1161,7 @@ def api_publish_revision(request):
             revision.save()
     except Exception as e:
         result['error'] = str(e)
-        return JsonResponse(result, safe=False, status=500)
+        return Response(result, status=500)
 
     result['success'] = True
     result['revision'] = new_revision.id
@@ -1172,30 +1169,27 @@ def api_publish_revision(request):
     for revision in Revision.objects.order_by('-published_datetime'):
         result['revisions'].append({
             'id': revision.id,
-            'published': revision.published_datetime.strftime('%m/%d/%Y %H:%M:%S'),
+            'published': totimestamp(revision.published_datetime),
         })
 
-    return JsonResponse(result, safe=False)
+    return Response(result)
 
 @login_required
 @gantt_writable_required
+@api_view(['POST'])
 def api_clear_revision(request):
     result = {
         'success': False,
     }
 
-    if request.method != 'POST':
-        result['error'] = 'Only POST method is allowed'
-        return JsonResponse(result, safe=False)
-
-    revision_id = request.POST.get('revision')
+    revision_id = request.data.get('revision')
 
     if revision_id and int(revision_id) > 0:
         try:
             revision = Revision.objects.get(pk=revision_id)
         except Revision.DoesNotExist:
             result['error'] = 'Revision not found'
-            return JsonResponse(result, safe=False, status=400)
+            return Response(result, status=400)
     else:
         revision = None
 
@@ -1207,30 +1201,27 @@ def api_clear_revision(request):
             revision.save()
     except Exception as e:
         result['error'] = str(e)
-        return JsonResponse(result, safe=False, status=500)
+        return Response(result, status=500)
 
     result['success'] = True
-    return JsonResponse(result, safe=False)
+    return Response(result)
 
 @login_required
 @gantt_writable_required
+@api_view(['POST'])
 def api_delete_revision(request):
     result = {
         'success': False,
     }
 
-    if request.method != 'POST':
-        result['error'] = 'Only POST method is allowed'
-        return JsonResponse(result, safe=False)
-
-    revision_id = request.POST.get('revision')
+    revision_id = request.data.get('revision')
 
     if revision_id and int(revision_id) > 0:
         try:
             revision = Revision.objects.get(pk=revision_id)
         except Revision.DoesNotExist:
             result['error'] = 'Revision not found'
-            return JsonResponse(result, safe=False, status=400)
+            return Response(result, status=400)
     else:
         revision = None
 
@@ -1242,14 +1233,14 @@ def api_delete_revision(request):
             revision.delete()
     except Exception as e:
         result['error'] = str(e)
-        return JsonResponse(result, safe=False, status=500)
+        return Response(result, status=500)
 
     result['success'] = True
     result['revisions'] = []
     for revision in Revision.objects.order_by('-published_datetime'):
         result['revisions'].append({
             'id': revision.id,
-            'published': revision.published_datetime.strftime('%m/%d/%Y %H:%M:%S'),
+            'published': totimestamp(revision.published_datetime),
         })
-    return JsonResponse(result, safe=False)
+    return Response(result)
 

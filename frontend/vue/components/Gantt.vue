@@ -4,7 +4,7 @@
             <div class="m-b-md" v-if="writable">
                 <label>Revision:</label>
                 <div class="revision-controls">
-                    <select id="revisions" class="form-control" style="max-width: 350px;">
+                    <select class="form-control" style="max-width: 350px;" v-model="revision">
                         <option value="0" selected>(New Draft)</option>
                         <option v-for="revision in revisions" :value="revision.id">
                             {{ formatDate(revision.published) }}
@@ -525,22 +525,22 @@ export default {
                 if (data.success) {
                     const revisions = [];
                     for (const index in data.revisions) {
-                        const revision = this.initialRevisions[index];
+                        const revision = data.revisions[index];
                         revisions.push({
                             id: revision.id,
-                            published: new Date(revision.published),
+                            published: new Date(revision.published * 1000),
                         });
                     }
                     this.revisions = revisions;
 
                     if (data.revisions.length > 0) {
-                        self.revision = data.revisions[0].id;
+                        this.revision = data.revisions[0].id;
                     } else {
-                        self.revision = 0;
+                        this.revision = 0;
                     }
 
                     Vue.nextTick(() => {
-                        self.loadData();
+                        this.loadData();
                     });
                 }
             });
@@ -565,16 +565,21 @@ export default {
                 if (data.success) {
                     const revisions = [];
                     for (const index in data.revisions) {
-                        const revision = this.initialRevisions[index];
+                        const revision = data.revisions[index];
                         revisions.push({
                             id: revision.id,
-                            published: new Date(revision.published),
+                            published: new Date(revision.published * 1000),
                         });
                     }
                     this.revisions = revisions;
                     this.revision = data.revision;
                 }
             });
+        },
+    },
+    watch: {
+        revision: function(val) {
+            this.loadData();
         },
     }
 }

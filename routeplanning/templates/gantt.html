@@ -43,7 +43,7 @@
             {% for revision in revisions %}{
                 id: {{ revision.id }},
                 published_datetime: "{{ revision.published_datetime|date:'c' }}",
-                has_draft: {{ revision.has_draft }},
+                has_draft: {% if revision.has_draft %}true{% else %}false{% endif %},
             },
             {% endfor %}
         ];
