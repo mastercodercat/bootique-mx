@@ -372,6 +372,7 @@ $popover-text-color: #333;
     .table-wrapper {
         position: relative;
         min-width: 100%;
+        margin-left: $label-cell-width;
     }
     .now-indicator {
         display: block;
@@ -430,7 +431,6 @@ $popover-text-color: #333;
         .row-line {
             position: relative;
             height: $row-height;
-            margin-left: $label-cell-width;
             text-align: center;
             border-bottom: 1px solid $border-color;
             a:not(.btn) {

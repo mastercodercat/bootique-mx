@@ -74,16 +74,6 @@ RoutePlanningGantt.prototype.resizeStatusBar = function($bar, startTime, endTime
     return $bar;
 }
 
-RoutePlanningGantt.prototype.displayNowIndicator = function($table) {
-    var self = this;
-    var now = new Date();
-    if (now >= self.options.startDate && now <= self.options.endDate) {
-        var parentWidth = $table.width() - 90;
-        var left = (now - self.options.startDate) / 1000 / ganttLengthSeconds;
-        $table.closest('.table-wrapper').find('.now-indicator').css('left', parentWidth * left + 90).removeClass('hidden');
-    }
-}
-
 RoutePlanningGantt.prototype.alertErrorIfAny = function(response, singular) {
     if (singular) {
         if (response.duplication) {

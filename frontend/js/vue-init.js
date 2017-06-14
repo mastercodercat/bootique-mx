@@ -37,7 +37,7 @@ function generateTemplate(component, params) {
         const value = params[field];
         if (value.constructor === Array) {
             template += `:${prop}='${JSON.stringify(value)}' `;
-        } else if (value.constructor === Number) {
+        } else if (value.constructor === Number || value.constructor === Boolean) {
             template += `:${prop}='${value}' `;
         } else {
             template += `${prop}="${value}" `;

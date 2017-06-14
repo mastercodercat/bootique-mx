@@ -7,12 +7,12 @@
                     <select id="revisions" class="form-control" style="max-width: 350px;">
                         <option value="0" selected>(New Draft)</option>
                         <option v-for="revision in revisions" :value="revision.id">
-                            {{ revision.published_datetime }}
+                            {{ formatDate(revision.published) }}
                         </option>
                     </select>
-                    <button id="delete-revision" class="btn btn-danger">Delete This Version</button>
-                    <button id="clear-revision" class="btn btn-default">Clear Changes</button>
-                    <button id="publish-revision" class="btn btn-primary">Publish Current Revision</button>
+                    <button id="delete-revision" class="btn btn-danger" @click="handleDeleteRevision">Delete This Version</button>
+                    <button id="clear-revision" class="btn btn-default" @click="handleClearRevision">Clear Changes</button>
+                    <button id="publish-revision" class="btn btn-primary" @click="handlePublishRevision">Publish Current Revision</button>
                 </div>
             </div>
             <label>Date/Time controls:</label>
@@ -33,16 +33,17 @@
                 </div>
                 <div class="page-control">
                     <a href="javascript:;" id="btn-prev-time-window" class="btn btn-white"
-                        :data-prev-period-href="`${ganttUrl}?mode=${mode}&start=${prevStartTmstmp}&window_at_end=1`">
+                        @click.prevent="handleClickPrevTimeWindow">
                         <i class="fa fa-chevron-left"></i>
                     </a>
                     <a href="javascript:;" id="btn-next-time-window" class="btn btn-white"
-                        :data-prev-period-href="`${ganttUrl}?mode=${mode}&start=${nextStartTmstmp}`">
+                        @click.prevent="handleClickNextTimeWindow">
                         <i class="fa fa-chevron-right"></i>
                     </a>
                 </div>
                 <div class="current-datetime-button-container">
-                    <a href="javascript:;" id="btn-now" class="btn btn-primary">
+                    <a href="javascript:;" id="btn-now" class="btn btn-primary"
+                        @click.prevent="handleClickNow">
                         <i class="fa fa-clock-o"></i>
                     </a>
                 </div>
@@ -50,22 +51,21 @@
                     <div class="component-wrapper">
                         <div class="input-group date">
                             <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
-                            <input type="text" id="start_date" class="form-control">
+                            <input type="text" id="start_date" class="form-control" ref="startDateInput">
                         </div>
                     </div>
                     <div class="component-wrapper">
                         <div class="input-group date">
                             <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
-                            <input type="text" id="end_date" class="form-control">
+                            <input type="text" id="end_date" class="form-control" ref="endDateInput">
                         </div>
                     </div>
                     <div class="component-wrapper">
-                        <form id="date-form" :action="ganttUrl" method="GET">
-                            <input type="hidden" name="mode" :value="mode" />
-                            <input type="hidden" id="startTmstmp" name="start" />
-                            <input type="hidden" id="endTmstmp" name="end" />
-                            <input type="submit" class="btn btn-primary" value="Search" />
-                        </form>
+                        <button
+                            class="btn btn-primary"
+                            @click="handleSubmitDateForm">
+                            Search
+                        </button>
                     </div>
                 </div>
                 <div class="timezone-control">
@@ -142,11 +142,13 @@
                         <a :href="editLineUrl.replace(0, line.id)">{{ line.name }}</a>
                     </div>
                 </div>
-                <div :class="{ 'cover': true, 'loading': loading }">
-                    <div class="cover-inner" ref="scrollWrapper" :style="{ width: ganttWidth + 'px' }">
+                <div :class="{ 'cover': true, 'loading': loading }" ref="scrollWrapper">
+                    <div class="cover-inner" :style="{ width: ganttWidth + 'px' }">
                         <!-- Tails table -->
                         <div class="table-wrapper">
-                            <div class="now-indicator hidden"></div>
+                            <div :class="{ 'now-indicator': true, 'hidden': !currentTimeIndicatorVisible }"
+                                :style="{ left: currentTimeIndicatorLeft + '%' }">
+                            </div>
                             <div id="flight-assignment-table" class="gantt-table m-b-none">
                                 <div class="head">
                                     <div class="row-line units big-units">
@@ -177,8 +179,9 @@
                         </div>
                         <!-- Lines table -->
                         <div class="table-wrapper">
-                            <div class="now-indicator hidden"></div>
-                            <div class="selection-area-indicator"></div>
+                            <div :class="{ 'now-indicator': true, 'hidden': !currentTimeIndicatorVisible }"
+                                :style="{ left: currentTimeIndicatorLeft + '%' }">
+                            </div>
                             <div id="flight-template-table" class="gantt-table m-b-none">
                                 <div class="head">
                                     <div class="row-line units big-units">
@@ -256,13 +259,14 @@ import GanttDragSelect from '@frontend_components/GanttDragSelect.vue';
 export default {
     name: 'Gantt',
     props: [
-        'lines', 'tails',
+        'lines', 'tails', 'initial-revisions', 
         'gantt-url', 'add-tail-url', 'add-line-url', 'edit-line-url',
         'load-data-api-url', 'assign-flight-api-url', 'assign-status-api-url', 'move-assignment-api-url',
         'remove-assignment-api-url', 'resize-assignment-api-url', 'publish-revision-api-url',
         'clear-revision-api-url', 'delete-revision-api-url',
         'days', 'hours', 'unit', 'writable', 'mode',
-        'start-tmstmp', 'prev-start-tmstmp', 'next-start-tmstmp', 'big-units', 'small-units'
+        'start-tmstmp', 'prev-start-tmstmp', 'next-start-tmstmp', 'big-units', 'small-units',
+        'window-at-end', 'start-param-exists', 'end-param-exists', 
     ],
     components: {
         'gantt-bar': GanttBar,
@@ -271,26 +275,35 @@ export default {
     data() {
         const timezoneOffset = Cookies.get('gantt-timezone-offset');
 
-        var ganttContainer = document.getElementById('gantt-container');
-        var timeWindowCount = this.days > 1 ? 14 / this.days : 14 * (24 / this.hours);
-        var timeWindowWidth = ganttContainer.clientWidth - 90;
-        var ganttWidth = 90 + timeWindowWidth * timeWindowCount;
-        var scrollLeft = 0;
+        const ganttContainer = document.getElementById('gantt-container');
+        const timeWindowCount = this.days > 1 ? 14 / this.days : 14 * (24 / this.hours);
+        const timeWindowWidth = ganttContainer.clientWidth - 90;
+        const ganttWidth = 90 + timeWindowWidth * timeWindowCount;
+        let scrollLeft = 0;
         if (this.windowAtEnd) {
             scrollLeft = (timeWindowCount - 1) * timeWindowWidth;
         }
 
+        const revisions = [];
+        for (const index in this.initialRevisions) {
+            const revision = this.initialRevisions[index];
+            revisions.push({
+                id: revision.id,
+                published: new Date(revision.published_datetime),
+            });
+        }
+
         return {
             ganttLengthSeconds: 14 * 24 * 3600,
-            revisions: [],
+            revisions,
             templates: {},
             assignments: {},
             assignedFlightIds: {},
-            revision: 0,
             loading: true,
             // values to use in templates
             ganttWidth,
             // 2-way bound models
+            revision: 0,
             timezone: timezoneOffset ? timezoneOffset : 0,
             selectedAssignmentIds: {},
             selectedTemplateIds: {},
@@ -304,7 +317,15 @@ export default {
             const endDate = new Date(this.startDate.getTime() - 1000);
             endDate.setDate(endDate.getDate() + 14);
             return endDate;
-        }
+        },
+        currentTimeIndicatorVisible() {
+            const now = new Date();
+            return now >= this.startDate && now <= this.endDate;
+        },
+        currentTimeIndicatorLeft() {
+            const now = new Date();
+            return (now - this.startDate) / 1000 / this.ganttLengthSeconds * 100;
+        },
     },
     mounted() {
         this.init();
@@ -312,31 +333,44 @@ export default {
     methods: {
         init() {
             this.setScrollPosition();
+            this.initDateForm();
             this.loadData();
         },
         setScrollPosition() {
-            var timeWindowCount = this.days > 1 ? 14 / this.days : 14 * (24 / this.hours);
-            var timeWindowWidth = this.$refs.gantt.clientWidth - 90;
-            var scrollLeft = 0;
+            const timeWindowCount = this.days > 1 ? 14 / this.days : 14 * (24 / this.hours);
+            const timeWindowWidth = this.$refs.gantt.clientWidth - 90;
+            let scrollLeft = 0;
             if (this.windowAtEnd) {
                 scrollLeft = (timeWindowCount - 1) * timeWindowWidth;
             }
             this.$refs.scrollWrapper.scrollLeft = scrollLeft;
         },
-        formatDate(date, dateFormat = 'MM/DD/YYYY HH:mm:ss') {
+        initDateForm() {
+            if (this.startParamExists) {
+                this.$refs.startDateInput.value = Utils.formatTo2Digits(this.startDate.getMonth() + 1) + '/' + 
+                    Utils.formatTo2Digits(this.startDate.getDate()) + '/' +
+                    this.startDate.getFullYear();
+            }
+            if (this.endParamExists) {
+                this.$refs.endDateInput.value = Utils.formatTo2Digits(this.endDate.getMonth() + 1) + '/' + 
+                    Utils.formatTo2Digits(this.endDate.getDate()) + '/' + 
+                    this.endDate.getFullYear();
+            }
+        },
+        formatDate(date, dateFormat = 'MM/DD/YYYY HH:mm:ss', considerTimezone = true) {
             if (typeof date === 'string') {
                 var _date = new Date(date);
             } else {
                 var _date = new Date(date.getTime());
             }
-            _date.setHours(parseInt(_date.getHours()) + parseInt(this.timezone));
+            _date.setHours(parseInt(_date.getHours()) + (considerTimezone ? parseInt(this.timezone) : 0));
             return moment(_date).tz('UTC').format(dateFormat);
         },
         bigUnitText(n) {
             const oneUnit = this.days > 1 ? 24 : this.hours;
             const date = new Date(this.startDate.getTime());
             date.setSeconds(date.getSeconds() + n * oneUnit * 3600);
-            return this.formatDate(date, 'ddd MM/DD/YYYY');
+            return this.formatDate(date, 'ddd MM/DD/YYYY', false);
         },
         smallUnitText(n) {
             const date = new Date(this.startDate.getTime());
@@ -398,6 +432,148 @@ export default {
                 }
 
                 this.loading = false;
+            });
+        },
+        handleClickPrevTimeWindow() {
+            const offset = 0.01;
+
+            const timeWindowWidth = this.$refs.gantt.clientWidth - 90;
+            const timeWindowCount = this.days > 1 ? 14 / this.days : 14 * (24 / this.hours);
+            let pos = this.$refs.scrollWrapper.scrollLeft / timeWindowWidth;
+            if (pos <= offset) {
+                window.location.href = `${this.ganttUrl}?mode=${this.mode}&start=${this.prevStartTmstmp}&window_at_end=1`;
+            } else {
+                if (Math.abs(pos - Math.round(pos)) <= offset) {
+                    pos = Math.floor(pos) - 1;
+                } else {
+                    pos = Math.floor(pos);
+                }
+                this.$refs.scrollWrapper.scrollLeft = pos * timeWindowWidth;
+            }
+        },
+        handleClickNextTimeWindow() {
+            const offset = 0.01;
+
+            const timeWindowWidth = this.$refs.gantt.clientWidth - 90;
+            const timeWindowCount = this.days > 1 ? 14 / this.days : 14 * (24 / this.hours);
+            let pos = this.$refs.scrollWrapper.scrollLeft / timeWindowWidth;
+            if (Math.abs(timeWindowCount - 1 - pos) <= offset) {
+                window.location.href = `${this.ganttUrl}?mode=${this.mode}&start=${this.nextStartTmstmp}`;
+            } else {
+                if (Math.abs(pos - Math.round(pos)) <= offset) {
+                    pos = Math.ceil(pos) + 1;
+                } else {
+                    pos = Math.ceil(pos);
+                }
+                this.$refs.scrollWrapper.scrollLeft = pos * timeWindowWidth;
+            }
+        },
+        handleClickNow() {
+            const windowLengths = [3, 6, 12, 24, 72, 168];
+            const now = new Date();
+            const windowLength = windowLengths[this.mode - 1];
+
+            if (now >= this.startDate && now < this.endDate) {
+                const diffSeconds = (now - this.startDate) / 1000;
+                const windowPage = parseInt(diffSeconds / 3600 / windowLength);
+                const timeWindowWidth = this.$refs.gantt.clientWidth - 90;
+
+                this.$refs.scrollWrapper.scrollLeft = windowPage * timeWindowWidth;
+            }
+            else {
+                const baseUrl = `${this.ganttUrl}?mode=${this.mode}`;
+                const newStartDate = new Date(now.getTime());
+                newStartDate.setUTCDate(1);
+                newStartDate.setUTCHours(0); newStartDate.setUTCMinutes(0); newStartDate.setUTCSeconds(0);
+
+                const diffSeconds = (now - newStartDate) / 1000;
+                const windowStartSeconds = parseInt(diffSeconds / 3600 / windowLength) * windowLength * 3600;
+                newStartDate.setUTCSeconds(windowStartSeconds);
+
+                window.location.href = `${baseUrl}&start=${parseInt(newStartDate.getTime() / 1000)}`;
+            }
+        },
+        handleSubmitDateForm() {
+            const startDateValue = this.$refs.startDateInput.value;
+            const endDateValue = this.$refs.endDateInput.value;
+            let url = `${this.ganttUrl}?mode=${this.mode}`;
+
+            if (startDateValue) {
+                var startDate = new Date(startDateValue);
+                var _date = new Date(startDate.getTime());
+                startDate.setUTCHours(0);
+                startDate.setUTCDate(_date.getDate());
+                url += `&start=${parseInt(startDate.getTime() / 1000)}`;
+            }
+
+            if (endDateValue) {
+                var endDate = new Date(endDateValue);
+                var _date = new Date(endDate.getTime());
+                endDate.setUTCHours(0);
+                endDate.setUTCDate(_date.getDate());
+                url += `&end=${parseInt(endDate.getTime() / 1000)}`;
+            }
+
+            window.location.href = url;
+        },
+        handleDeleteRevision() {
+            this.$http.post(this.deleteRevisionApiUrl, {
+                revision: this.revision,
+            })
+            .then((response) => {
+                const { data } = response;
+                if (data.success) {
+                    const revisions = [];
+                    for (const index in data.revisions) {
+                        const revision = this.initialRevisions[index];
+                        revisions.push({
+                            id: revision.id,
+                            published: new Date(revision.published),
+                        });
+                    }
+                    this.revisions = revisions;
+
+                    if (data.revisions.length > 0) {
+                        self.revision = data.revisions[0].id;
+                    } else {
+                        self.revision = 0;
+                    }
+
+                    Vue.nextTick(() => {
+                        self.loadData();
+                    });
+                }
+            });
+        },
+        handleClearRevision() {
+            this.$http.post(this.clearRevisionApiUrl, {
+                revision: this.revision,
+            })
+            .then((response) => {
+                const { data } = response;
+                if (data.success) {
+                    this.loadData();
+                }
+            });
+        },
+        handlePublishRevision() {
+            this.$http.post(this.publishRevisionApiUrl, {
+                revision: this.revision,
+            })
+            .then((response) => {
+                const { data } = response;
+                if (data.success) {
+                    const revisions = [];
+                    for (const index in data.revisions) {
+                        const revision = this.initialRevisions[index];
+                        revisions.push({
+                            id: revision.id,
+                            published: new Date(revision.published),
+                        });
+                    }
+                    this.revisions = revisions;
+                    this.revision = data.revision;
+                }
             });
         },
     }

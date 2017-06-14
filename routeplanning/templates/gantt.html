@@ -24,145 +24,27 @@
 {% block pagejs %}
     <script type="text/javascript">
         var readOnly = {{ request.user|can_write_gantt|yesno:"false,true" }};
-        var days = {{ days }};
-        var hours = {{ hours }};
         var unit = 3600 / {{ units_per_hour }};
-
-        /* Calculate start date */
-
-        var startDate = new Date({{ start_tmstmp }} * 1000);
-
-        /* Calculate end date */
-
-        var endDate = new Date(startDate.getTime() - 1000);
-        endDate.setDate(endDate.getDate() + 14);
-
-        /* Date pickers init */
-
-        {% if start_param %}
-            $('#start_date').val(Utils.formatTo2Digits(startDate.getMonth() + 1) + '/' + Utils.formatTo2Digits(startDate.getDate()) + '/' + startDate.getFullYear());
-        {% endif %}
-        {% if end_param %}
-            $('#end_date').val(Utils.formatTo2Digits(endDate.getMonth() + 1) + '/' + Utils.formatTo2Digits(endDate.getDate()) + '/' + endDate.getFullYear());
-        {% endif %}
-
-        /* Date form */
-
-        $('#date-form').on('submit', function() {
-            if ($('#start_date').val()) {
-                var startDate = new Date($('#start_date').val());
-                var _date = new Date(startDate.getTime());
-                startDate.setUTCHours(0);
-                startDate.setUTCDate(_date.getDate());
-                $('#start_tmstmp').val(parseInt(startDate.getTime() / 1000));
-            } else {
-                $('#start_tmstmp').val('');
-            }
-            if ($('#end_date').val()) {
-                var endDate = new Date($('#end_date').val());
-                var _date = new Date(endDate.getTime());
-                endDate.setUTCHours(0);
-                endDate.setUTCDate(_date.getDate());
-                $('#end_tmstmp').val(parseInt(endDate.getTime() / 1000));
-            } else {
-                $('#end_tmstmp').val('');
-            }
-        });
-
-        /* Set table size */
-
-        var $cover = $('.cover');
-        var $coverInner = $cover.children('.cover-inner');
-        var timeWindowCount = days > 1 ? 14 / days : 14 * (24 / hours);
-        var timeWindowWidth = $cover.width() - 90;
-        $coverInner.css('width', 90 + timeWindowWidth * timeWindowCount);
-        if ({{ window_at_end }}) {
-            $cover.scrollLeft((timeWindowCount - 1) * timeWindowWidth);
-        }
-
-        /* Prev, next time window buttons */
-
-        var offset = 0.01;
-
-        $('#btn-prev-time-window').on('click', function() {
-            var $cover = $('.cover');
-            var timeWindowWidth = $cover.width() - 90;
-            var pos = $cover.scrollLeft() / timeWindowWidth;
-            if (pos <= offset) {
-                window.location.href = $(this).data('prev-period-href');
-            } else {
-                if (Math.abs(pos - Math.round(pos)) <= offset) {
-                    pos = Math.floor(pos) - 1;
-                } else {
-                    pos = Math.floor(pos);
-                }
-                $cover.scrollLeft(pos * timeWindowWidth);
-            }
-        });
-
-        $('#btn-next-time-window').on('click', function() {
-            var $cover = $('.cover');
-            var timeWindowWidth = $cover.width() - 90;
-            var pos = $cover.scrollLeft() / timeWindowWidth;
-            if (Math.abs(timeWindowCount - 1 - pos) <= offset) {
-                window.location.href = $(this).data('next-period-href');
-            } else {
-                if (Math.abs(pos - Math.round(pos)) <= offset) {
-                    pos = Math.ceil(pos) + 1;
-                } else {
-                    pos = Math.ceil(pos);
-                }
-                $cover.scrollLeft(pos * timeWindowWidth);
-            }
-        });
-
-        /* Current date/time button */
-
-        var windowLengths = [3, 6, 12, 24, 72, 168];
-
-        $('#btn-now').on('click', function() {
-            var now = new Date();
-            var mode = {{ mode }};
-            var windowLength = windowLengths[mode - 1];
-
-            if (now >= startDate && now < endDate) {
-                var diffSeconds = (now - startDate) / 1000;
-                var windowPage = parseInt(diffSeconds / 3600 / windowLength);
-
-                var $cover = $('.cover');
-                var timeWindowWidth = $cover.width() - 90;
-
-                $cover.scrollLeft(windowPage * timeWindowWidth);
-            }
-            else {
-                var baseUrl = '{% url 'routeplanning:index' %}?mode=' + mode;
-                var newStartDate = new Date(now.getTime());
-                newStartDate.setUTCDate(1);
-                newStartDate.setUTCHours(0); newStartDate.setUTCMinutes(0); newStartDate.setUTCSeconds(0);
-
-                var diffSeconds = (now - newStartDate) / 1000;
-                var windowStartSeconds = parseInt(diffSeconds / 3600 / windowLength) * windowLength * 3600;
-                newStartDate.setUTCSeconds(windowStartSeconds);
-
-                window.location.href = baseUrl + '&start=' + parseInt(newStartDate.getTime() / 1000);
-            }
-        });
-
         var lines = [
             {% for line in lines %}
-                {
-                    id: {{ line.id }},
-                    name: "{{ line.name }}",
-                },
+            {
+                id: {{ line.id }},
+                name: "{{ line.name }}",
+            },{% endfor %}
+        ];
+        var tails = [
+            {% for tail in tails %}{
+                id: {{ tail.id }},
+                number: "{{ tail.number }}",
+            },
             {% endfor %}
         ];
-
-        var tails = [
-            {% for tail in tails %}
-                {
-                    id: {{ tail.id }},
-                    number: "{{ tail.number }}",
-                },
+        var initialRevisions = [
+            {% for revision in revisions %}{
+                id: {{ revision.id }},
+                published_datetime: "{{ revision.published_datetime|date:'c' }}",
+                has_draft: {{ revision.has_draft }},
+            },
             {% endfor %}
         ];
 
@@ -171,6 +53,7 @@
         window.initGantt('#gantt-container', {
             lines: lines,
             tails: tails,
+            initialRevisions: initialRevisions,
             ganttURL: "{% url 'routeplanning:index' %}",
             addTailURL: "{% url 'routeplanning:add_tail' %}",
             addLineURL: "{% url 'routeplanning:add_line' %}",
@@ -184,8 +67,8 @@
             publishRevisionAPIUrl: "{% url 'routeplanning:api_publish_revision' %}",
             clearRevisionAPIUrl: "{% url 'routeplanning:api_clear_revision' %}",
             deleteRevisionAPIUrl: "{% url 'routeplanning:api_delete_revision' %}",
-            days: days,
-            hours: hours,
+            days: {{ days }},
+            hours: {{ hours }},
             unit: unit,
             writable: !readOnly,
             mode: {{ mode }},
@@ -195,6 +78,8 @@
             bigUnits: {{ big_units }},
             smallUnits: {{ small_units }},
             windowAtEnd: {{ window_at_end }},
+            startParamExists: {% if start_param %}true{% else %}false{% endif %},
+            endParamExists: {% if end_param %}true{% else %}false{% endif %},
         });
     </script>
 {% endblock %}
