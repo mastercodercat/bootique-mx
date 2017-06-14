@@ -1031,12 +1031,12 @@ def api_coming_due_list(request):
         tail_id = request.data.get('tail_id')
         start_time = dateutil.parser.parse(request.data.get('start'))
         days = int(request.data.get('days'))
-        revision_id = int(request.data.get('revision'))
+        revision_id = request.data.get('revision')
     except:
         result['error'] = 'Invalid parameters'
         return Response(result, status=400)
 
-    if revision_id:
+    if revision_id and int(revision_id) > 0:
         try:
             revision = Revision.objects.get(pk=revision_id)
         except Revision.DoesNotExist:
@@ -1136,7 +1136,7 @@ def api_publish_revision(request):
 
     revision_id = request.POST.get('revision')
 
-    if int(revision_id):
+    if revision_id and int(revision_id) > 0:
         try:
             revision = Revision.objects.get(pk=revision_id)
         except Revision.DoesNotExist:
@@ -1190,7 +1190,7 @@ def api_clear_revision(request):
 
     revision_id = request.POST.get('revision')
 
-    if int(revision_id):
+    if revision_id and int(revision_id) > 0:
         try:
             revision = Revision.objects.get(pk=revision_id)
         except Revision.DoesNotExist:
@@ -1225,7 +1225,7 @@ def api_delete_revision(request):
 
     revision_id = request.POST.get('revision')
 
-    if int(revision_id):
+    if revision_id and int(revision_id) > 0:
         try:
             revision = Revision.objects.get(pk=revision_id)
         except Revision.DoesNotExist:

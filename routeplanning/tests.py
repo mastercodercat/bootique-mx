@@ -779,7 +779,7 @@ class ViewsTestCase(TestCase):
         api_url = reverse('routeplanning:api_publish_revision')
 
         response = self.client.post(api_url, {
-            'revision': '0',
+            # 'revision': '0',
         })
         data = json.loads(response.content)
         self.assertEqual(response.status_code, 200)
@@ -810,7 +810,7 @@ class ViewsTestCase(TestCase):
         Assignment.objects.update(is_draft=True)
 
         response = self.client.post(reverse('routeplanning:api_publish_revision'), {
-            'revision': '0',
+            # 'revision': '0',
         })
         data = json.loads(response.content)
         self.assertEqual(response.status_code, 200)
@@ -841,7 +841,7 @@ class ViewsTestCase(TestCase):
         Assignment.objects.update(is_draft=True)
 
         response = self.client.post(reverse('routeplanning:api_publish_revision'), {
-            'revision': '0',
+            # 'revision': '0',
         })
         data = json.loads(response.content)
         self.assertEqual(response.status_code, 200)
