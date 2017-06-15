@@ -5,7 +5,9 @@
                 :assignment="data"
                 :start-date="startDate"
                 :timezone="timezone"
-                :selected="selected">
+                :selected="selected"
+                :dragging="dragging"
+                :drag-offset="dragOffset">
             </gantt-maintenance-bar>
         </template>
         <template v-else-if="data.status == 3">
@@ -13,7 +15,9 @@
                 :flight="data"
                 :start-date="startDate"
                 :timezone="timezone"
-                :selected="selected">
+                :selected="selected"
+                :dragging="dragging"
+                :drag-offset="dragOffset">
             </gantt-unscheduled-flight-bar>
         </template>
         <template v-else>
@@ -22,7 +26,9 @@
                 :start-date="startDate"
                 :timezone="timezone"
                 :selected="selected"
-                :assigned="assigned">
+                :assigned="assigned"
+                :dragging="dragging"
+                :drag-offset="dragOffset">
             </gantt-flight-bar>
         </template>
     </div>
@@ -35,7 +41,7 @@ import GanttUnscheduledFlightBar from '@frontend_components/GanttUnscheduledFlig
 
 export default {
     name: 'GanttBar',
-    props: ['data', 'start-date', 'timezone', 'selected', 'assigned'],
+    props: ['data', 'start-date', 'timezone', 'selected', 'assigned', 'dragging', 'drag-offset'],
     components: {
         'gantt-flight-bar': GanttFlightBar,
         'gantt-maintenance-bar': GanttMaintenanceBar,

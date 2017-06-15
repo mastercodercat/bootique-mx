@@ -172,6 +172,17 @@
                                             :selected="!!selectedAssignmentIds[assignment.id]"
                                             v-for="assignment in getTailAssignments(tail)">
                                         </gantt-bar>
+                                        <gantt-bar
+                                            :key="assignment.id"
+                                            :data="assignment"
+                                            :start-date="startDate"
+                                            :timezone="timezone"
+                                            :selected="!!selectedAssignmentIds[assignment.id]"
+                                            :dragging="true"
+                                            :drag-offset="dragOffset"
+                                            v-for="assignment in getTailAssignments(tail)"
+                                            v-if="dragging && draggingAssignmentIds[assignment.id]">
+                                        </gantt-bar>
                                     </div>
                                 </gantt-drag-select>
                                 <div id="reserves" class="hidden"></div>
@@ -249,6 +260,7 @@
 </template>
 
 <script>
+import interact from 'interactjs';
 import Utils from '@frontend/js/utils.js';
 import Cookies from 'js-cookie';
 import moment from 'moment-timezone';
@@ -300,8 +312,11 @@ export default {
             assignments: {},
             assignedFlightIds: {},
             loading: true,
-            // values to use in templates
             ganttWidth,
+            draggingAssignmentIds: {},
+            draggingTemplateIds: {},
+            dragging: false,
+            dragOffset: false,
             // 2-way bound models
             revision: 0,
             timezone: timezoneOffset ? timezoneOffset : 0,
@@ -335,6 +350,7 @@ export default {
             this.setScrollPosition();
             this.initDateForm();
             this.loadData();
+            this.initInteractables();
         },
         setScrollPosition() {
             const timeWindowCount = this.days > 1 ? 14 / this.days : 14 * (24 / this.hours);
@@ -432,6 +448,50 @@ export default {
                 }
 
                 this.loading = false;
+            });
+        },
+        initInteractables() {
+            interact('.gantt-bar .bar:not(.assigned)').draggable({
+                autoScroll: true,
+                onstart: (event) => {
+                    const $bar = $(event.target);
+                    const vm = $bar.closest('.gantt-bar')[0].__vue__;
+                    const data = vm.data;
+
+                    this.draggingTemplateIds = {};
+                    this.draggingAssignmentIds = {};
+                    if (data.status) {
+                        if (this.selectedAssignmentIds[data.id]) {
+                            this.draggingAssignmentIds = this.selectedAssignmentIds;
+                        } else {
+                            this.draggingAssignmentIds[data.id] = true;
+                        }
+                    } else {
+                        if (this.selectedTemplateIds[data.id]) {
+                            this.draggingTemplateIds = this.selectedTemplateIds;
+                        } else {
+                            this.draggingAssignmentIds[data.id] = true;
+                        }
+                    }
+
+                    this.dragOffset = false;
+                    this.dragging = true;
+                },
+                onmove: (event) => {
+                    const x = (this.dragOffset ? this.dragOffset.x : 0) + event.dx;
+                    const y = (this.dragOffset ? this.dragOffset.y : 0) + event.dy;
+
+                    this.dragOffset = { x, y };
+                },
+                onend: (event) => {
+                    this.dragging = false;
+                    this.dragOffset = false;
+                },
+            }).actionChecker(function (pointer, event, action) {
+                if (event.button !== 0) {
+                    return null;
+                }
+                return action;
             });
         },
         handleClickPrevTimeWindow() {
