@@ -83,41 +83,36 @@
                 </div>
             </div>
             <!-- Status bar sources, remove area -->
-            <div class="status-bars disabled clearfix" v-if="writable">
+            <div class="status-bars clearfix" v-if="writable">
                 <div class="clearfix">
                     <label>Drag and drop: </label>
                 </div>
                 <div class="bar-container">
-                    <div class="bar status-bar maintenance status-prototype" draggable="true" data-status="2">
-                        <span>Maintenance</span>
-                        <div class="info bar-popover">
-                            <div class="field">Status: Maintenance</div>
-                            <div class="field">Sched. Start Time: <span class="start"></span></div>
-                            <div class="field">Sched. End Time: <span class="end"></span></div>
-                        </div>
-                    </div>
+                    <gantt-maintenance-bar-prototype
+                        :status="2">
+                    </gantt-maintenance-bar-prototype>
+                    <gantt-maintenance-bar-prototype
+                        :status="2"
+                        :dragged="true"
+                        :drag-offset="dragOffset"
+                        v-if="draggingStatusPrototype && draggingStatus == 2">
+                    </gantt-maintenance-bar-prototype>
                 </div>
                 <div class="bar-container">
-                    <div class="bar status-bar unscheduled-flight status-prototype" draggable="true" data-status="3">
-                        <span>Unscheduled Flight</span>
-                        <div class="bar-popover">
-                            <div class="field">Unscheduled Flight</div>
-                            <div class="field">Origin: <span class="org"></span></div>
-                            <div class="field">Destination: <span class="dest"></span></div>
-                            <div class="field">Sched. Depature Time: <span class="departure"></span></div>
-                            <div class="field">Sched. Arrival Time: <span class="arrival"></span></div>
-                            <div class="assignment-only">
-                                <hr />
-                                <div class="field">Projected Hobbs: <span class="projected-hobbs"></span></div>
-                                <div class="field">Next Due Hobbs: <span class="next-due-hobbs"></span></div>
-                                <div class="field field-hobbs-left">Hobbs Left: <span class="hobbs-left"></span></div>
-                            </div>
-                        </div>
-                    </div>
+                    <gantt-unscheduled-flight-bar-prototype
+                        :status="3">
+                    </gantt-unscheduled-flight-bar-prototype>
+                    <gantt-unscheduled-flight-bar-prototype
+                        :status="3"
+                        :dragged="true"
+                        :drag-offset="dragOffset"
+                        v-if="draggingStatusPrototype && draggingStatus == 3">
+                    </gantt-unscheduled-flight-bar-prototype>
                 </div>
-                <div class="drop-to-remove-area" id="drop-to-remove-area">
-                    <i class="fa fa-trash-o"></i> Drag and drop here to remove assignment
-                </div>
+                <gantt-remove-dropzone
+                    acceptable-selector="#flight-assignment-table .bar"
+                    @drop-on="handleDropOnRemoveZone">
+                </gantt-remove-dropzone>
             </div>
 
             <div class="cover-wrapper">
@@ -260,6 +255,9 @@ import moment from 'moment-timezone';
 
 import GanttRow from '@frontend_components/GanttRow.vue';
 import GanttDragSelect from '@frontend_components/GanttDragSelect.vue';
+import GanttMaintenanceBarPrototype from '@frontend_components/GanttMaintenanceBarPrototype.vue';
+import GanttUnscheduledFlightBarPrototype from '@frontend_components/GanttUnscheduledFlightBarPrototype.vue';
+import GanttRemoveDropzone from '@frontend_components/GanttRemoveDropzone.vue';
 
 export default {
     name: 'Gantt',
@@ -276,6 +274,9 @@ export default {
     components: {
         'gantt-row': GanttRow,
         'gantt-drag-select': GanttDragSelect,
+        'gantt-maintenance-bar-prototype': GanttMaintenanceBarPrototype,
+        'gantt-unscheduled-flight-bar-prototype': GanttUnscheduledFlightBarPrototype,
+        'gantt-remove-dropzone': GanttRemoveDropzone,
     },
     data() {
         const timezoneOffset = Cookies.get('gantt-timezone-offset');
@@ -310,6 +311,8 @@ export default {
             draggingTemplateIds: {},
             dragging: false,
             dragOffset: { x: 0, y: 0 },
+            draggingStatusPrototype: false,
+            draggingStatus: 0,
             // 2-way bound models
             revision: 0,
             timezone: timezoneOffset ? timezoneOffset : 0,
@@ -410,37 +413,37 @@ export default {
             .then((response) => {
                 const { data } = response;
 
-                /*
-                 NOTE: assignedFlightIds, assignments and templates properties are not initialized as reactive,
-                 so consider this when updating later
-                 */
-
-                this.assignedFlightIds = {};
-                this.assignments = {};
+                const assignedFlightIds = {};
+                const assignments = {};
                 data.assignments.forEach((assignment) => {
-                    if (!(assignment.tail in this.assignments)) {
-                        this.assignments[assignment.tail] = {};
+                    if (!(assignment.tail in assignments)) {
+                        assignments[assignment.tail] = {};
                     }
-                    this.assignments[assignment.tail][assignment.id] = assignment;
+                    assignments[assignment.tail][assignment.id] = assignment;
                     if (assignment.flight_id) {
-                        this.assignedFlightIds[assignment.flight_id] = true;
+                        assignedFlightIds[assignment.flight_id] = true;
                     }
                 });
 
+                this.assignedFlightIds = assignedFlightIds;
+                this.assignments = assignments;
+
                 if (!assignmentsOnly) {
-                    this.templates = {};
+                    const templates = {};
                     data.templates.forEach((template) => {
-                        if (!(template.line_id in this.templates)) {
-                            this.templates[template.line_id] = {}
+                        if (!(template.line_id in templates)) {
+                            templates[template.line_id] = {}
                         }
-                        this.templates[template.line_id][template.id] = template;
+                        templates[template.line_id][template.id] = template;
                     });
+                    this.templates = templates;
                 }
 
                 this.loading = false;
             });
         },
         initInteractables() {
+            // Template flights or assignments dragging
             interact('.gantt-bar .bar:not(.assigned)').draggable({
                 autoScroll: true,
                 onstart: (event) => {
@@ -454,15 +457,20 @@ export default {
                         if (this.selectedAssignmentIds[data.id]) {
                             this.draggingAssignmentIds = this.selectedAssignmentIds;
                         } else {
-                            this.draggingAssignmentIds[data.id] = true;
+                            this.selectedAssignmentIds = {
+                                [data.id]: true,
+                            };
+                            this.$set(this.draggingAssignmentIds, data.id, true);
                         }
                     } else {
                         if (this.selectedTemplateIds[data.id]) {
                             this.draggingTemplateIds = this.selectedTemplateIds;
                         } else {
-                            this.draggingAssignmentIds[data.id] = true;
+                            this.selectedTemplateIds = {
+                                [data.id]: true,
+                            };
+                            this.$set(this.draggingTemplateIds, data.id, true);
                         }
-
                     }
 
                     this.dragOffset.x = 0;
@@ -478,6 +486,61 @@ export default {
                 },
                 onend: (event) => {
                     this.dragging = false;
+                },
+            }).actionChecker(function (pointer, event, action) {
+                if (event.button !== 0) {
+                    return null;
+                }
+                return action;
+            }).on('click', (event) => {
+                const $bar = $(event.target);
+                const vm = $bar.closest('.gantt-bar')[0].__vue__;
+                const data = vm.data;
+
+                if (data.status) {
+                    if (event.shiftKey) {
+                        this.$set(this.selectedAssignmentIds, data.id, true);
+                    } else if (event.altKey) {
+                        this.$set(this.selectedAssignmentIds, data.id, false);
+                    } else {
+                        this.selectedAssignmentIds = {
+                            [data.id]: true,
+                        };
+                    }
+                } else {
+                    if (event.shiftKey) {
+                        this.$set(this.selectedTemplateIds, data.id, true);
+                    } else if (event.altKey) {
+                        this.$set(this.selectedTemplateIds, data.id, false);
+                    } else {
+                        this.selectedTemplateIds = {
+                            [data.id]: true,
+                        };
+                    }
+                }
+            });
+
+            // Status bar prototypes dragging
+            interact('.status-prototype').draggable({
+                autoScroll: true,
+                onstart: (event) => {
+                    const $bar = $(event.target);
+                    const vm = $bar.closest('.bar.status-prototype')[0].__vue__;
+
+                    this.dragOffset.x = 0;
+                    this.dragOffset.y = 0;
+                    this.draggingStatusPrototype = true;
+                    this.draggingStatus = vm.status;
+                },
+                onmove: (event) => {
+                    const x = (this.dragOffset.x ? this.dragOffset.x : 0) + event.dx;
+                    const y = (this.dragOffset.y ? this.dragOffset.y : 0) + event.dy;
+
+                    this.dragOffset.x = x;
+                    this.dragOffset.y = y;
+                },
+                onend: (event) => {
+                    this.draggingStatusPrototype = false;
                 },
             }).actionChecker(function (pointer, event, action) {
                 if (event.button !== 0) {
@@ -628,6 +691,19 @@ export default {
                 }
             });
         },
+        handleDropOnRemoveZone(event) {
+            const assignmentIds = Object.keys(this.selectedAssignmentIds);
+            this.$http.post(this.removeAssignmentApiUrl, {
+                assignment_data: JSON.stringify(assignmentIds),
+                revision: this.revision,
+            })
+            .then((response) => {
+                const { data } = response;
+                if (data.success) {
+                    this.loadData(true);
+                }
+            });
+        }
     },
     watch: {
         revision: function(val) {
