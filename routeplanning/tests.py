@@ -1,8 +1,8 @@
+import json
 from django.test import TestCase
 from datetime import datetime
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
-import json
 
 from routeplanning.models import *
 from home.models import *
@@ -249,8 +249,7 @@ class ViewsTestCase(TestCase):
 
         response = self.client.post(view_url)
         data = json.loads(response.content)
-        self.assertEqual(data['success'], False)
-        self.assertEqual(data['error'], 'Only DELETE method allowed for this api')
+        self.assertEqual(response.status_code, 405)
 
     def test_view_coming_due(self):
         tail = Tail.objects.first()
@@ -370,8 +369,7 @@ class ViewsTestCase(TestCase):
 
         response = self.client.post(view_url)
         data = json.loads(response.content)
-        self.assertEqual(data['success'], False)
-        self.assertEqual(data['error'], 'Only DELETE method allowed for this api')
+        self.assertEqual(response.status_code, 405)
 
     def test_view_flights(self):
         view_url = reverse('routeplanning:flights')
@@ -460,7 +458,7 @@ class ViewsTestCase(TestCase):
             'startdate': 1494799200,
             'enddate': 1496008800,
             'revision': 0,
-        })
+        });
         data = json.loads(response.content)
         self.assertEqual(response.status_code, 200)
         self.assertNotEqual(len(data['assignments']), 0)

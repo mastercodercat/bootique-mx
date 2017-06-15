@@ -8,7 +8,7 @@ from django.core import serializers
 from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponse, JsonResponse, HttpResponseForbidden
+from django.http import HttpResponse, HttpResponseForbidden
 from django.middleware import csrf
 from django.db.models import Q, ProtectedError, Max
 from django.conf import settings
@@ -133,20 +133,20 @@ def edit_tail(request, tail_id=None):
 
 @login_required
 @gantt_writable_required
+@api_view(['DELETE'])
 def delete_tail(request, tail_id=None):
     result = {
         'success': False,
     }
-    if request.method == 'DELETE':
-        try:
-            tail = Tail.objects.get(pk=tail_id)
-            tail.delete()
-            result['success'] = True
-        except:
-            result['error'] = 'Error occurred while deleting tail'
-    else:
-        result['error'] = 'Only DELETE method allowed for this api'
-    return JsonResponse(result, safe=False)
+
+    try:
+        tail = Tail.objects.get(pk=tail_id)
+        tail.delete()
+        result['success'] = True
+    except:
+        result['error'] = 'Error occurred while deleting tail'
+
+    return Response(result)
 
 @login_required
 @gantt_writable_required
@@ -246,23 +246,23 @@ def edit_line(request, line_id=None):
 
 @login_required
 @gantt_writable_required
+@api_view(['DELETE'])
 def delete_line(request, line_id=None):
     result = {
         'success': False,
     }
-    if request.method == 'DELETE':
-        try:
-            if line_id:
-                line = Line.objects.get(pk=line_id)
-                line.delete()
-                result['success'] = True
-            else:
-                result['error'] = 'Line id should be specified'
-        except:
-            result['error'] = 'Error occurred while deleting line'
-    else:
-        result['error'] = 'Only DELETE method allowed for this api'
-    return JsonResponse(result, safe=False)
+
+    try:
+        if line_id:
+            line = Line.objects.get(pk=line_id)
+            line.delete()
+            result['success'] = True
+        else:
+            result['error'] = 'Line id should be specified'
+    except:
+        result['error'] = 'Error occurred while deleting line'
+
+    return Response(result)
 
 @login_required
 @gantt_readable_required
@@ -277,6 +277,7 @@ def flights(request):
 
 @login_required
 @gantt_readable_required
+@api_view(['POST'])
 def api_flight_get_page(request):
     result = {
         'success': False,
@@ -289,11 +290,11 @@ def api_flight_get_page(request):
     order_columns = ('id', 'number', 'origin', 'destination', 'departure_datetime', 'arrival_datetime')
 
     try:
-        start = int(request.POST.get('start'))
-        length = int(request.POST.get('length'))
-        order_dir = request.POST.get('order[0][dir]')
-        order_column_index = int(request.POST.get('order[0][column]'))
-        search = request.POST.get('search[value]')
+        start = int(request.data.get('start'))
+        length = int(request.data.get('length'))
+        order_dir = request.data.get('order[0][dir]')
+        order_column_index = int(request.data.get('order[0][column]'))
+        search = request.data.get('search[value]')
 
         order_column = order_columns[order_column_index]
         if order_dir == 'desc':
@@ -334,10 +335,10 @@ def api_flight_get_page(request):
         request.session['flights_dt_page_draw'] = draw
     except Exception as e:
         result['error'] = str(e)
-        return JsonResponse(result, safe=False, status=500)
+        return Response(result, status=500)
 
     result['success'] = True
-    return JsonResponse(result, safe=False)
+    return Response(result)
 
 @login_required
 @gantt_writable_required
@@ -384,20 +385,21 @@ def delete_flights(request):
 
 @login_required
 @gantt_readable_required
+@api_view(['GET'])
 def api_load_data(request):
-    start_time = datetime.fromtimestamp(int(request.GET.get('startdate')), tz=utc)
-    end_time = datetime.fromtimestamp(int(request.GET.get('enddate')), tz=utc)
-    assignments_only = request.GET.get('assignments_only')
-    revision_id = request.GET.get('revision')
+    start_time = datetime.fromtimestamp(int(request.query_params.get('startdate')), tz=utc)
+    end_time = datetime.fromtimestamp(int(request.query_params.get('enddate')), tz=utc)
+    assignments_only = request.query_params.get('assignments_only')
+    revision_id = request.query_params.get('revision')
 
-    if int(revision_id):
+    if revision_id and int(revision_id) > 0:
         try:
             revision = Revision.objects.get(pk=revision_id)
         except Revision.DoesNotExist:
             result = {
                 'error': 'Revision not found',
             }
-            return JsonResponse(result, safe=False, status=400)
+            return Response(result, status=400)
     else:
         revision = None
 
@@ -467,10 +469,11 @@ def api_load_data(request):
         'assignments': assignments_data,
         'templates': template_data,
     }
-    return JsonResponse(data, safe=False)
+    return Response(data)
 
 @login_required
 @gantt_writable_required
+@api_view(['POST'])
 def api_assign_flight(request):
     result = {
         'success': False,
@@ -479,25 +482,21 @@ def api_assign_flight(request):
         'physically_invalid': False,
     }
 
-    if request.method != 'POST':
-        result['error'] = 'Only POST method is allowed'
-        return JsonResponse(result, safe=False)
-
     try:
-        flight_data = json.loads(request.POST.get('flight_data'))
-        revision_id = request.POST.get('revision')
+        flight_data = json.loads(request.data.get('flight_data'))
+        revision_id = request.data.get('revision')
     except:
         result['error'] = 'Invalid parameters'
-        return JsonResponse(result, safe=False, status=400)
+        return Response(result, status=400)
 
-    if int(revision_id):
+    if revision_id and int(revision_id) > 0:
         try:
             revision = Revision.objects.get(pk=revision_id)
             if revision:
                 revision.check_draft_created()
         except Revision.DoesNotExist:
             result['error'] = 'Revision not found'
-            return JsonResponse(result, safe=False, status=400)
+            return Response(result, status=400)
     else:
         revision = None
 
@@ -540,39 +539,36 @@ def api_assign_flight(request):
             print(str(e))
 
     result['success'] = True
-    return JsonResponse(result, safe=False)
+    return Response(result)
 
 @login_required
 @gantt_writable_required
+@api_view(['POST'])
 def api_assign_status(request):
     result = {
         'success': False,
     }
 
-    if request.method != 'POST':
-        result['error'] = 'Only POST method is allowed'
-        return JsonResponse(result, safe=False)
-
     try:
-        tail_number = request.POST.get('tail')
-        start_time = dateutil.parser.parse(request.POST.get('start_time'))
-        end_time = dateutil.parser.parse(request.POST.get('end_time'))
-        status = int(request.POST.get('status'))
-        origin = request.POST.get('origin') or ''     # used for unscheduled flight assignments
-        destination = request.POST.get('destination') or ''   # used for unscheduled flight assignments
-        revision_id = request.POST.get('revision')
+        tail_number = request.data.get('tail')
+        start_time = dateutil.parser.parse(request.data.get('start_time'))
+        end_time = dateutil.parser.parse(request.data.get('end_time'))
+        status = int(request.data.get('status'))
+        origin = request.data.get('origin') or ''     # used for unscheduled flight assignments
+        destination = request.data.get('destination') or ''   # used for unscheduled flight assignments
+        revision_id = request.data.get('revision')
     except:
         result['error'] = 'Invalid parameters'
-        return JsonResponse(result, safe=False, status=400)
+        return Response(result, status=400)
 
-    if int(revision_id):
+    if revision_id and int(revision_id) > 0:
         try:
             revision = Revision.objects.get(pk=revision_id)
             if revision:
                 revision.check_draft_created()
         except Revision.DoesNotExist:
             result['error'] = 'Revision not found'
-            return JsonResponse(result, safe=False, status=400)
+            return Response(result, status=400)
     else:
         revision = None
 
@@ -581,11 +577,11 @@ def api_assign_status(request):
 
         if Assignment.is_duplicated(tail, start_time, end_time):
             result['error'] = 'Duplicated assignment'
-            return JsonResponse(result, safe=False)
+            return Response(result)
 
         if status == Assignment.STATUS_UNSCHEDULED_FLIGHT and not Assignment.is_physically_valid(tail, origin, destination, start_time, end_time):
             result['error'] = 'Physically invalid assignment'
-            return JsonResponse(result, safe=False)
+            return Response(result)
 
         assignment = Assignment(
             flight_number=0,
@@ -612,39 +608,36 @@ def api_assign_status(request):
 
     except Exception as e:
         result['error'] = str(e)
-        return JsonResponse(result, safe=False, status=500)
+        return Response(result, status=500)
 
     result['success'] = True
     result['id'] = assignment.id
-    return JsonResponse(result, safe=False)
+    return Response(result)
 
 @login_required
 @gantt_writable_required
+@api_view(['POST'])
 def api_remove_assignment(request):
     result = {
         'success': False,
         'removed_assignments': [],
     }
 
-    if request.method != 'POST':
-        result['error'] = 'Only POST method is allowed'
-        return JsonResponse(result, safe=False)
-
     try:
-        assignment_ids = json.loads(request.POST.get('assignment_data'))
-        revision_id = request.POST.get('revision')
+        assignment_ids = json.loads(request.data.get('assignment_data'))
+        revision_id = request.data.get('revision')
     except:
         result['error'] = 'Invalid parameters'
-        return JsonResponse(result, safe=False, status=400)
+        return Response(result, status=400)
 
-    if int(revision_id):
+    if revision_id and int(revision_id) > 0:
         try:
             revision = Revision.objects.get(pk=revision_id)
             if revision:
                 revision.check_draft_created()
         except Revision.DoesNotExist:
             result['error'] = 'Revision not found'
-            return JsonResponse(result, safe=False, status=400)
+            return Response(result, status=400)
     else:
         revision = None
 
@@ -660,10 +653,11 @@ def api_remove_assignment(request):
             print(str(e))
 
     result['success'] = True
-    return JsonResponse(result, safe=False)
+    return Response(result)
 
 @login_required
 @gantt_writable_required
+@api_view(['POST'])
 def api_move_assignment(request):
     result = {
         'success': False,
@@ -672,25 +666,21 @@ def api_move_assignment(request):
         'assignments': {},
     }
 
-    if request.method != 'POST':
-        result['error'] = 'Only POST method is allowed'
-        return JsonResponse(result, safe=False)
-
     try:
-        assignment_data = json.loads(request.POST.get('assignment_data'))
-        revision_id = request.POST.get('revision')
+        assignment_data = json.loads(request.data.get('assignment_data'))
+        revision_id = request.data.get('revision')
     except:
         result['error'] = 'Invalid parameters'
-        return JsonResponse(result, safe=False, status=400)
+        return Response(result, status=400)
 
-    if int(revision_id):
+    if revision_id and int(revision_id) > 0:
         try:
             revision = Revision.objects.get(pk=revision_id)
             if revision:
                 revision.check_draft_created()
         except Revision.DoesNotExist:
             result['error'] = 'Revision not found'
-            return JsonResponse(result, safe=False, status=400)
+            return Response(result, status=400)
     else:
         revision = None
 
@@ -752,36 +742,33 @@ def api_move_assignment(request):
             print(str(e))
 
     result['success'] = True
-    return JsonResponse(result, safe=False)
+    return Response(result)
 
 @login_required
 @gantt_writable_required
+@api_view(['POST'])
 def api_resize_assignment(request):
     result = {
         'success': False,
     }
 
-    if request.method != 'POST':
-        result['error'] = 'Only POST method is allowed'
-        return JsonResponse(result, safe=False)
-
     try:
-        assignment_id = request.POST.get('assignment_id')
-        revision_id = request.POST.get('revision')
-        pos = request.POST.get('position')  # start or end
-        diff_seconds = round(float(request.POST.get('diff_seconds')) / 300.0) * 300.0     # changed time in seconds
+        assignment_id = request.data.get('assignment_id')
+        revision_id = request.data.get('revision')
+        pos = request.data.get('position')  # start or end
+        diff_seconds = round(float(request.data.get('diff_seconds')) / 300.0) * 300.0     # changed time in seconds
     except:
         result['error'] = 'Invalid parameters'
-        return JsonResponse(result, safe=False, status=400)
+        return Response(result, status=400)
 
-    if int(revision_id):
+    if revision_id and int(revision_id) > 0:
         try:
             revision = Revision.objects.get(pk=revision_id)
             if revision:
                 revision.check_draft_created()
         except Revision.DoesNotExist:
             result['error'] = 'Revision not found'
-            return JsonResponse(result, safe=False, status=400)
+            return Response(result, status=400)
     else:
         revision = None
 
@@ -797,11 +784,11 @@ def api_resize_assignment(request):
 
         if start_time >= end_time:
             result['error'] = 'Start time cannot be later than end time'
-            return JsonResponse(result, safe=False, status=400)
+            return Response(result, status=400)
 
         if Assignment.is_duplicated(assignment.tail, start_time, end_time, assignment):
             result['error'] = 'Duplicated assignment'
-            return JsonResponse(result, safe=False)
+            return Response(result)
 
         assignment.start_time = start_time
         assignment.end_time = end_time
@@ -815,12 +802,12 @@ def api_resize_assignment(request):
 
     except Exception as e:
         result['error'] = str(e)
-        return JsonResponse(result, safe=False, status=500)
+        return Response(result, status=500)
 
     result['success'] = True
     result['start_time'] = assignment.start_time.isoformat()
     result['end_time'] = assignment.end_time.isoformat()
-    return JsonResponse(result, safe=False)
+    return Response(result)
 
 def str_to_datetime(str):
     parts = str.split(' ')
@@ -842,6 +829,7 @@ def str_to_datetime(str):
 
 @login_required
 @gantt_writable_required
+@api_view(['POST'])
 def api_upload_csv(request): # pragma: no cover
     result = {
         'success': False,
@@ -856,7 +844,7 @@ def api_upload_csv(request): # pragma: no cover
             destination.close()
     except Exception as e:
         result['error'] = str(e)
-        return JsonResponse(result, safe=False)
+        return Response(result)
 
     with open(filepath) as csvfile:
         csvreader = csv.reader(csvfile, delimiter=',', quotechar='"')
@@ -932,7 +920,7 @@ def api_upload_csv(request): # pragma: no cover
         pass
 
     result['success'] = True
-    return JsonResponse(result, safe=False)
+    return Response(result)
 
 @login_required
 @gantt_readable_required
@@ -953,22 +941,19 @@ def api_get_hobbs(request, hobbs_id=None):
 
 @login_required
 @gantt_writable_required
+@api_view(['POST'])
 def api_delete_actual_hobbs(request, hobbs_id=None):
     result = {
         'success': False,
     }
 
-    if request.method != 'POST':
-        result['error'] = 'Only POST method is allowed'
-        return JsonResponse(result, safe=False)
-
     try:
         Hobbs.objects.filter(pk=hobbs_id).filter(type=Hobbs.TYPE_ACTUAL).delete()
     except:
-        return JsonResponse(result, safe=False, status=400)
+        return Response(result, status=400)
 
     result['success'] = True
-    return JsonResponse(result, safe=False)
+    return Response(result)
 
 @login_required
 @gantt_writable_required
