@@ -1,7 +1,7 @@
 <template>
-    <div :class="componentClass" :style="{ left: left + '%', width: width + '%' }">
+    <div :class="componentClass" :style="componentStyle">
         <span>Unscheduled Flight</span>
-        <div class="bar-popover">
+        <div class="bar-popover" v-if="!dragging">
             <div class="field">Unscheduled Flight</div>
             <div class="field">Origin: <span class="org">{{ flight.origin }}</span></div>
             <div class="field">Destination: <span class="dest">{{ flight.destination }}</span></div>
@@ -28,7 +28,7 @@ import moment from 'moment-timezone';
 
 export default {
     name: 'GanttUnscheduledFlightBar',
-    props: ['flight', 'start-date', 'timezone', 'selected'],
+    props: ['flight', 'start-date', 'timezone', 'selected', 'dragging', 'drag-offset'],
     data() {
         return {
         };
@@ -59,7 +59,18 @@ export default {
                 'hobbs-green': this.hobbs < 15 && this.hobbs >= 8,
                 'hobbs-yellow': this.hobbs < 8 && this.hobbs >= 0,
                 'hobbs-red': this.hobbs < 0,
+                'drag-clone': this.dragging,
             };
+        },
+        componentStyle() {
+            const style = {
+                left: this.left + '%',
+                width: this.width + '%'
+            };
+            if (this.dragging && this.dragOffset) {
+                style.transform = `translate(${this.dragOffset.x}px, ${this.dragOffset.y}px)`;
+            }
+            return style;
         },
         fieldHobbsLeftClass() {
             return {

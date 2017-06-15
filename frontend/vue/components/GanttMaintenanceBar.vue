@@ -1,7 +1,7 @@
 <template>
-    <div :class="componentClass" :style="{ left: left + '%', width: width + '%' }">
+    <div :class="componentClass" :style="componentStyle">
         <span>Maintenance</span>
-        <div class="info bar-popover">
+        <div class="info bar-popover" v-if="!dragging">
             <div class="field">Status: Maintenance</div>
             <div class="field">Sched. Start Time: <span class="start"></span>{{ startTime }}</div>
             <div class="field">Sched. End Time: <span class="end"></span>{{ endTime }}</div>
@@ -14,7 +14,7 @@ import moment from 'moment-timezone';
 
 export default {
     name: 'GanttMaintenanceBar',
-    props: ['assignment', 'start-date', 'timezone', 'selected'],
+    props: ['assignment', 'start-date', 'timezone', 'selected', 'dragging', 'drag-offset'],
     data() {
         return {
         }
@@ -40,7 +40,18 @@ export default {
             return {
                 'bar status-bar maintenance': true,
                 'selected': this.selected,
+                'drag-clone': this.dragging,
             };
+        },
+        componentStyle() {
+            const style = {
+                left: this.left + '%',
+                width: this.width + '%'
+            };
+            if (this.dragging && this.dragOffset) {
+                style.transform = `translate(${this.dragOffset.x}px, ${this.dragOffset.y}px)`;
+            }
+            return style;
         },
     },
     methods: {

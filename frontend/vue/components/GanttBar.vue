@@ -54,7 +54,6 @@ export default {
     },
     mounted() {
         this.$on('drag-offset-update', (offset) => {
-            console.log(offset)///
             this.internalDragOffset = offset;
         });
     },

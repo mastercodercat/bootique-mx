@@ -217,6 +217,18 @@
                                             :assigned="isAssigned(template)"
                                             v-for="template in getLineTemplates(line)">
                                         </gantt-bar>
+                                        <gantt-bar
+                                            :key="template.id"
+                                            :data="template"
+                                            :start-date="startDate"
+                                            :timezone="timezone"
+                                            :selected="!!selectedTemplateIds[template.id]"
+                                            :assigned="isAssigned(template)"
+                                            :dragging="true"
+                                            :drag-offset="dragOffset"
+                                            v-for="template in getLineTemplates(line)"
+                                            v-if="dragging && draggingTemplateIds[template.id]">
+                                        </gantt-bar>
                                     </div>
                                 </gantt-drag-select>
                             </div>
