@@ -156,7 +156,7 @@ $popover-text-color: #333;
         &.assigned {
             background-color: #999;
         }
-        &.selected {
+        &.selected:not(.drag-clone) {
             &:before {
                 content: '';
                 display: block;

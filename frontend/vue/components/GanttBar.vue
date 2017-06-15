@@ -1,5 +1,5 @@
 <template>
-    <div class="gantt-bar">
+    <div :class="{ 'gantt-bar': true, 'dragging': dragging }">
         <template v-if="data.status == 2">
             <gantt-maintenance-bar
                 :assignment="data"
@@ -7,7 +7,7 @@
                 :timezone="timezone"
                 :selected="selected"
                 :dragging="dragging"
-                :drag-offset="dragOffset">
+                :drag-offset="internalDragOffset">
             </gantt-maintenance-bar>
         </template>
         <template v-else-if="data.status == 3">
@@ -17,7 +17,7 @@
                 :timezone="timezone"
                 :selected="selected"
                 :dragging="dragging"
-                :drag-offset="dragOffset">
+                :drag-offset="internalDragOffset">
             </gantt-unscheduled-flight-bar>
         </template>
         <template v-else>
@@ -28,7 +28,7 @@
                 :selected="selected"
                 :assigned="assigned"
                 :dragging="dragging"
-                :drag-offset="dragOffset">
+                :drag-offset="internalDragOffset">
             </gantt-flight-bar>
         </template>
     </div>
@@ -48,7 +48,15 @@ export default {
         'gantt-unscheduled-flight-bar': GanttUnscheduledFlightBar,
     },
     data() {
-        return {}
+        return {
+            internalDragOffset: this.dragOffset,
+        };
+    },
+    mounted() {
+        this.$on('drag-offset-update', (offset) => {
+            console.log(offset)///
+            this.internalDragOffset = offset;
+        });
     },
 }
 </script>

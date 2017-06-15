@@ -316,7 +316,6 @@ export default {
             draggingAssignmentIds: {},
             draggingTemplateIds: {},
             dragging: false,
-            dragOffset: false,
             // 2-way bound models
             revision: 0,
             timezone: timezoneOffset ? timezoneOffset : 0,
@@ -341,6 +340,9 @@ export default {
             const now = new Date();
             return (now - this.startDate) / 1000 / this.ganttLengthSeconds * 100;
         },
+    },
+    created() {
+        this.dragOffset = { x: 0, y: 0 };
     },
     mounted() {
         this.init();
@@ -472,20 +474,28 @@ export default {
                         } else {
                             this.draggingAssignmentIds[data.id] = true;
                         }
+
                     }
 
-                    this.dragOffset = false;
+                    this.dragOffset.x = 0;
+                    this.dragOffset.y = 0;
                     this.dragging = true;
                 },
                 onmove: (event) => {
-                    const x = (this.dragOffset ? this.dragOffset.x : 0) + event.dx;
-                    const y = (this.dragOffset ? this.dragOffset.y : 0) + event.dy;
+                    const x = (this.dragOffset.x ? this.dragOffset.x : 0) + event.dx;
+                    const y = (this.dragOffset.y ? this.dragOffset.y : 0) + event.dy;
 
-                    this.dragOffset = { x, y };
+                    this.dragOffset.x = x;
+                    this.dragOffset.y = y;
+
+                    const $draggedBars = $('.gantt-bar.dragging');
+                    $draggedBars.each((index, bar) => {
+                        var vm = bar.__vue__;
+                        vm.$emit('drag-offset-update', this.dragOffset);
+                    });
                 },
                 onend: (event) => {
                     this.dragging = false;
-                    this.dragOffset = false;
                 },
             }).actionChecker(function (pointer, event, action) {
                 if (event.button !== 0) {
