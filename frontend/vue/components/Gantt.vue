@@ -163,27 +163,18 @@
                                     </div>
                                 </div>
                                 <gantt-drag-select item-selector=".bar" v-model="selectedAssignmentIds">
-                                    <div class="row-line" :data-tail-number="tail.number" v-for="tail in tails">
-                                        <gantt-bar
-                                            :key="assignment.id"
-                                            :data="assignment"
-                                            :start-date="startDate"
-                                            :timezone="timezone"
-                                            :selected="!!selectedAssignmentIds[assignment.id]"
-                                            v-for="assignment in getTailAssignments(tail)">
-                                        </gantt-bar>
-                                        <gantt-bar
-                                            :key="assignment.id"
-                                            :data="assignment"
-                                            :start-date="startDate"
-                                            :timezone="timezone"
-                                            :selected="!!selectedAssignmentIds[assignment.id]"
-                                            :dragging="true"
-                                            :drag-offset="dragOffset"
-                                            v-for="assignment in getTailAssignments(tail)"
-                                            v-if="dragging && draggingAssignmentIds[assignment.id]">
-                                        </gantt-bar>
-                                    </div>
+                                    <gantt-row
+                                        :key="tail.id"
+                                        :row-object="tail"
+                                        :start-date="startDate"
+                                        :timezone="timezone"
+                                        :objects="getTailAssignments(tail)"
+                                        :selected-ids="selectedAssignmentIds"
+                                        :dragging="dragging"
+                                        :drag-offset="dragOffset"
+                                        :dragging-ids="draggingAssignmentIds"
+                                        v-for="tail in tails">
+                                    </gantt-row>
                                 </gantt-drag-select>
                                 <div id="reserves" class="hidden"></div>
                             </div>
@@ -207,29 +198,19 @@
                                     </div>
                                 </div>
                                 <gantt-drag-select item-selector=".bar" v-model="selectedTemplateIds">
-                                    <div class="row-line" :data-line="line.id" v-for="line in lines">
-                                        <gantt-bar
-                                            :key="template.id"
-                                            :data="template"
-                                            :start-date="startDate"
-                                            :timezone="timezone"
-                                            :selected="!!selectedTemplateIds[template.id]"
-                                            :assigned="isAssigned(template)"
-                                            v-for="template in getLineTemplates(line)">
-                                        </gantt-bar>
-                                        <gantt-bar
-                                            :key="template.id"
-                                            :data="template"
-                                            :start-date="startDate"
-                                            :timezone="timezone"
-                                            :selected="!!selectedTemplateIds[template.id]"
-                                            :assigned="isAssigned(template)"
-                                            :dragging="true"
-                                            :drag-offset="dragOffset"
-                                            v-for="template in getLineTemplates(line)"
-                                            v-if="dragging && draggingTemplateIds[template.id]">
-                                        </gantt-bar>
-                                    </div>
+                                    <gantt-row
+                                        :key="line.id"
+                                        :row-object="line"
+                                        :start-date="startDate"
+                                        :timezone="timezone"
+                                        :objects="getLineTemplates(line)"
+                                        :selected-ids="selectedTemplateIds"
+                                        :dragging="dragging"
+                                        :drag-offset="dragOffset"
+                                        :dragging-ids="draggingTemplateIds"
+                                        :assigned-ids="assignedFlightIds"
+                                        v-for="line in lines">
+                                    </gantt-row>
                                 </gantt-drag-select>
                             </div>
                         </div>
@@ -277,7 +258,7 @@ import Utils from '@frontend/js/utils.js';
 import Cookies from 'js-cookie';
 import moment from 'moment-timezone';
 
-import GanttBar from '@frontend_components/GanttBar.vue';
+import GanttRow from '@frontend_components/GanttRow.vue';
 import GanttDragSelect from '@frontend_components/GanttDragSelect.vue';
 
 export default {
@@ -293,7 +274,7 @@ export default {
         'window-at-end', 'start-param-exists', 'end-param-exists', 
     ],
     components: {
-        'gantt-bar': GanttBar,
+        'gantt-row': GanttRow,
         'gantt-drag-select': GanttDragSelect,
     },
     data() {
@@ -416,9 +397,6 @@ export default {
         },
         getTailAssignments(tail) {
             return this.assignments[tail.number] ? this.assignments[tail.number] : {};
-        },
-        isAssigned(flight) {
-            return !!this.assignedFlightIds[flight.id];
         },
         loadData(assignmentsOnly = false) {
             this.loading = true;
