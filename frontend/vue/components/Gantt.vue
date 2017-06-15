@@ -21,15 +21,15 @@
                     <a :class="{ 'btn btn-white': true, 'active': mode == 1 }"
                         :href="ganttUrl + '?mode=1&start=' + startTmstmp">3 Hours</a>
                     <a :class="{ 'btn btn-white': true, 'active': mode == 2 }"
-                        :href="ganttUrl + '?mode=1&start=' + startTmstmp">6 Hours</a>
+                        :href="ganttUrl + '?mode=2&start=' + startTmstmp">6 Hours</a>
                     <a :class="{ 'btn btn-white': true, 'active': mode == 3 }"
-                        :href="ganttUrl + '?mode=1&start=' + startTmstmp">12 Hours</a>
+                        :href="ganttUrl + '?mode=3&start=' + startTmstmp">12 Hours</a>
                     <a :class="{ 'btn btn-white': true, 'active': mode == 4 }"
-                        :href="ganttUrl + '?mode=1&start=' + startTmstmp">24 Hours</a>
+                        :href="ganttUrl + '?mode=4&start=' + startTmstmp">24 Hours</a>
                     <a :class="{ 'btn btn-white': true, 'active': mode == 5 }"
-                        :href="ganttUrl + '?mode=1&start=' + startTmstmp">3 Days</a>
+                        :href="ganttUrl + '?mode=5&start=' + startTmstmp">3 Days</a>
                     <a :class="{ 'btn btn-white': true, 'active': mode == 6 }"
-                        :href="ganttUrl + '?mode=1&start=' + startTmstmp">7 Days</a>
+                        :href="ganttUrl + '?mode=6&start=' + startTmstmp">7 Days</a>
                 </div>
                 <div class="page-control">
                     <a href="javascript:;" id="btn-prev-time-window" class="btn btn-white"
@@ -309,6 +309,7 @@ export default {
             draggingAssignmentIds: {},
             draggingTemplateIds: {},
             dragging: false,
+            dragOffset: { x: 0, y: 0 },
             // 2-way bound models
             revision: 0,
             timezone: timezoneOffset ? timezoneOffset : 0,
@@ -333,9 +334,6 @@ export default {
             const now = new Date();
             return (now - this.startDate) / 1000 / this.ganttLengthSeconds * 100;
         },
-    },
-    created() {
-        this.dragOffset = { x: 0, y: 0 };
     },
     mounted() {
         this.init();
@@ -477,12 +475,6 @@ export default {
 
                     this.dragOffset.x = x;
                     this.dragOffset.y = y;
-
-                    const $draggedBars = $('.gantt-bar.dragging');
-                    $draggedBars.each((index, bar) => {
-                        var vm = bar.__vue__;
-                        vm.$emit('drag-offset-update', this.dragOffset);
-                    });
                 },
                 onend: (event) => {
                     this.dragging = false;
