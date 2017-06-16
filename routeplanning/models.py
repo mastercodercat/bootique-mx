@@ -246,7 +246,8 @@ class Hobbs(models.Model):
                 .filter(start_time__lte=datetime) \
                 .filter(revision=revision)
         else:
-            assignments_after = Assignment.objects.all()
+            assignments_after = Assignment.objects.filter(start_time__lte=datetime) \
+                .filter(revision=revision)
 
         for assignment in assignments_after:
             projected_hobbs_value += assignment.length / 3600
