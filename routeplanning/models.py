@@ -244,13 +244,18 @@ class Hobbs(models.Model):
         if latest_actual_hobbs:
             assignments_after = Assignment.objects.filter(start_time__gt=latest_actual_hobbs.hobbs_time) \
                 .filter(start_time__lte=datetime) \
-                .filter(revision=revision)
+                .filter(tail=tail) \
+                .filter(revision=revision) \
+                .select_related('flight')
         else:
             assignments_after = Assignment.objects.filter(start_time__lte=datetime) \
-                .filter(revision=revision)
+                .filter(tail=tail) \
+                .filter(revision=revision) \
+                .select_related('flight')
 
         for assignment in assignments_after:
-            projected_hobbs_value += assignment.length / 3600
+            if assignment.flight:
+                projected_hobbs_value += assignment.flight.length / 3600
 
         return projected_hobbs_value
 
