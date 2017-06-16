@@ -164,10 +164,14 @@
                                         :start-date="startDate"
                                         :timezone="timezone"
                                         :objects="getTailAssignments(tail)"
+                                        :shadows="getTailShadows(tail)"
                                         :selected-ids="selectedAssignmentIds"
                                         :dragging="dragging"
                                         :drag-offset="dragOffset"
                                         :dragging-ids="draggingAssignmentIds"
+                                        @drag-enter="handleDragEnterAssignmentRow"
+                                        @drag-leave="handleDragLeaveAssignmentRow"
+                                        @drop-on="handleDropOnAssignmentRow"
                                         v-for="tail in tails">
                                     </gantt-row>
                                 </gantt-drag-select>
@@ -313,6 +317,7 @@ export default {
             dragOffset: { x: 0, y: 0 },
             draggingStatusPrototype: false,
             draggingStatus: 0,
+            dragoverRowShadows: {},
             // 2-way bound models
             revision: 0,
             timezone: timezoneOffset ? timezoneOffset : 0,
@@ -399,6 +404,9 @@ export default {
         getTailAssignments(tail) {
             return this.assignments[tail.number] ? this.assignments[tail.number] : {};
         },
+        getTailShadows(tail) {
+            return this.dragoverRowShadows[tail.id] ? this.dragoverRowShadows[tail.id] : [];
+        },
         loadData(assignmentsOnly = false) {
             this.loading = true;
 
@@ -432,7 +440,7 @@ export default {
                     const templates = {};
                     data.templates.forEach((template) => {
                         if (!(template.line_id in templates)) {
-                            templates[template.line_id] = {}
+                            templates[template.line_id] = {};
                         }
                         templates[template.line_id][template.id] = template;
                     });
@@ -703,7 +711,94 @@ export default {
                     this.loadData(true);
                 }
             });
-        }
+        },
+        getTailIndex(tailNumber) {
+            for (const index in this.tails) {
+                const _tail = this.tails[index];
+                if (tailNumber == _tail.number) {
+                    return parseInt(index);
+                }
+            }
+            return -1;
+        },
+        getLineIndex(lineId) {
+            for (const index in this.lines) {
+                const line = this.lines[index];
+                if (lineId == line.id) {
+                    return parseInt(index);
+                }
+            }
+            return -1;
+        },
+        getAssignmentById(id) {
+            for (const tailNumber in this.assignments) {
+                if (this.assignments[tailNumber][id]) {
+                    return this.assignments[tailNumber][id];
+                }
+            }
+            return null;
+        },
+        getTemplateById(id) {
+            for (const lineId in this.templates) {
+                if (this.templates[lineId][id]) {
+                    return this.templates[lineId][id];
+                }
+            }
+            return null;
+        },
+        /* in handleDrag* methods, object should be dragged assignment/template object and null for prototypes,
+         * status should be the status type value of the prototype and null for assignments/templates)
+         */
+        handleDragEnterAssignmentRow(tail, object, status) {
+            const tailIndex = this.getTailIndex(tail.number);
+            const dragoverRowShadows = {};
+
+            if (object) {   /* Dragging assignments or templates */
+                if (object.status) {    /* Dragging assignments */
+                    const dragstartRowIndex = this.getTailIndex(object.tail);
+                    for (const id in this.selectedAssignmentIds) {
+                        const assignment = this.getAssignmentById(id);
+                        if (!assignment) {
+                            continue;
+                        }
+
+                        const srcRowIndex = this.getTailIndex(assignment.tail);
+                        const dragOverTailIndex = tailIndex - dragstartRowIndex + srcRowIndex;
+                        if (dragOverTailIndex >= 0 && dragOverTailIndex < this.tails.length) {
+                            const tailId = this.tails[dragOverTailIndex].id;
+                            const shadows = dragoverRowShadows[tailId] ? dragoverRowShadows[tailId] : [];
+                            shadows.push(assignment);
+                            dragoverRowShadows[tailId] = shadows;
+                        }
+                    }
+                } else {    /* Dragging templates */
+                    const dragstartRowIndex = this.getLineIndex(object.line_id);
+                    for (const id in this.selectedTemplateIds) {
+                        const template = this.getTemplateById(id);
+                        if (!template) {
+                            continue;
+                        }
+
+                        const srcRowIndex = this.getLineIndex(template.line_id);
+                        const dragOverTailIndex = tailIndex - dragstartRowIndex + srcRowIndex;
+                        if (dragOverTailIndex >= 0 && dragOverTailIndex < this.tails.length) {
+                            const tailId = this.tails[dragOverTailIndex].id;
+                            const shadows = dragoverRowShadows[tailId] ? dragoverRowShadows[tailId] : [];
+                            shadows.push(template);
+                            dragoverRowShadows[tailId] = shadows;
+                        }
+                    }
+                }
+                this.dragoverRowShadows = dragoverRowShadows;
+            } else {    /* Dragging status prototype */
+                // Status prototype has no dragging shadows by design so nothing to do here
+            }
+        },
+        handleDragLeaveAssignmentRow(tail) {
+        },
+        handleDropOnAssignmentRow(tail) {
+            this.dragoverRowShadows = {};
+        },
     },
     watch: {
         revision: function(val) {
