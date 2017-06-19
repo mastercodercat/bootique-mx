@@ -69,7 +69,7 @@ export default {
             if ($ganttBar.length) {
                 return $ganttBar[0].__vue__;
             } else {
-                const $statusPrototype = $(event.relatedTarget).closest('.status-prototype');
+                const $statusPrototype = $(barElement);
                 return $statusPrototype[0].__vue__;
             }
         },
