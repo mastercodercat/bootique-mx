@@ -218,36 +218,11 @@
             </div>
         </div>
         <!-- Unscheduled Flight modal -->
-        <div class="modal inmodal fade" id="unscheduled-flight-modal" tabindex="-1" role="dialog" aria-hidden="true">
-            <div class="modal-dialog modal-md">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
-                        <h5 class="modal-title">Create Unscheduled Flight</h5>
-                    </div>
-                    <div class="modal-body">
-                        <form class="form-horizontal">
-                            <div class="form-group">
-                                <label class="col-lg-2 control-label">Origin</label>
-                                <div class="col-lg-10">
-                                    <input type="origin" class="form-control unscheduled-flight-origin" placeholder="Origin">
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label class="col-lg-2 control-label">Destination</label>
-                                <div class="col-lg-10">
-                                    <input type="destination" class="form-control unscheduled-flight-destination" placeholder="Destination">
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-white" data-dismiss="modal">Cancel</button>
-                        <button type="button" class="btn btn-primary btn-save-unscheduled-flight">Save</button>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <gantt-unscheduled-flight-modal
+            ref="unscheduledFlightModal"
+            @submit="createUnscheduledFlight"
+            @cancel="cancelUnscheduledFlightCreate">
+        </gantt-unscheduled-flight-modal>
     </div>
 </template>
 
@@ -262,6 +237,7 @@ import GanttDragSelect from '@frontend_components/GanttDragSelect.vue';
 import GanttMaintenanceBarPrototype from '@frontend_components/GanttMaintenanceBarPrototype.vue';
 import GanttUnscheduledFlightBarPrototype from '@frontend_components/GanttUnscheduledFlightBarPrototype.vue';
 import GanttRemoveDropzone from '@frontend_components/GanttRemoveDropzone.vue';
+import GanttUnscheduledFlightModal from '@frontend_components/GanttUnscheduledFlightModal.vue';
 
 export default {
     name: 'Gantt',
@@ -281,6 +257,7 @@ export default {
         'gantt-maintenance-bar-prototype': GanttMaintenanceBarPrototype,
         'gantt-unscheduled-flight-bar-prototype': GanttUnscheduledFlightBarPrototype,
         'gantt-remove-dropzone': GanttRemoveDropzone,
+        'gantt-unscheduled-flight-modal': GanttUnscheduledFlightModal,
     },
     data() {
         const timezoneOffset = Cookies.get('gantt-timezone-offset');
@@ -318,6 +295,7 @@ export default {
             draggingStatusPrototype: false,
             draggingStatus: 0,
             dragoverRowShadows: {},
+            unscheduledFlightCreateData: {},
             // 2-way bound models
             revision: 0,
             timezone: timezoneOffset ? timezoneOffset : 0,
@@ -700,6 +678,8 @@ export default {
             });
         },
         handleDropOnRemoveZone(event) {
+            this.dragoverRowShadows = {};
+
             const assignmentIds = Object.keys(this.selectedAssignmentIds);
             this.$http.post(this.removeAssignmentApiUrl, {
                 assignment_data: JSON.stringify(assignmentIds),
@@ -794,10 +774,87 @@ export default {
                 // Status prototype has no dragging shadows by design so nothing to do here
             }
         },
-        handleDragLeaveAssignmentRow(tail) {
+        handleDragLeaveAssignmentRow(tail, object, status) {
         },
-        handleDropOnAssignmentRow(tail) {
+        handleDropOnAssignmentRow(tail, object, status, event, rowEl) {
             this.dragoverRowShadows = {};
+
+            if (object) {
+                if (object.status) {    /* Assignment move */
+                    console.log('assignment move')///
+                } else {                /* Template flight assign */
+                    console.log('template assign')///
+                }
+            } else {
+                const $row = $(rowEl);
+                const x = event.dragEvent.clientX - $row.offset().left;
+                var diffSeconds = this.ganttLengthSeconds / $row.width() * x;
+                diffSeconds = Math.round(diffSeconds / 300) * 300;
+
+                var startTime = new Date(this.startDate);
+                startTime.setSeconds(startTime.getSeconds() + diffSeconds);
+                startTime.setMinutes(0);
+                startTime.setSeconds(0);
+                var endTime = new Date(startTime.getTime() + 3600000);
+
+                if (status == 3) {
+                    this.unscheduledFlightCreateData = {
+                        tail,
+                        status,
+                        startTime,
+                        endTime,
+                    };
+                    this.$refs.unscheduledFlightModal.showModal();
+                } else {
+                    this.$http.post(this.assignStatusApiUrl, {
+                        tail: tail.number,
+                        status: status,
+                        start_time: startTime.toISOString(),
+                        end_time: endTime.toISOString(),
+                        revision: this.revision,
+                    })
+                    .then((response) => {
+                        const { data } = response;
+                        if (data.success) {
+                            this.loadData(true);
+                        }
+                    });
+                }
+            }
+        },
+        createUnscheduledFlight(origin, destination) {
+            if (!this.unscheduledFlightCreateData.tail) {
+                throw new Exception('Invalid unscheduled flight data');
+            }
+
+            var data = {
+                tail: this.unscheduledFlightCreateData.tail.number,
+                status: this.unscheduledFlightCreateData.status,
+                start_time: this.unscheduledFlightCreateData.startTime.toISOString(),
+                end_time: this.unscheduledFlightCreateData.endTime.toISOString(),
+                origin,
+                destination,
+                revision: this.revision
+            };
+
+            this.$refs.unscheduledFlightModal.disableSubmit();
+
+            this.$http.post(this.assignStatusApiUrl, data)
+            .then((response) => {
+                this.$refs.unscheduledFlightModal.enableSubmit();
+                this.$refs.unscheduledFlightModal.hideModal();
+
+                const { data } = response;
+                if (data.success) {
+                    this.loadData(true);
+                }
+            })
+            .catch(() => {
+                this.$refs.unscheduledFlightModal.enableSubmit();
+            });
+        },
+        cancelUnscheduledFlightCreate() {
+            this.unscheduledFlightCreateData = {};
         },
     },
     watch: {

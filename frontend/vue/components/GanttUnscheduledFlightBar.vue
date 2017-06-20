@@ -56,6 +56,7 @@ export default {
         componentClass() {
             return {
                 'bar status-bar unscheduled-flight': true,
+                'selected': this.selected,
                 'hobbs-green': this.hobbs < 15 && this.hobbs >= 8,
                 'hobbs-yellow': this.hobbs < 8 && this.hobbs >= 0,
                 'hobbs-red': this.hobbs < 0,
@@ -75,7 +76,6 @@ export default {
         fieldHobbsLeftClass() {
             return {
                 'field field-hobbs-left': true,
-                'selected': this.selected,
                 'hobbs-green': this.hobbs < 15 && this.hobbs >= 8,
                 'hobbs-yellow': this.hobbs < 8 && this.hobbs >= 0,
                 'hobbs-red': this.hobbs < 0,

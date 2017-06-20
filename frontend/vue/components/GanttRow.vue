@@ -56,7 +56,7 @@ export default {
             },
             ondrop: (event) => {
                 const vm = this.getVueInstanceFromBar(event.relatedTarget);
-                this.$emit('drop-on', this.rowObject, vm.data, vm.status);
+                this.$emit('drop-on', this.rowObject, vm.data, vm.status, event, this.$el);
             },
         });
     },
