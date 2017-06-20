@@ -165,6 +165,7 @@
                                         :timezone="timezone"
                                         :objects="getTailAssignments(tail)"
                                         :shadows="getTailShadows(tail)"
+                                        :unit="unit"
                                         :selected-ids="selectedAssignmentIds"
                                         :dragging="dragging"
                                         :drag-offset="dragOffset"
@@ -172,6 +173,7 @@
                                         @drag-enter="handleDragEnterAssignmentRow"
                                         @drag-leave="handleDragLeaveAssignmentRow"
                                         @drop-on="handleDropOnAssignmentRow"
+                                        @resized="handleResizeBar"
                                         v-for="tail in tails">
                                     </gantt-row>
                                 </gantt-drag-select>
@@ -203,6 +205,7 @@
                                         :start-date="startDate"
                                         :timezone="timezone"
                                         :objects="getLineTemplates(line)"
+                                        :unit="unit"
                                         :selected-ids="selectedTemplateIds"
                                         :dragging="dragging"
                                         :drag-offset="dragOffset"
@@ -498,12 +501,24 @@ export default {
                 onend: (event) => {
                     this.dragging = false;
                 },
-            }).actionChecker(function (pointer, event, action) {
+            })
+            .actionChecker(function (pointer, event, action) {
+                const pos = event.offsetX / $(event.target).closest('.bar').width();
+                if (pos <= 0.15 || pos >= 0.85) {
+                    action.name = 'resize';
+                    action.edges = {};
+                    if (pos <= 0.15) {
+                        action.edges.left = true;
+                    } else {
+                        action.edges.right = true;
+                    }
+                }
                 if (event.button !== 0) {
                     return null;
                 }
                 return action;
-            }).on('click', (event) => {
+            })
+            .on('click', (event) => {
                 const $bar = $(event.target);
                 const vm = $bar.closest('.gantt-bar')[0].__vue__;
                 const data = vm.data;
@@ -553,7 +568,8 @@ export default {
                 onend: (event) => {
                     this.draggingStatusPrototype = false;
                 },
-            }).actionChecker(function (pointer, event, action) {
+            })
+            .actionChecker(function (pointer, event, action) {
                 if (event.button !== 0) {
                     return null;
                 }
@@ -856,6 +872,18 @@ export default {
                         }
                     }
 
+                    flightData.sort((data1, data2) => {
+                        var flight1 = this.getTemplateById(data1.flight);
+                        var flight2 = this.getTemplateById(data2.flight);
+                        if (flight1.departure_datetime > flight2.departure_datetime) {
+                            return 1;
+                        } else if (flight1.departure_datetime < flight2.departure_datetime) {
+                            return -1;
+                        } else {
+                            return 0;
+                        }
+                    });
+
                     this.$http.post(this.assignFlightApiUrl, {
                         flight_data: JSON.stringify(flightData),
                         revision: this.revision,
@@ -904,6 +932,35 @@ export default {
                     });
                 }
             }
+        },
+        handleResizeBar(assignment_id, position, diff_seconds) {
+            this.$http.post(this.resizeAssignmentApiUrl, {
+                assignment_id,
+                position,
+                diff_seconds,
+                revision: this.revision,
+            })
+            .then((response) => {
+                const { data } = response;
+                if (data.success) {
+                    const startTime = new Date(data.start_time);
+                    const endTime = new Date(data.end_time);
+
+                    for (const tailNumber in this.assignments) {
+                        if (this.assignments[tailNumber][assignment_id]) {
+                            this.$set(this.assignments[tailNumber][assignment_id], 'start_time', startTime.toISOString());
+                            this.$set(this.assignments[tailNumber][assignment_id], 'end_time', endTime.toISOString());
+                            if (this.assignments[tailNumber][assignment_id].departure_datetime) {
+                                this.$set(this.assignments[tailNumber][assignment_id], 'departure_datetime', startTime.toISOString());
+                                this.$set(this.assignments[tailNumber][assignment_id], 'arrival_datetime', endTime.toISOString());
+                            }
+                            break;
+                        }
+                    }
+
+                    this.loadData(true);
+                }
+            });
         },
         createUnscheduledFlight(origin, destination) {
             if (!this.unscheduledFlightCreateData.tail) {

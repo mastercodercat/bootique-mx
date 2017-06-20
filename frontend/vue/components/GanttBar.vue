@@ -5,19 +5,23 @@
                 :assignment="data"
                 :start-date="startDate"
                 :timezone="timezone"
+                :unit="unit"
                 :selected="selected"
                 :dragging="dragging"
-                :drag-offset="internalDragOffset">
+                :drag-offset="internalDragOffset"
+                @resized="handleResizeBar">
             </gantt-maintenance-bar>
         </template>
         <template v-else-if="data.status == 3">
             <gantt-unscheduled-flight-bar
-                :flight="data"
+                :assignment="data"
                 :start-date="startDate"
                 :timezone="timezone"
+                :unit="unit"
                 :selected="selected"
                 :dragging="dragging"
-                :drag-offset="internalDragOffset">
+                :drag-offset="internalDragOffset"
+                @resized="handleResizeBar">
             </gantt-unscheduled-flight-bar>
         </template>
         <template v-else>
@@ -41,7 +45,7 @@ import GanttUnscheduledFlightBar from '@frontend_components/GanttUnscheduledFlig
 
 export default {
     name: 'GanttBar',
-    props: ['data', 'start-date', 'timezone', 'selected', 'assigned', 'dragging', 'drag-offset'],
+    props: ['data', 'start-date', 'timezone', 'unit', 'selected', 'assigned', 'dragging', 'drag-offset'],
     components: {
         'gantt-flight-bar': GanttFlightBar,
         'gantt-maintenance-bar': GanttMaintenanceBar,
@@ -56,6 +60,11 @@ export default {
         this.$on('drag-offset-update', (offset) => {
             this.internalDragOffset = offset;
         });
+    },
+    methods: {
+        handleResizeBar(assignment_id, position, diff_seconds) {
+            this.$emit('resized', assignment_id, position, diff_seconds);
+        },
     },
 }
 </script>

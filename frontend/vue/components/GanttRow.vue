@@ -5,8 +5,10 @@
             :data="object"
             :start-date="startDate"
             :timezone="timezone"
+            :unit="unit"
             :selected="!!selectedIds[object.id]"
             :assigned="isAssigned(object)"
+            @resized="handleResizeBar"
             v-for="object in objects">
         </gantt-bar>
         <gantt-bar
@@ -37,7 +39,7 @@ import GanttBarShadow from '@frontend_components/GanttBarShadow.vue';
 
 export default {
     name: 'GanttRow',
-    props: ['row-object', 'start-date', 'timezone', 'objects', 'shadows',
+    props: ['row-object', 'start-date', 'timezone', 'objects', 'shadows', 'unit',
         'selected-ids', 'dragging', 'drag-offset', 'dragging-ids', 'assigned-ids'],
     components: {
         'gantt-bar': GanttBar,
@@ -72,6 +74,9 @@ export default {
                 const $statusPrototype = $(barElement);
                 return $statusPrototype[0].__vue__;
             }
+        },
+        handleResizeBar(assignment_id, position, diff_seconds) {
+            this.$emit('resized', assignment_id, position, diff_seconds);
         },
     }
 }

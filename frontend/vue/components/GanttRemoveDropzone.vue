@@ -16,7 +16,7 @@ export default {
         };
     },
     mounted() {
-        interact('.drop-to-remove-area').dropzone({
+        interact(this.$el).dropzone({
             accept: this.acceptableSelector,
             ondragenter: (event) => {
                 this.draggingOver = true;
