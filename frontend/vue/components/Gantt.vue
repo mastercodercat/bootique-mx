@@ -376,6 +376,29 @@ export default {
                 return this.formatDate(date, 'HH:mm');
             }
         },
+        alertErrorIfAny(response, singular) {
+            if (singular) {
+                if (response.duplication) {
+                    alert('Timeframe overlapped with other assignments');
+                } else if (response.physically_invalid) {
+                    alert('Physically invalid assignment');
+                }
+            } else {
+                var errorOccurred = false;
+                var errors = "Some of assignments are not placed due to following errors:";
+                if (response.duplication) {
+                    errorOccurred = true;
+                    errors += "\n- Overlapped timeframe";
+                }
+                if (response.physically_invalid) {
+                    errorOccurred = true;
+                    errors += "\n- Physically invalid assignment";
+                }
+                if (errorOccurred) {
+                    alert(errors);
+                }
+            }
+        },
         getLineTemplates(line) {
             return this.templates[line.id] ? this.templates[line.id] : {};
         },
@@ -386,7 +409,9 @@ export default {
             return this.dragoverRowShadows[tail.id] ? this.dragoverRowShadows[tail.id] : [];
         },
         loadData(assignmentsOnly = false) {
-            this.loading = true;
+            if (!assignmentsOnly) {
+                this.loading = true;
+            }
 
             this.$http.get(this.loadDataApiUrl, {
                 params: {
@@ -777,13 +802,71 @@ export default {
         handleDragLeaveAssignmentRow(tail, object, status) {
         },
         handleDropOnAssignmentRow(tail, object, status, event, rowEl) {
+            const tailIndex = this.getTailIndex(tail.number);
+
             this.dragoverRowShadows = {};
 
             if (object) {
                 if (object.status) {    /* Assignment move */
-                    console.log('assignment move')///
+                    const assignmentData = [];
+                    const dragstartRowIndex = this.getTailIndex(object.tail);
+                    for (const id in this.selectedAssignmentIds) {
+                        const assignment = this.getAssignmentById(id);
+                        if (!assignment) {
+                            continue;
+                        }
+
+                        const srcRowIndex = this.getTailIndex(assignment.tail);
+                        const dragOverTailIndex = tailIndex - dragstartRowIndex + srcRowIndex;
+                        if (dragOverTailIndex >= 0 && dragOverTailIndex < this.tails.length) {
+                            assignmentData.push({
+                                assignment_id: id,
+                                tail: this.tails[dragOverTailIndex].number,
+                            });
+                        }
+                    }
+
+                    this.$http.post(this.moveAssignmentApiUrl, {
+                        assignment_data: JSON.stringify(assignmentData),
+                        revision: this.revision,
+                    })
+                    .then((response) => {
+                        const { data } = response;
+                        if (data.success) {
+                            this.loadData(true);
+                        }
+                        this.alertErrorIfAny(data, assignmentData.length == 1);
+                    });
                 } else {                /* Template flight assign */
-                    console.log('template assign')///
+                    const flightData = [];
+                    const dragstartRowIndex = this.getLineIndex(object.line_id);
+                    for (const id in this.selectedTemplateIds) {
+                        const template = this.getTemplateById(id);
+                        if (!template) {
+                            continue;
+                        }
+
+                        const srcRowIndex = this.getLineIndex(template.line_id);
+                        const dragOverTailIndex = tailIndex - dragstartRowIndex + srcRowIndex;
+                        if (dragOverTailIndex >= 0 && dragOverTailIndex < this.tails.length) {
+                            flightData.push({
+                                flight: id,
+                                tail: this.tails[dragOverTailIndex].number,
+                            });
+                        }
+                    }
+
+                    this.$http.post(this.assignFlightApiUrl, {
+                        flight_data: JSON.stringify(flightData),
+                        revision: this.revision,
+                    })
+                    .then((response) => {
+                        const { data } = response;
+                        if (data.success) {
+                            this.loadData(true);
+                        }
+                        this.alertErrorIfAny(data, flightData.length == 1);
+                    });
                 }
             } else {
                 const $row = $(rowEl);
