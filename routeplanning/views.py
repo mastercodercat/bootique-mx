@@ -809,7 +809,7 @@ def api_resize_assignment(request):
     result['end_time'] = assignment.end_time.isoformat()
     return Response(result)
 
-def str_to_datetime(str):
+def str_to_datetime(str): # pragma: no cover
     parts = str.split(' ')
     date_parts = parts[0].split('/')
     date = int(date_parts[0])
