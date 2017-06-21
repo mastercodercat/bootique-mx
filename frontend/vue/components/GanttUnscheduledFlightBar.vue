@@ -126,8 +126,10 @@ export default {
             const unitWidth = $row.width() / (14 * 24 * 3600) * this.unit;
             var dt = parseFloat(this.deltaWidth) / unitWidth * this.unit;
 
-            this.$emit('resized', this.assignment.id, this.pos, dt);
+            this.$emit('resized', this.assignment.id, this.pos, dt, this);
         });
+
+        this.$on('cancel-resize', this.handleCancelResize);
     },
     watch: {
         'assignment.start_time': function() {
@@ -148,6 +150,10 @@ export default {
             }
             _date.setHours(parseInt(_date.getHours()) + parseInt(this.timezone));
             return moment(_date).tz('UTC').format(dateFormat);
+        },
+        handleCancelResize() {
+            this.barWidth = 0;
+            this.transform = '';
         },
     }
 }

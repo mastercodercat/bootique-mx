@@ -62,8 +62,8 @@ export default {
         });
     },
     methods: {
-        handleResizeBar(assignment_id, position, diff_seconds) {
-            this.$emit('resized', assignment_id, position, diff_seconds);
+        handleResizeBar(assignment_id, position, diff_seconds, vm) {
+            this.$emit('resized', assignment_id, position, diff_seconds, vm);
         },
     },
 }

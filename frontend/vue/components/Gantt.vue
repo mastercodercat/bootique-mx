@@ -973,7 +973,7 @@ export default {
                 }
             }
         },
-        handleResizeBar(assignment_id, position, diff_seconds) {
+        handleResizeBar(assignment_id, position, diff_seconds, vm) {
             this.$http.post(this.resizeAssignmentApiUrl, {
                 assignment_id,
                 position,
@@ -999,6 +999,8 @@ export default {
                     }
 
                     this.loadData(true);
+                } else {
+                    vm.$emit('cancel-resize')
                 }
             });
         },
