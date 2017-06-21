@@ -7,7 +7,6 @@ module.exports = {
         '../frontend/js/inspinia.js',
         '../frontend/js/datatables.js',
         '../frontend/js/utils.js',
-        '../frontend/js/gantt.js',
         '../frontend/js/vue-init.js',
     ],
 
