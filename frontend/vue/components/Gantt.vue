@@ -777,9 +777,11 @@ export default {
             if (object) {   /* Dragging assignments or templates */
                 if (object.status) {    /* Dragging assignments */
                     const dragstartRowIndex = this.getTailIndex(object.tail);
+
                     for (const id in this.selectedAssignmentIds) {
                         const assignment = this.getAssignmentById(id);
-                        if (!assignment) {
+
+                        if (!assignment || !assignment.flight_id) {
                             continue;
                         }
 
@@ -819,6 +821,7 @@ export default {
         },
         handleDropOnAssignmentRow(tail, object, status, event, rowEl) {
             const tailIndex = this.getTailIndex(tail.number);
+            let draggingStatusesOnly = true;
 
             this.dragoverRowShadows = {};
 
@@ -826,10 +829,16 @@ export default {
                 if (object.status) {    /* Assignment move */
                     const assignmentData = [];
                     const dragstartRowIndex = this.getTailIndex(object.tail);
+
                     for (const id in this.selectedAssignmentIds) {
                         const assignment = this.getAssignmentById(id);
+
                         if (!assignment) {
                             continue;
+                        }
+
+                        if (assignment.flight_id) {
+                            draggingStatusesOnly = false;
                         }
 
                         const srcRowIndex = this.getTailIndex(assignment.tail);
@@ -839,6 +848,37 @@ export default {
                                 assignment_id: id,
                                 tail: this.tails[dragOverTailIndex].number,
                             });
+                        }
+                    }
+
+                    if (draggingStatusesOnly) {
+                        /* Dragging only status assignments - which means dragging is horizontally free unlike flights */
+                        assignmentData.length = 0;
+
+                        const $row = $(rowEl);
+
+                        for (const id in this.selectedAssignmentIds) {
+                            const assignment = this.getAssignmentById(id);
+
+                            if (!assignment) {
+                                continue;
+                            }
+
+                            const srcRowIndex = this.getTailIndex(assignment.tail);
+                            const dragOverTailIndex = tailIndex - dragstartRowIndex + srcRowIndex;
+                            var startDiffSeconds = (new Date(assignment.start_time) - this.startDate) / 1000;
+                            startDiffSeconds = Math.round(startDiffSeconds / 300) * 300;
+                            var diffSeconds = this.ganttLengthSeconds / $row.width() * event.dragEvent.dx;
+                            diffSeconds = Math.round(diffSeconds / 300) * 300;
+                            var startTime = new Date(this.startDate.getTime() + startDiffSeconds * 1000 + diffSeconds * 1000);
+
+                            if (dragOverTailIndex >= 0 && dragOverTailIndex < this.tails.length) {
+                                assignmentData.push({
+                                    assignment_id: id,
+                                    tail: this.tails[dragOverTailIndex].number,
+                                    start_time: startTime.toISOString(),
+                                });
+                            }
                         }
                     }
 
