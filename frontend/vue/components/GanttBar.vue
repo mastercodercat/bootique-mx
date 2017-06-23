@@ -6,7 +6,7 @@
                 :start-date="startDate"
                 :timezone="timezone"
                 :unit="unit"
-                :selected="selected"
+                :selected="selected && !assigned"
                 :dragging="dragging"
                 :drag-offset="internalDragOffset"
                 @resized="handleResizeBar">
@@ -18,7 +18,7 @@
                 :start-date="startDate"
                 :timezone="timezone"
                 :unit="unit"
-                :selected="selected"
+                :selected="selected && !assigned"
                 :dragging="dragging"
                 :drag-offset="internalDragOffset"
                 @resized="handleResizeBar">
@@ -29,7 +29,7 @@
                 :flight="data"
                 :start-date="startDate"
                 :timezone="timezone"
-                :selected="selected"
+                :selected="selected && !assigned"
                 :assigned="assigned"
                 :dragging="dragging"
                 :drag-offset="internalDragOffset">
