@@ -499,6 +499,8 @@ export default {
                     this.dragOffset.y = y;
                 },
                 onend: (event) => {
+                    this.draggingAssignmentIds = {}
+                    this.draggingTemplateIds = {}
                     this.dragging = false;
                 },
             })

@@ -26,7 +26,8 @@
             :key="object.id"
             :data="object"
             :start-date="startDate"
-            v-for="object in shadows">
+            v-for="object in shadows"
+            v-if="dragging">
         </gantt-bar-shadow>
     </div>
 </template>
