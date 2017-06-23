@@ -23,9 +23,17 @@ plugins = [
 ];
 
 if (isProd) {
-    plugins.push(new webpack.optimize.UglifyJsPlugin({
-        sourceMap: false,
-    }))
+    plugins = plugins.concat([
+        new webpack.optimize.UglifyJsPlugin({
+            sourceMap: false,
+        }),
+
+        new webpack.DefinePlugin({
+            'process.env': {
+                NODE_ENV: '"production"'
+            }
+        }),
+    ]);
 }
 
 module.exports = {
