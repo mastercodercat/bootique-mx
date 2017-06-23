@@ -133,7 +133,11 @@ class Assignment(models.Model):
             return cls.objects.filter(revision=revision).filter(is_draft=True)
 
     @classmethod
-    def is_duplicated(cls, tail, start_time, end_time, exclude_check_assignment=None):
+    def get_revision_assignments_all(cls, revision):
+        return cls.objects.filter(revision=revision)
+
+    @classmethod
+    def is_duplicated(cls, revision, tail, start_time, end_time, exclude_check_assignment=None):
         query = cls.objects.filter(
             Q(tail=tail) &
             (
@@ -141,7 +145,8 @@ class Assignment(models.Model):
                 (Q(start_time__lt=end_time) & Q(end_time__gte=end_time)) |
                 (Q(start_time__gte=start_time) & Q(end_time__lte=end_time))
             )
-        )
+        ).filter(revision=revision)
+
         if exclude_check_assignment:
             query = query.exclude(pk=exclude_check_assignment.id)
         dup_count = query.count()
@@ -151,11 +156,12 @@ class Assignment(models.Model):
         return False
 
     @classmethod
-    def is_physically_valid(cls, tail, origin, destination, start_time, end_time, exclude_check_assignment=None):
+    def is_physically_valid(cls, revision, tail, origin, destination, start_time, end_time, exclude_check_assignment=None):
         query = cls.objects.filter(
                 Q(tail=tail) &
                 Q(end_time__lte=start_time)
             ) \
+            .filter(revision=revision) \
             .exclude(status=Assignment.STATUS_MAINTENANCE) \
             .order_by('-start_time') \
             .select_related('flight')
@@ -181,7 +187,7 @@ class Assignment(models.Model):
         return True
 
     @classmethod
-    def get_duplicated_assignments(cls, tail, start_time, end_time, exclude_check_assignment=None):
+    def get_duplicated_assignments(cls, revision, tail, start_time, end_time, exclude_check_assignment=None):
         query = cls.objects.filter(
             Q(tail=tail) &
             (
@@ -189,7 +195,7 @@ class Assignment(models.Model):
                 (Q(start_time__lt=end_time) & Q(end_time__gte=end_time)) |
                 (Q(start_time__gte=start_time) & Q(end_time__lte=end_time))
             )
-        )
+        ).filter(revision=revision)
         if exclude_check_assignment:
             query = query.exclude(pk=exclude_check_assignment.id)
         return query.all()

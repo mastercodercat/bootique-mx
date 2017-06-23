@@ -507,11 +507,12 @@ def api_assign_flight(request):
             tail = Tail.objects.get(number=tail_number)
             flight = Flight.objects.get(pk=flight_id)
 
-            if Assignment.is_duplicated(tail, flight.departure_datetime, flight.arrival_datetime):
+            if Assignment.is_duplicated(revision, tail, flight.departure_datetime, flight.arrival_datetime):
                 result['duplication'] = True
                 continue
 
             if not Assignment.is_physically_valid(
+                revision,
                 tail,
                 flight.origin, flight.destination,
                 flight.departure_datetime, flight.arrival_datetime
@@ -575,11 +576,11 @@ def api_assign_status(request):
     try:
         tail = Tail.objects.get(number=tail_number)
 
-        if Assignment.is_duplicated(tail, start_time, end_time):
+        if Assignment.is_duplicated(revision, tail, start_time, end_time):
             result['error'] = 'Duplicated assignment'
             return Response(result)
 
-        if status == Assignment.STATUS_UNSCHEDULED_FLIGHT and not Assignment.is_physically_valid(tail, origin, destination, start_time, end_time):
+        if status == Assignment.STATUS_UNSCHEDULED_FLIGHT and not Assignment.is_physically_valid(revision, tail, origin, destination, start_time, end_time):
             result['error'] = 'Physically invalid assignment'
             return Response(result)
 
@@ -707,13 +708,13 @@ def api_move_assignment(request):
             else:
                 end_time = start_time + (assignment.end_time - assignment.start_time)
 
-            if Assignment.is_duplicated(tail, start_time, end_time, assignment):
+            if Assignment.is_duplicated(revision, tail, start_time, end_time, assignment):
                 result['duplication'] = True
                 continue
 
             try:
                 if assignment.flight:
-                    if not Assignment.is_physically_valid(tail, assignment.flight.origin, assignment.flight.destination, start_time, end_time, assignment):
+                    if not Assignment.is_physically_valid(revision, tail, assignment.flight.origin, assignment.flight.destination, start_time, end_time, assignment):
                         result['physically_invalid'] = True
                         continue
             except ObjectDoesNotExist:
@@ -786,7 +787,7 @@ def api_resize_assignment(request):
             result['error'] = 'Start time cannot be later than end time'
             return Response(result, status=400)
 
-        if Assignment.is_duplicated(assignment.tail, start_time, end_time, assignment):
+        if Assignment.is_duplicated(revision, assignment.tail, start_time, end_time, assignment):
             result['error'] = 'Duplicated assignment'
             return Response(result)
 
@@ -1211,7 +1212,7 @@ def api_delete_revision(request):
         revision = None
 
     try:
-        revision_assignments = Assignment.get_revision_assignments(revision)
+        revision_assignments = Assignment.get_revision_assignments_all(revision)
         revision_assignments.delete()
 
         if revision:
