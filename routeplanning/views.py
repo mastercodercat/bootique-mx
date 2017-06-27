@@ -1060,6 +1060,7 @@ def api_coming_due_list(request):
         assignments = Assignment.objects.filter(start_time__gte=start_time) \
             .filter(start_time__lt=end_time) \
             .filter(revision=revision) \
+            .filter(tail=tail) \
             .select_related('flight') \
             .order_by('start_time')
         for assignment in assignments:

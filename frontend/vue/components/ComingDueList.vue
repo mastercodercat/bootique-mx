@@ -22,9 +22,9 @@
                 <tr v-for="hobbs in hobbsList">
                     <td>{{ formatHobbsDate(hobbs.day) }}</td>
                     <td>{{ hobbs.flight }}</td>
-                    <td>{{ hobbs.projected.toFixed(1) }}</td>
-                    <td>{{ hobbs.next_due.toFixed(1) }}</td>
-                    <td>{{ (hobbs.next_due - hobbs.projected).toFixed(1) }}</td>
+                    <td>{{ roundTo2(hobbs.projected) }}</td>
+                    <td>{{ roundTo2(hobbs.next_due) }}</td>
+                    <td>{{ roundTo2(hobbs.next_due - hobbs.projected) }}</td>
                     <td v-if="writable && hobbs.flight" style="padding-bottom: 3px;">
                         <button class="btn btn-primary btn-xs btn-edit-hobbs" @click="handleEditHobbs(hobbs)">
                             <i class="fa fa-fw fa-edit"></i>
@@ -57,6 +57,9 @@ export default {
         this.refresh();
     },
     methods: {
+        roundTo2(n) {
+            return +(Math.round(n + 'e+2') + 'e-2');
+        },
         formatHobbsDate(dateString) {
             if (!dateString) {
                 return '';

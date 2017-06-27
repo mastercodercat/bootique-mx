@@ -69,13 +69,16 @@ export default {
         to2Digits(n) {
             return n < 10 ? '0' + n : '' + n
         },
+        roundTo2(n) {
+            return +(Math.round(n + 'e+2') + 'e-2');
+        },
         setValues(data) {
             this.$refs.hobbsId.value = '';
             this.$refs.hobbsDate.value = this.to2Digits(data.date.getMonth() + 1) + '/' +
                 this.to2Digits(data.date.getDate()) + '/' + 
                 data.date.getFullYear();
             this.$refs.hobbsTime.value = this.to2Digits(data.date.getHours()) + ':' + this.to2Digits(data.date.getMinutes());
-            this.$refs.hobbsValue.value = data.projected;
+            this.$refs.hobbsValue.value = this.roundTo2(data.projected);
         },
         loadHobbs(hobbsId) {
             var apiUrl = this.loadHobbsApiBase.replace('0', hobbsId);
