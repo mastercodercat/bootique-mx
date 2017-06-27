@@ -81,8 +81,9 @@ export default {
         refresh() {
             this.$http.post(this.comingDueListApi, {
                 tail_id: this.tailId,
-                start: this.firstWeekDay().toISOString(),
-                days: 7,
+                // start: this.firstWeekDay().toISOString(),
+                start: this.anchorDate.toISOString(),
+                days: 1,
                 revision: this.revision,
             })
             .then((response) => {
