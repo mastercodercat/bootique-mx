@@ -30,6 +30,12 @@ $gantt-cover-padding-top: 105px;
         position: relative;
         background: #fff;
     }
+    .edit-tools-toggle {
+        position: absolute;
+        right: 5px;
+        top: 0;
+        z-index: 10;
+    }
     .gantt-labels {
         position: absolute;
         left: 0;
@@ -323,7 +329,7 @@ $gantt-cover-padding-top: 105px;
         top: 0;
         width: 100%;
         z-index: 1;
-        padding: 35px 25px;
+        padding: 35px 25px 0;
         &.disabled {
             pointer-events: none;
         }
@@ -488,6 +494,28 @@ $gantt-cover-padding-top: 105px;
     }
     .prototype {
         display: none;
+    }
+    /* Edit toolbar toggle animation */
+    .gantt-labels {
+        transition: top 0.3s;
+    }
+    .cover .cover-inner {
+        transition: padding-top 0.3s;
+    }
+    .table-wrapper {
+        transition: all 0.3s;
+    }
+    &.edit-tools-closed {
+        $closed-edit-toolbar-height: 35px;
+        .gantt-labels {
+            top: $closed-edit-toolbar-height;
+        }
+        .cover .cover-inner {
+            padding-top: $closed-edit-toolbar-height;
+        }
+        .table-wrapper {
+            z-index: 1;
+        }
     }
 }
 

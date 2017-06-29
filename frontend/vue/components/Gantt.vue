@@ -1,6 +1,6 @@
 <template>
     <div>
-        <div :class="{ 'gantt': true, 'loading': true, 'small-cells': days > 1, 'no-flight-number': days > 3 }" ref="gantt">
+        <div :class="componentClass" ref="gantt">
             <div class="clearfix m-b-md"><!-- Top controls -->
                 <div class="unit-control btn-group">
                     <a :class="{ 'btn btn-white': true, 'active': mode == 1 }"
@@ -68,6 +68,12 @@
                 </div>
             </div>
             <div class="cover-wrapper">
+                <div class="edit-tools-toggle">
+                    <a href="#" class="btn btn-link" @click.prevent="handleClickEditToolsToggle">
+                        <i class="fa fa-chevron-down" v-if="editToolsClosed"></i>
+                        <i class="fa fa-chevron-up" v-if="!editToolsClosed"></i>
+                    </a>
+                </div>
                 <div class="gantt-labels">
                     <div class="label-cell">
                         <a :href="addTailUrl" class="btn btn-primary btn-circle-xs" type="button" v-if="writable">
@@ -297,6 +303,7 @@ export default {
             draggingStatus: 0,
             dragoverRowShadows: {},
             unscheduledFlightCreateData: {},
+            editToolsClosed: false,
             // 2-way bound models
             revision: 0,
             timezone: timezoneOffset ? timezoneOffset : 0,
@@ -305,6 +312,14 @@ export default {
         }
     },
     computed: {
+        componentClass() {
+            return {
+                'gantt': true,
+                'small-cells': this.days > 1,
+                'no-flight-number': this.days > 3,
+                'edit-tools-closed': this.editToolsClosed,
+            };
+        },
         startDate() {
             return new Date(this.startTmstmp * 1000);
         },
@@ -719,6 +734,10 @@ export default {
             });
         },
         handleDropOnRemoveZone(event) {
+            if (this.editToolsClosed) {
+                return;
+            }
+
             this.dragoverRowShadows = {};
 
             const assignmentIds = Object.keys(this.selectedAssignmentIds);
@@ -1037,6 +1056,9 @@ export default {
         },
         cancelUnscheduledFlightCreate() {
             this.unscheduledFlightCreateData = {};
+        },
+        handleClickEditToolsToggle() {
+            this.editToolsClosed = !this.editToolsClosed;
         },
     },
     watch: {
