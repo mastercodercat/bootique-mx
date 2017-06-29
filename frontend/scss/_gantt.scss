@@ -62,6 +62,7 @@ $gantt-cover-padding-top: 105px;
         .axis-cell {
             text-align: left;
             border-bottom: 1px solid $border-color;
+            position: relative;
             & > a {
                 padding: 5px 5px 4px 12px;
                 display: block;
@@ -85,12 +86,18 @@ $gantt-cover-padding-top: 105px;
                     }
                 }
             }
+            .last-assignment {
+                position: absolute;
+                left: 100%;
+                margin-left: 5px;
+                top: 50%;
+                margin-top: -0.714em;
+            }
         }
     }
     .cover {
         width: 100%;
         overflow-x: auto;
-        position: relative;
         .cover-inner {
             overflow: hidden;
             padding-top: $gantt-cover-padding-top;

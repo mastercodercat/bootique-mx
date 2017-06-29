@@ -413,6 +413,31 @@ def api_load_data(request):
             if revision.latest_published_datetime != latest_published_datetime:
                 revision = Revision.objects.filter(published_datetime=latest_published_datetime).first()
 
+    # Date for tails and its last assignment on current revision
+
+    tails_data = []
+    tails = Tail.objects.all()
+    for tail in tails:
+        tail_data = {}
+        tail_data['tail'] = {
+            'id': tail.id,
+            'number': tail.number,
+        }
+        assignment = tail.get_last_assignment(revision)
+        if assignment:
+            tail_data['last_assignment'] = {
+                'id': assignment.id,
+                'number': assignment.flight_number,
+                'start_time': assignment.start_time,
+                'end_time': assignment.end_time,
+                'status': assignment.status,
+                'origin': assignment.flight.origin,
+                'destination': assignment.flight.destination,
+            }
+        else:
+            tail_data['last_assignment'] = None
+        tails_data.append(tail_data)
+
     # Data for template flights on Lines
 
     template_data = []
@@ -468,6 +493,7 @@ def api_load_data(request):
     data = {
         'assignments': assignments_data,
         'templates': template_data,
+        'tails': tails_data,
     }
     return Response(data)
 

@@ -83,7 +83,12 @@
                     </div>
                     <div class="axis-cell tail" v-for="tail in tails">
                         <a class="coming-due-page-link"
-                            :href="'/routeplanning/tail/' + tail.id + '/revision/' + revision + '/comingdue/'">{{ tail.number }}</a>
+                            :href="'/routeplanning/tail/' + tail.id + '/revision/' + revision + '/comingdue/'">
+                            {{ tail.number }}
+                        </a>
+                        <div class="last-assignment" v-if="currentTailPositions[tail.number]">
+                            {{ currentTailPositions[tail.number] }}
+                        </div>
                     </div>
                     <div class="label-cell">
                         <a :href="addLineUrl" class="btn btn-primary btn-circle-xs" type="button" v-if="writable">
@@ -95,52 +100,52 @@
                         <a :href="editLineUrl.replace(0, line.id)">{{ line.name }}</a>
                     </div>
                 </div>
+                <!-- Status bar sources, remove area -->
+                <div class="status-bars clearfix" v-if="writable">
+                    <div class="bar-container">
+                        <gantt-maintenance-bar-prototype
+                            :status="2">
+                        </gantt-maintenance-bar-prototype>
+                        <gantt-maintenance-bar-prototype
+                            :status="2"
+                            :dragged="true"
+                            :drag-offset="dragOffset"
+                            v-if="draggingStatusPrototype && draggingStatus == 2">
+                        </gantt-maintenance-bar-prototype>
+                    </div>
+                    <div class="bar-container">
+                        <gantt-unscheduled-flight-bar-prototype
+                            :status="3">
+                        </gantt-unscheduled-flight-bar-prototype>
+                        <gantt-unscheduled-flight-bar-prototype
+                            :status="3"
+                            :dragged="true"
+                            :drag-offset="dragOffset"
+                            v-if="draggingStatusPrototype && draggingStatus == 3">
+                        </gantt-unscheduled-flight-bar-prototype>
+                    </div>
+                    <gantt-remove-dropzone
+                        acceptable-selector="#flight-assignment-table .bar"
+                        @drop-on="handleDropOnRemoveZone">
+                    </gantt-remove-dropzone>
+                    <div class="revision-controls pull-right">
+                        <select class="form-control" style="max-width: 250px;" v-model="revision">
+                            <option value="0" selected>(New Draft)</option>
+                            <option v-for="revision in revisions" :value="revision.id">
+                                {{ formatDate(revision.published) }}
+                            </option>
+                        </select>
+                        <button id="delete-revision" class="btn btn-link" @click="handleDeleteRevision">
+                            <i class="fa fa-fw fa-trash-o"></i>
+                        </button>
+                        <button id="clear-revision" class="btn btn-link" @click="handleClearRevision">
+                            <i class="fa fa-fw fa-refresh"></i>
+                        </button>
+                        <button id="publish-revision" class="btn btn-default" @click="handlePublishRevision">Publish</button>
+                    </div>
+                </div>
                 <div :class="{ 'cover': true, 'loading': loading }" ref="scrollWrapper">
                     <div class="cover-inner" :style="{ width: ganttWidth + 'px' }">
-                        <!-- Status bar sources, remove area -->
-                        <div class="status-bars clearfix" v-if="writable">
-                            <div class="bar-container">
-                                <gantt-maintenance-bar-prototype
-                                    :status="2">
-                                </gantt-maintenance-bar-prototype>
-                                <gantt-maintenance-bar-prototype
-                                    :status="2"
-                                    :dragged="true"
-                                    :drag-offset="dragOffset"
-                                    v-if="draggingStatusPrototype && draggingStatus == 2">
-                                </gantt-maintenance-bar-prototype>
-                            </div>
-                            <div class="bar-container">
-                                <gantt-unscheduled-flight-bar-prototype
-                                    :status="3">
-                                </gantt-unscheduled-flight-bar-prototype>
-                                <gantt-unscheduled-flight-bar-prototype
-                                    :status="3"
-                                    :dragged="true"
-                                    :drag-offset="dragOffset"
-                                    v-if="draggingStatusPrototype && draggingStatus == 3">
-                                </gantt-unscheduled-flight-bar-prototype>
-                            </div>
-                            <gantt-remove-dropzone
-                                acceptable-selector="#flight-assignment-table .bar"
-                                @drop-on="handleDropOnRemoveZone">
-                            </gantt-remove-dropzone>
-                            <div class="revision-controls pull-right">
-                                <select class="form-control" style="max-width: 250px;" v-model="revision">
-                                    <option value="0" selected>(New Draft)</option>
-                                    <option v-for="revision in revisions" :value="revision.id">
-                                        {{ formatDate(revision.published) }}
-                                    </option>
-                                </select>
-                                <button id="delete-revision" class="btn btn-link" @click="handleDeleteRevision">
-                                    <i class="fa fa-fw fa-trash-o"></i>
-                                </button>
-                                <button id="clear-revision" class="btn btn-link" @click="handleClearRevision">
-                                    <i class="fa fa-fw fa-refresh"></i>
-                                </button>
-                                <button id="publish-revision" class="btn btn-default" @click="handlePublishRevision">Publish</button>
-                            </div>
-                        </div>
                         <!-- Gray border -->
                         <div class="border-top-line"></div>
                         <!-- Tails table -->
@@ -287,14 +292,18 @@ export default {
             });
         }
 
+        const startTimeAtScroll = new Date(this.startTmstmp * 1000);
+
         return {
             ganttLengthSeconds: 14 * 24 * 3600,
             revisions,
             templates: {},
             assignments: {},
+            tailsLastAssignments: {},
             assignedFlightIds: {},
             loading: true,
             ganttWidth,
+            startTimeAtScroll,
             draggingAssignmentIds: {},
             draggingTemplateIds: {},
             dragging: false,
@@ -336,16 +345,39 @@ export default {
             const now = new Date();
             return (now - this.startDate) / 1000 / this.ganttLengthSeconds * 100;
         },
+        currentTailPositions() {
+            const currentPositions = {};
+            for(const tailNumber in this.tailsLastAssignments) {
+                const lastAssignment = this.tailsLastAssignments[tailNumber];
+                if (lastAssignment) {
+                    const assignmentEndTime = new Date(lastAssignment.end_time);
+                    if (assignmentEndTime <= this.startTimeAtScroll) {
+                        currentPositions[tailNumber] = lastAssignment.destination;
+                    }
+                }
+            }
+            return currentPositions;
+        },
     },
     mounted() {
         this.init();
     },
+    beforeDestroy() {
+        this.unbindEventHandlers();
+    },
     methods: {
         init() {
+            this.bindEventHandlers();
             this.setScrollPosition();
             this.initDateForm();
             this.loadData();
             this.initInteractables();
+        },
+        bindEventHandlers() {
+            this.$refs.scrollWrapper.addEventListener('scroll', this.handleGanttScroll);
+        },
+        unbindEventHandlers() {
+            this.$refs.scrollWrapper.removeEventListener('scroll');
         },
         setScrollPosition() {
             const timeWindowCount = this.days > 1 ? 14 / this.days : 14 * (24 / this.hours);
@@ -367,6 +399,13 @@ export default {
                     Utils.formatTo2Digits(this.endDate.getDate()) + '/' + 
                     this.endDate.getFullYear();
             }
+        },
+        currentStartTimeAtScrollPosition() {
+            const scrollLeft = this.$refs.scrollWrapper.scrollLeft;
+            const secondsScrolled = this.ganttLengthSeconds * scrollLeft / (this.ganttWidth - 90);
+            const date = new Date(this.startDate.getTime());
+            date.setSeconds(date.getSeconds() + secondsScrolled);
+            return date;
         },
         formatDate(date, dateFormat = 'MM/DD/YYYY HH:mm:ss', considerTimezone = true) {
             if (typeof date === 'string') {
@@ -440,6 +479,7 @@ export default {
             .then((response) => {
                 const { data } = response;
 
+                // Assignments and assigned flight ids
                 const assignedFlightIds = {};
                 const assignments = {};
                 data.assignments.forEach((assignment) => {
@@ -451,10 +491,19 @@ export default {
                         assignedFlightIds[assignment.flight_id] = true;
                     }
                 });
-
                 this.assignedFlightIds = assignedFlightIds;
                 this.assignments = assignments;
 
+                // Tails last assignment
+                const tailsLastAssignments = {};
+                data.tails.forEach((tailData) => {
+                    if (tailData.last_assignment) {
+                        tailsLastAssignments[tailData.tail.number] = tailData.last_assignment;
+                    }
+                });
+                this.tailsLastAssignments = tailsLastAssignments;
+
+                // Template flights
                 if (!assignmentsOnly) {
                     const templates = {};
                     data.templates.forEach((template) => {
@@ -1059,6 +1108,9 @@ export default {
         },
         handleClickEditToolsToggle() {
             this.editToolsClosed = !this.editToolsClosed;
+        },
+        handleGanttScroll() {
+            this.startTimeAtScroll = this.currentStartTimeAtScrollPosition();
         },
     },
     watch: {

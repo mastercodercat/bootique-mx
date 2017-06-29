@@ -10,6 +10,15 @@ class Tail(models.Model):
     def __unicode__(self):
         return self.number
 
+    def get_last_assignment(self, revision):
+        assignment = Assignment.objects.filter(tail=self) \
+            .filter(revision=revision) \
+            .exclude(status=Assignment.STATUS_MAINTENANCE) \
+            .order_by('-end_time') \
+            .select_related('flight') \
+            .first()
+        return assignment
+
 
 class Line(models.Model):
     name = models.CharField(max_length=100, blank=True, unique=True)
