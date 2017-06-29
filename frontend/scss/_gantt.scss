@@ -86,13 +86,6 @@ $gantt-cover-padding-top: 105px;
                     }
                 }
             }
-            .last-assignment {
-                position: absolute;
-                left: 100%;
-                margin-left: 5px;
-                top: 50%;
-                margin-top: -0.714em;
-            }
         }
     }
     .cover {
@@ -519,6 +512,12 @@ $gantt-cover-padding-top: 105px;
         .table-wrapper {
             z-index: 1;
         }
+    }
+    .last-assignment {
+        position: absolute;
+        left: 5px;
+        top: 50%;
+        margin-top: -0.714em;
     }
 }
 

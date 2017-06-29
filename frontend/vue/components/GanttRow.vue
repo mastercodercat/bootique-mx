@@ -1,5 +1,8 @@
 <template>
     <div class="row-line">
+        <div class="last-assignment" v-if="startingTailPosition && firstAssignmentFarEnough">
+            {{ startingTailPosition }}
+        </div>
         <gantt-bar
             :key="object.id"
             :data="object"
@@ -41,10 +44,29 @@ import GanttBarShadow from '@frontend_components/GanttBarShadow.vue';
 export default {
     name: 'GanttRow',
     props: ['row-object', 'start-date', 'timezone', 'objects', 'shadows', 'unit',
-        'selected-ids', 'dragging', 'drag-offset', 'dragging-ids', 'assigned-ids'],
+        'selected-ids', 'dragging', 'drag-offset', 'dragging-ids', 'assigned-ids',
+        'starting-tail-position'],
     components: {
         'gantt-bar': GanttBar,
         'gantt-bar-shadow': GanttBarShadow,
+    },
+    computed: {
+        firstAssignmentFarEnough() {
+            if (!this.objects.length) {
+                return true;
+            }
+            let firstAssignment = this.objects[0];
+            if (this.startDate >= new Date(firstAssignment.end_time)) {
+                if (this.objects.length > 1) {
+                    firstAssignment = this.objects[1];
+                } else {
+                    return true;
+                }
+            }
+            const date = new Date(firstAssignment.start_time);
+            date.setSeconds(date.getSeconds() - this.unit);
+            return this.startDate <= date;
+        },
     },
     mounted() {
         interact(this.$el).dropzone({

@@ -423,7 +423,7 @@ def api_load_data(request):
             'id': tail.id,
             'number': tail.number,
         }
-        assignment = tail.get_last_assignment(revision)
+        assignment = tail.get_last_assignment(revision, start_time)
         if assignment:
             tail_data['last_assignment'] = {
                 'id': assignment.id,

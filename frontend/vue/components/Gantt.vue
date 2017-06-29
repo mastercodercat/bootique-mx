@@ -86,9 +86,6 @@
                             :href="'/routeplanning/tail/' + tail.id + '/revision/' + revision + '/comingdue/'">
                             {{ tail.number }}
                         </a>
-                        <div class="last-assignment" v-if="currentTailPositions[tail.number]">
-                            {{ currentTailPositions[tail.number] }}
-                        </div>
                     </div>
                     <div class="label-cell">
                         <a :href="addLineUrl" class="btn btn-primary btn-circle-xs" type="button" v-if="writable">
@@ -179,6 +176,7 @@
                                         :dragging="dragging"
                                         :drag-offset="dragOffset"
                                         :dragging-ids="draggingAssignmentIds"
+                                        :starting-tail-position="startingTailPositions[tail.number]"
                                         @drag-enter="handleDragEnterAssignmentRow"
                                         @drag-leave="handleDragLeaveAssignmentRow"
                                         @drop-on="handleDropOnAssignmentRow"
@@ -292,8 +290,6 @@ export default {
             });
         }
 
-        const startTimeAtScroll = new Date(this.startTmstmp * 1000);
-
         return {
             ganttLengthSeconds: 14 * 24 * 3600,
             revisions,
@@ -303,7 +299,6 @@ export default {
             assignedFlightIds: {},
             loading: true,
             ganttWidth,
-            startTimeAtScroll,
             draggingAssignmentIds: {},
             draggingTemplateIds: {},
             dragging: false,
@@ -345,39 +340,26 @@ export default {
             const now = new Date();
             return (now - this.startDate) / 1000 / this.ganttLengthSeconds * 100;
         },
-        currentTailPositions() {
-            const currentPositions = {};
+        startingTailPositions() {
+            const startingPositions = {};
             for(const tailNumber in this.tailsLastAssignments) {
                 const lastAssignment = this.tailsLastAssignments[tailNumber];
                 if (lastAssignment) {
-                    const assignmentEndTime = new Date(lastAssignment.end_time);
-                    if (assignmentEndTime <= this.startTimeAtScroll) {
-                        currentPositions[tailNumber] = lastAssignment.destination;
-                    }
+                    startingPositions[tailNumber] = lastAssignment.destination;
                 }
             }
-            return currentPositions;
+            return startingPositions;
         },
     },
     mounted() {
         this.init();
     },
-    beforeDestroy() {
-        this.unbindEventHandlers();
-    },
     methods: {
         init() {
-            this.bindEventHandlers();
             this.setScrollPosition();
             this.initDateForm();
             this.loadData();
             this.initInteractables();
-        },
-        bindEventHandlers() {
-            this.$refs.scrollWrapper.addEventListener('scroll', this.handleGanttScroll);
-        },
-        unbindEventHandlers() {
-            this.$refs.scrollWrapper.removeEventListener('scroll');
         },
         setScrollPosition() {
             const timeWindowCount = this.days > 1 ? 14 / this.days : 14 * (24 / this.hours);
@@ -399,13 +381,6 @@ export default {
                     Utils.formatTo2Digits(this.endDate.getDate()) + '/' + 
                     this.endDate.getFullYear();
             }
-        },
-        currentStartTimeAtScrollPosition() {
-            const scrollLeft = this.$refs.scrollWrapper.scrollLeft;
-            const secondsScrolled = this.ganttLengthSeconds * scrollLeft / (this.ganttWidth - 90);
-            const date = new Date(this.startDate.getTime());
-            date.setSeconds(date.getSeconds() + secondsScrolled);
-            return date;
         },
         formatDate(date, dateFormat = 'MM/DD/YYYY HH:mm:ss', considerTimezone = true) {
             if (typeof date === 'string') {
@@ -455,10 +430,10 @@ export default {
             }
         },
         getLineTemplates(line) {
-            return this.templates[line.id] ? this.templates[line.id] : {};
+            return this.templates[line.id] ? this.templates[line.id] : [];
         },
         getTailAssignments(tail) {
-            return this.assignments[tail.number] ? this.assignments[tail.number] : {};
+            return this.assignments[tail.number] ? this.assignments[tail.number] : [];
         },
         getTailShadows(tail) {
             return this.dragoverRowShadows[tail.id] ? this.dragoverRowShadows[tail.id] : [];
@@ -484,9 +459,9 @@ export default {
                 const assignments = {};
                 data.assignments.forEach((assignment) => {
                     if (!(assignment.tail in assignments)) {
-                        assignments[assignment.tail] = {};
+                        assignments[assignment.tail] = [];
                     }
-                    assignments[assignment.tail][assignment.id] = assignment;
+                    assignments[assignment.tail].push(assignment);
                     if (assignment.flight_id) {
                         assignedFlightIds[assignment.flight_id] = true;
                     }
@@ -508,9 +483,9 @@ export default {
                     const templates = {};
                     data.templates.forEach((template) => {
                         if (!(template.line_id in templates)) {
-                            templates[template.line_id] = {};
+                            templates[template.line_id] = [];
                         }
-                        templates[template.line_id][template.id] = template;
+                        templates[template.line_id].push(template);
                     });
                     this.templates = templates;
                 }
@@ -1108,9 +1083,6 @@ export default {
         },
         handleClickEditToolsToggle() {
             this.editToolsClosed = !this.editToolsClosed;
-        },
-        handleGanttScroll() {
-            this.startTimeAtScroll = this.currentStartTimeAtScrollPosition();
         },
     },
     watch: {

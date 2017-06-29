@@ -10,10 +10,11 @@ class Tail(models.Model):
     def __unicode__(self):
         return self.number
 
-    def get_last_assignment(self, revision):
+    def get_last_assignment(self, revision, date):
         assignment = Assignment.objects.filter(tail=self) \
             .filter(revision=revision) \
             .exclude(status=Assignment.STATUS_MAINTENANCE) \
+            .filter(end_time__lte=date) \
             .order_by('-end_time') \
             .select_related('flight') \
             .first()
