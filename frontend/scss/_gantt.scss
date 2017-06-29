@@ -293,9 +293,11 @@ $gantt-cover-padding-top: 105px;
             padding-top: 0;
             text-align: center;
             background: none;
-            & > span {
+            .text {
                 line-height: 30px;
                 color: #fff;
+                overflow: hidden;
+                white-space: nowrap;
             }
             &:not(.status-prototype):hover,
             &.resizing {
@@ -311,7 +313,7 @@ $gantt-cover-padding-top: 105px;
             background-color: #2A4053;
         }
     }
-    &.small-cells .bar[data-status]:not(.status-prototype) > span {
+    &.small-cells .bar:not(.status-prototype) .text {
         display: none;
     }
     &.small-cells .bar .flight-info {
@@ -468,7 +470,7 @@ $gantt-cover-padding-top: 105px;
                 display: block;
             }
         }
-        .bar[data-status] {
+        .bar.status-bar {
             /*&:before,
             &:after {
                 content: '';
@@ -485,12 +487,6 @@ $gantt-cover-padding-top: 105px;
             &:after {
                 right: 3px;
             }*/
-            & > span {
-                display: inline-block;
-                max-width: 100%;
-                overflow: hidden;
-                white-space: nowrap;
-            }
         }
         #bar-placeholder {
             position: absolute;

@@ -1,6 +1,8 @@
 <template>
     <div :class="{ 'bar status-bar unscheduled-flight status-prototype': true, 'drag-clone': dragged }" :style="componentStyle">
-        <span>Unscheduled Flight</span>
+        <div class="text">
+            <span>Unscheduled Flight</span>
+        </div>
         <div class="bar-popover">
             <div class="field">Unscheduled Flight</div>
             <div class="field">Origin: <span class="org"></span></div>

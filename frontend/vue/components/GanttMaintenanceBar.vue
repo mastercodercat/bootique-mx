@@ -1,6 +1,8 @@
 <template>
     <div :class="componentClass" :style="componentStyle">
-        <span>Maintenance</span>
+        <div class="text">
+            <span>Maintenance</span>
+        </div>
         <div class="info bar-popover" v-if="!dragging">
             <div class="field">Status: Maintenance</div>
             <div class="field">Sched. Start Time: <span class="start"></span>{{ startTime }}</div>

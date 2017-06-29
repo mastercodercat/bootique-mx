@@ -1,6 +1,8 @@
 <template>
     <div :class="componentClass" :style="componentStyle">
-        <span>Unscheduled Flight</span>
+        <div class="text">
+            <span>Unscheduled Flight</span>
+        </div>
         <div class="bar-popover" v-if="!dragging">
             <div class="field">Unscheduled Flight</div>
             <div class="field">Origin: <span class="org">{{ assignment.origin }}</span></div>
