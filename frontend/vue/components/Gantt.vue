@@ -1,21 +1,6 @@
 <template>
     <div>
         <div :class="{ 'gantt': true, 'loading': true, 'small-cells': days > 1, 'no-flight-number': days > 3 }" ref="gantt">
-            <div class="m-b-md" v-if="writable">
-                <label>Revision:</label>
-                <div class="revision-controls">
-                    <select class="form-control" style="max-width: 350px;" v-model="revision">
-                        <option value="0" selected>(New Draft)</option>
-                        <option v-for="revision in revisions" :value="revision.id">
-                            {{ formatDate(revision.published) }}
-                        </option>
-                    </select>
-                    <button id="delete-revision" class="btn btn-danger" @click="handleDeleteRevision">Delete This Version</button>
-                    <button id="clear-revision" class="btn btn-default" @click="handleClearRevision">Clear Changes</button>
-                    <button id="publish-revision" class="btn btn-primary" @click="handlePublishRevision">Publish Current Revision</button>
-                </div>
-            </div>
-            <label>Date/Time controls:</label>
             <div class="clearfix m-b-md"><!-- Top controls -->
                 <div class="unit-control btn-group">
                     <a :class="{ 'btn btn-white': true, 'active': mode == 1 }"
@@ -82,39 +67,6 @@
                     </select>
                 </div>
             </div>
-            <!-- Status bar sources, remove area -->
-            <div class="status-bars clearfix" v-if="writable">
-                <div class="clearfix">
-                    <label>Drag and drop: </label>
-                </div>
-                <div class="bar-container">
-                    <gantt-maintenance-bar-prototype
-                        :status="2">
-                    </gantt-maintenance-bar-prototype>
-                    <gantt-maintenance-bar-prototype
-                        :status="2"
-                        :dragged="true"
-                        :drag-offset="dragOffset"
-                        v-if="draggingStatusPrototype && draggingStatus == 2">
-                    </gantt-maintenance-bar-prototype>
-                </div>
-                <div class="bar-container">
-                    <gantt-unscheduled-flight-bar-prototype
-                        :status="3">
-                    </gantt-unscheduled-flight-bar-prototype>
-                    <gantt-unscheduled-flight-bar-prototype
-                        :status="3"
-                        :dragged="true"
-                        :drag-offset="dragOffset"
-                        v-if="draggingStatusPrototype && draggingStatus == 3">
-                    </gantt-unscheduled-flight-bar-prototype>
-                </div>
-                <gantt-remove-dropzone
-                    acceptable-selector="#flight-assignment-table .bar"
-                    @drop-on="handleDropOnRemoveZone">
-                </gantt-remove-dropzone>
-            </div>
-
             <div class="cover-wrapper">
                 <div class="gantt-labels">
                     <div class="label-cell">
@@ -139,6 +91,52 @@
                 </div>
                 <div :class="{ 'cover': true, 'loading': loading }" ref="scrollWrapper">
                     <div class="cover-inner" :style="{ width: ganttWidth + 'px' }">
+                        <!-- Status bar sources, remove area -->
+                        <div class="status-bars clearfix" v-if="writable">
+                            <div class="bar-container">
+                                <gantt-maintenance-bar-prototype
+                                    :status="2">
+                                </gantt-maintenance-bar-prototype>
+                                <gantt-maintenance-bar-prototype
+                                    :status="2"
+                                    :dragged="true"
+                                    :drag-offset="dragOffset"
+                                    v-if="draggingStatusPrototype && draggingStatus == 2">
+                                </gantt-maintenance-bar-prototype>
+                            </div>
+                            <div class="bar-container">
+                                <gantt-unscheduled-flight-bar-prototype
+                                    :status="3">
+                                </gantt-unscheduled-flight-bar-prototype>
+                                <gantt-unscheduled-flight-bar-prototype
+                                    :status="3"
+                                    :dragged="true"
+                                    :drag-offset="dragOffset"
+                                    v-if="draggingStatusPrototype && draggingStatus == 3">
+                                </gantt-unscheduled-flight-bar-prototype>
+                            </div>
+                            <gantt-remove-dropzone
+                                acceptable-selector="#flight-assignment-table .bar"
+                                @drop-on="handleDropOnRemoveZone">
+                            </gantt-remove-dropzone>
+                            <div class="revision-controls pull-right">
+                                <select class="form-control" style="max-width: 250px;" v-model="revision">
+                                    <option value="0" selected>(New Draft)</option>
+                                    <option v-for="revision in revisions" :value="revision.id">
+                                        {{ formatDate(revision.published) }}
+                                    </option>
+                                </select>
+                                <button id="delete-revision" class="btn btn-link" @click="handleDeleteRevision">
+                                    <i class="fa fa-fw fa-trash-o"></i>
+                                </button>
+                                <button id="clear-revision" class="btn btn-link" @click="handleClearRevision">
+                                    <i class="fa fa-fw fa-refresh"></i>
+                                </button>
+                                <button id="publish-revision" class="btn btn-default" @click="handlePublishRevision">Publish</button>
+                            </div>
+                        </div>
+                        <!-- Gray border -->
+                        <div class="border-top-line"></div>
                         <!-- Tails table -->
                         <div class="table-wrapper">
                             <div :class="{ 'now-indicator': true, 'hidden': !currentTimeIndicatorVisible }"

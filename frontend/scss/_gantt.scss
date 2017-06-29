@@ -2,6 +2,7 @@ $label-cell-width: 90px;
 $row-height: 30px;
 $popover-bg-color: #e0e0e1;
 $popover-text-color: #333;
+$gantt-cover-padding-top: 105px;
 
 .date-range-picker-group {
     .component-wrapper {
@@ -27,11 +28,12 @@ $popover-text-color: #333;
 
     .cover-wrapper {
         position: relative;
+        background: #fff;
     }
     .gantt-labels {
         position: absolute;
         left: 0;
-        top: 20px;
+        top: $gantt-cover-padding-top;
         z-index: 200;
         background: #e7eaec;
         .label-cell,
@@ -82,12 +84,10 @@ $popover-text-color: #333;
     .cover {
         width: 100%;
         overflow-x: auto;
-        top: -30px;
-        margin-bottom: -30px;
         position: relative;
         .cover-inner {
             overflow: hidden;
-            padding-top: 50px;
+            padding-top: $gantt-cover-padding-top;
             min-width: 100%;
         }
         &.loading {
@@ -97,9 +97,9 @@ $popover-text-color: #333;
                 content: '';
                 position: absolute;
                 left: 0;
-                top: 50px;
+                top: $gantt-cover-padding-top;
                 width: 100%;
-                height: 100%;
+                bottom: 0;
                 background-color: rgba(255, 255, 255, 0.6);
                 z-index: 999;
             }
@@ -313,7 +313,17 @@ $popover-text-color: #333;
             display: none;
         }
     }
+    .revision-controls {
+        white-space: nowrap;
+        width: 450px;
+    }
     .status-bars {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        z-index: 1;
+        padding: 35px 25px;
         &.disabled {
             pointer-events: none;
         }
@@ -338,7 +348,8 @@ $popover-text-color: #333;
             }
         }
         .drop-to-remove-area {
-            float: right;
+            float: left;
+            margin-left: 50px;
             position: relative;
             max-width: 100%;
             text-align: center;
@@ -369,6 +380,10 @@ $popover-text-color: #333;
         text-align: center;
         font-size: 12px;
         line-height: 20px;
+    }
+    .border-top-line {
+        border-top: 1px solid $border-color;
+        margin-top: -1px;
     }
     .table-wrapper {
         position: relative;
