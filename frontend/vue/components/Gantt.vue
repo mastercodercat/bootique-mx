@@ -796,16 +796,26 @@ export default {
         },
         getAssignmentById(id) {
             for (const tailNumber in this.assignments) {
-                if (this.assignments[tailNumber][id]) {
-                    return this.assignments[tailNumber][id];
+                const assignments = this.assignments[tailNumber];
+                if (!assignments) {
+                    continue;
+                }
+                const assignment = assignments.find(elm => elm.id == id);
+                if (assignment) {
+                    return assignment;
                 }
             }
             return null;
         },
         getTemplateById(id) {
             for (const lineId in this.templates) {
-                if (this.templates[lineId][id]) {
-                    return this.templates[lineId][id];
+                const templates = this.templates[lineId];
+                if (!templates) {
+                    continue;
+                }
+                const template = templates.find(elm => elm.id == id);
+                if (template) {
+                    return template;
                 }
             }
             return null;
