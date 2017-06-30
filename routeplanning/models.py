@@ -147,7 +147,7 @@ class Assignment(models.Model):
         return cls.objects.filter(revision=revision)
 
     @classmethod
-    def is_duplicated(cls, revision, tail, start_time, end_time, exclude_check_assignment=None):
+    def duplication_check(cls, revision, tail, start_time, end_time, exclude_check_assignment=None):
         query = cls.objects.filter(
             Q(tail=tail) &
             (
@@ -159,14 +159,11 @@ class Assignment(models.Model):
 
         if exclude_check_assignment:
             query = query.exclude(pk=exclude_check_assignment.id)
-        dup_count = query.count()
-        if dup_count > 0:
-            return True
 
-        return False
+        return query.first()
 
     @classmethod
-    def is_physically_valid(cls, revision, tail, origin, destination, start_time, end_time, exclude_check_assignment=None):
+    def physical_conflict_check(cls, revision, tail, origin, destination, start_time, end_time, exclude_check_assignment=None):
         query = cls.objects.filter(
                 Q(tail=tail) &
                 Q(end_time__lte=start_time)
@@ -179,7 +176,7 @@ class Assignment(models.Model):
             query = query.exclude(pk=exclude_check_assignment.id)
         assignment_just_before = query.first()
         if assignment_just_before and assignment_just_before.flight.destination != origin:
-            return False
+            return 'origin'
 
         query = cls.objects.filter(
                 Q(tail=tail) &
@@ -192,9 +189,9 @@ class Assignment(models.Model):
             query = query.exclude(pk=exclude_check_assignment.id)
         assignment_just_after = query.first()
         if assignment_just_after and assignment_just_after.flight.origin != destination:
-            return False
+            return 'destination'
 
-        return True
+        return None
 
     @classmethod
     def get_duplicated_assignments(cls, revision, tail, start_time, end_time, exclude_check_assignment=None):

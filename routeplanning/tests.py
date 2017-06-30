@@ -12,72 +12,76 @@ from common.helpers import *
 class UnitTestCase(TestCase):
     fixtures = ['tails', 'assignments_test', 'flights_test']
 
-    def test_assignment_is_valid_method(self):
+    def test_assignment_duplication_check_method(self):
         tail = Tail.objects.get(pk=14)
 
         d1 = datetime(2017, 5, 24, 13, 30, tzinfo=utc)
         d2 = datetime(2017, 5, 24, 14, 30, tzinfo=utc)
-        result = Assignment.is_duplicated(None, tail, d1, d2)
-        self.assertIs(result, True)
+        result = Assignment.duplication_check(None, tail, d1, d2)
+        self.assertIsNot(result, None)
+        self.assertEqual(result.id, 450)
 
         d1 = datetime(2017, 5, 24, 16, 0, tzinfo=utc)
         d2 = datetime(2017, 5, 24, 17, 0, tzinfo=utc)
-        result = Assignment.is_duplicated(None, tail, d1, d2)
-        self.assertIs(result, True)
+        result = Assignment.duplication_check(None, tail, d1, d2)
+        self.assertIsNot(result, None)
+        self.assertEqual(result.id, 451)
 
         d1 = datetime(2017, 5, 24, 19, 30, tzinfo=utc)
         d2 = datetime(2017, 5, 24, 20, 10, tzinfo=utc)
-        result = Assignment.is_duplicated(None, tail, d1, d2)
-        self.assertIs(result, True)
+        result = Assignment.duplication_check(None, tail, d1, d2)
+        self.assertIsNot(result, None)
+        self.assertEqual(result.id, 454)
 
         d1 = datetime(2017, 5, 25, 12, 30, tzinfo=utc)
         d2 = datetime(2017, 5, 25, 14, 30, tzinfo=utc)
-        result = Assignment.is_duplicated(None, tail, d1, d2)
-        self.assertIs(result, True)
+        result = Assignment.duplication_check(None, tail, d1, d2)
+        self.assertIsNot(result, None)
+        self.assertEqual(result.id, 455)
 
         d1 = datetime(2017, 5, 24, 14, 30, tzinfo=utc)
         d2 = datetime(2017, 5, 24, 15, 0, tzinfo=utc)
-        result = Assignment.is_duplicated(None, tail, d1, d2)
-        self.assertIs(result, False)
+        result = Assignment.duplication_check(None, tail, d1, d2)
+        self.assertIs(result, None)
 
         assignment_to_exclude_check = Assignment.objects.get(pk=451)
         d1 = datetime(2017, 5, 24, 15, 0, tzinfo=utc)
         d2 = datetime(2017, 5, 24, 16, 0, tzinfo=utc)
-        result = Assignment.is_duplicated(None, tail, d1, d2, assignment_to_exclude_check)
-        self.assertIs(result, False)
+        result = Assignment.duplication_check(None, tail, d1, d2, assignment_to_exclude_check)
+        self.assertIs(result, None)
 
-    def test_assignment_is_physically_valid_method(self):
+    def test_assignment_physical_conflict_check_method(self):
         tail = Tail.objects.get(pk=14)
 
         d1 = datetime(2017, 5, 24, 16, 30, tzinfo=utc)
         d2 = datetime(2017, 5, 24, 17, 30, tzinfo=utc)
-        result = Assignment.is_physically_valid(None, tail, 'MCE', 'OAK', d1, d2)
-        self.assertIs(result, True)
+        conflict = Assignment.physical_conflict_check(None, tail, 'MCE', 'OAK', d1, d2)
+        self.assertIs(conflict, None)
 
         d1 = datetime(2017, 5, 24, 16, 30, tzinfo=utc)
         d2 = datetime(2017, 5, 24, 17, 30, tzinfo=utc)
-        result = Assignment.is_physically_valid(None, tail, 'LAX', 'OAK', d1, d2)
-        self.assertIs(result, False)
+        conflict = Assignment.physical_conflict_check(None, tail, 'LAX', 'OAK', d1, d2)
+        self.assertEqual(conflict, 'origin')
 
         d1 = datetime(2017, 5, 24, 16, 30, tzinfo=utc)
         d2 = datetime(2017, 5, 24, 17, 30, tzinfo=utc)
-        result = Assignment.is_physically_valid(None, tail, 'MCE', 'ATL', d1, d2)
-        self.assertIs(result, False)
+        conflict = Assignment.physical_conflict_check(None, tail, 'MCE', 'ATL', d1, d2)
+        self.assertEqual(conflict, 'destination')
 
         d1 = datetime(2017, 5, 24, 23, 0, tzinfo=utc)
         d2 = datetime(2017, 5, 25, 0, 10, tzinfo=utc)
-        result = Assignment.is_physically_valid(None, tail, 'MCE', 'OAK', d1, d2)
-        self.assertIs(result, True)
+        conflict = Assignment.physical_conflict_check(None, tail, 'MCE', 'OAK', d1, d2)
+        self.assertIs(conflict, None)
 
         d1 = datetime(2017, 5, 24, 23, 0, tzinfo=utc)
         d2 = datetime(2017, 5, 25, 0, 10, tzinfo=utc)
-        result = Assignment.is_physically_valid(None, tail, 'MCE', 'LAX', d1, d2)
-        self.assertIs(result, False)
+        conflict = Assignment.physical_conflict_check(None, tail, 'MCE', 'LAX', d1, d2)
+        self.assertEqual(conflict, 'destination')
 
         assignment_to_move = Assignment.objects.select_related('flight').get(pk=455)
         d1 = datetime(2017, 5, 25, 13, 30, tzinfo=utc)
         d2 = datetime(2017, 5, 25, 14, 45, tzinfo=utc)
-        result = Assignment.is_physically_valid(
+        conflict = Assignment.physical_conflict_check(
             None,
             tail,
             assignment_to_move.flight.origin,
@@ -86,7 +90,7 @@ class UnitTestCase(TestCase):
             d2,
             assignment_to_move
         )
-        self.assertIs(result, True)
+        self.assertIs(conflict, None)
 
 class ViewsTestCase(TestCase):
     fixtures = ['roles', 'lines', 'lineparts', 'tails', 'assignments_test', 'flights_test']

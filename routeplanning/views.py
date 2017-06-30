@@ -505,7 +505,9 @@ def api_assign_flight(request):
         'success': False,
         'assigned_flights': {},
         'duplication': False,
+        'time_conflicts': [],
         'physically_invalid': False,
+        'physical_conflicts': [],
     }
 
     try:
@@ -526,6 +528,9 @@ def api_assign_flight(request):
     else:
         revision = None
 
+    physical_conflicts = []
+    time_conflicts = []
+
     for data in flight_data:
         try:
             flight_id = data['flight']
@@ -533,17 +538,39 @@ def api_assign_flight(request):
             tail = Tail.objects.get(number=tail_number)
             flight = Flight.objects.get(pk=flight_id)
 
-            if Assignment.is_duplicated(revision, tail, flight.departure_datetime, flight.arrival_datetime):
+            duplicated_assignment = Assignment.duplication_check(revision, tail, flight.departure_datetime, flight.arrival_datetime)
+            if duplicated_assignment:
+                time_conflicts.append({
+                    'flight': {
+                        'id': duplicated_assignment.flight.id,
+                        'number': duplicated_assignment.flight.number,
+                        'origin': duplicated_assignment.flight.origin,
+                        'destination': duplicated_assignment.flight.destination,
+                    } if duplicated_assignment.flight else None,
+                    'id': duplicated_assignment.id,
+                    'start_time': duplicated_assignment.start_time,
+                    'end_time': duplicated_assignment.end_time,
+                    'status': duplicated_assignment.status,
+                })
                 result['duplication'] = True
                 continue
 
-            if not Assignment.is_physically_valid(
+            conflict = Assignment.physical_conflict_check(
                 revision,
                 tail,
                 flight.origin, flight.destination,
                 flight.departure_datetime, flight.arrival_datetime
-            ):
+            )
+            if conflict:
                 result['physically_invalid'] = True
+                physical_conflicts.append({
+                    'assigning_flight': {
+                        'number': flight.number,
+                        'origin': flight.origin,
+                        'destination': flight.destination,
+                    },
+                    'conflict': conflict,
+                })
                 continue
 
             assignment = Assignment(
@@ -565,6 +592,8 @@ def api_assign_flight(request):
         except Exception as e:
             print(str(e))
 
+    result['physical_conflicts'] = physical_conflicts
+    result['time_conflicts'] = time_conflicts
     result['success'] = True
     return Response(result)
 
@@ -574,6 +603,8 @@ def api_assign_flight(request):
 def api_assign_status(request):
     result = {
         'success': False,
+        'physical_conflicts': [],
+        'time_conflicts': [],
     }
 
     try:
@@ -599,16 +630,44 @@ def api_assign_status(request):
     else:
         revision = None
 
+    physical_conflicts = []
+    time_conflicts = []
+
     try:
         tail = Tail.objects.get(number=tail_number)
 
-        if Assignment.is_duplicated(revision, tail, start_time, end_time):
+        duplicated_assignment = Assignment.duplication_check(revision, tail, start_time, end_time)
+        if duplicated_assignment:
+            time_conflicts.append({
+                'flight': {
+                    'id': duplicated_assignment.flight.id,
+                    'number': duplicated_assignment.flight.number,
+                    'origin': duplicated_assignment.flight.origin,
+                    'destination': duplicated_assignment.flight.destination,
+                } if duplicated_assignment.flight else None,
+                'id': duplicated_assignment.id,
+                'start_time': duplicated_assignment.start_time,
+                'end_time': duplicated_assignment.end_time,
+                'status': duplicated_assignment.status,
+            })
             result['error'] = 'Duplicated assignment'
+            result['time_conflicts'] = time_conflicts
             return Response(result)
 
-        if status == Assignment.STATUS_UNSCHEDULED_FLIGHT and not Assignment.is_physically_valid(revision, tail, origin, destination, start_time, end_time):
-            result['error'] = 'Physically invalid assignment'
-            return Response(result)
+        if status == Assignment.STATUS_UNSCHEDULED_FLIGHT:
+            conflict = Assignment.physical_conflict_check(revision, tail, origin, destination, start_time, end_time)
+            if conflict:
+                physical_conflicts.append({
+                    'assigning_flight': {
+                        'number': 0,
+                        'origin': origin,
+                        'destination': destination,
+                    },
+                    'conflict': conflict,
+                })
+                result['physical_conflicts'] = physical_conflicts
+                result['error'] = 'Physically invalid assignment'
+                return Response(result)
 
         assignment = Assignment(
             flight_number=0,
@@ -688,9 +747,11 @@ def api_remove_assignment(request):
 def api_move_assignment(request):
     result = {
         'success': False,
-        'duplication': False,
-        'physically_invalid': False,
         'assignments': {},
+        'duplication': False,
+        'time_conflicts': [],
+        'physically_invalid': False,
+        'physical_conflicts': [],
     }
 
     try:
@@ -710,6 +771,9 @@ def api_move_assignment(request):
             return Response(result, status=400)
     else:
         revision = None
+
+    physical_conflicts = []
+    time_conflicts = []
 
     for data in assignment_data:
         try:
@@ -734,13 +798,35 @@ def api_move_assignment(request):
             else:
                 end_time = start_time + (assignment.end_time - assignment.start_time)
 
-            if Assignment.is_duplicated(revision, tail, start_time, end_time, assignment):
+            duplicated_assignment = Assignment.duplication_check(revision, tail, start_time, end_time, assignment)
+            if duplicated_assignment:
+                time_conflicts.append({
+                    'flight': {
+                        'id': duplicated_assignment.flight.id,
+                        'number': duplicated_assignment.flight.number,
+                        'origin': duplicated_assignment.flight.origin,
+                        'destination': duplicated_assignment.flight.destination,
+                    } if duplicated_assignment.flight else None,
+                    'id': duplicated_assignment.id,
+                    'start_time': duplicated_assignment.start_time,
+                    'end_time': duplicated_assignment.end_time,
+                    'status': duplicated_assignment.status,
+                })
                 result['duplication'] = True
                 continue
 
             try:
                 if assignment.flight:
-                    if not Assignment.is_physically_valid(revision, tail, assignment.flight.origin, assignment.flight.destination, start_time, end_time, assignment):
+                    conflict = Assignment.physical_conflict_check(revision, tail, assignment.flight.origin, assignment.flight.destination, start_time, end_time, assignment)
+                    if conflict:
+                        physical_conflicts.append({
+                            'assigning_flight': {
+                                'number': assignment.flight.number,
+                                'origin': assignment.flight.origin,
+                                'destination': assignment.flight.destination,
+                            },
+                            'conflict': conflict,
+                        })
                         result['physically_invalid'] = True
                         continue
             except ObjectDoesNotExist:
@@ -768,6 +854,8 @@ def api_move_assignment(request):
         except Exception as e:
             print(str(e))
 
+    result['physical_conflicts'] = physical_conflicts
+    result['time_conflicts'] = time_conflicts
     result['success'] = True
     return Response(result)
 
@@ -777,6 +865,7 @@ def api_move_assignment(request):
 def api_resize_assignment(request):
     result = {
         'success': False,
+        'time_conflicts': [],
     }
 
     try:
@@ -799,6 +888,8 @@ def api_resize_assignment(request):
     else:
         revision = None
 
+    time_conflicts = []
+
     try:
         assignment = Assignment.objects.get(pk=assignment_id)
 
@@ -813,7 +904,21 @@ def api_resize_assignment(request):
             result['error'] = 'Start time cannot be later than end time'
             return Response(result, status=400)
 
-        if Assignment.is_duplicated(revision, assignment.tail, start_time, end_time, assignment):
+        duplicated_assignment = Assignment.duplication_check(revision, assignment.tail, start_time, end_time, assignment)
+        if duplicated_assignment:
+            time_conflicts.append({
+                'flight': {
+                    'id': duplicated_assignment.flight.id,
+                    'number': duplicated_assignment.flight.number,
+                    'origin': duplicated_assignment.flight.origin,
+                    'destination': duplicated_assignment.flight.destination,
+                } if duplicated_assignment.flight else None,
+                'id': duplicated_assignment.id,
+                'start_time': duplicated_assignment.start_time,
+                'end_time': duplicated_assignment.end_time,
+                'status': duplicated_assignment.status,
+            })
+            result['time_conflicts'] = time_conflicts
             result['error'] = 'Duplicated assignment'
             return Response(result)
 
