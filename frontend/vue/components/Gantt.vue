@@ -406,28 +406,35 @@ export default {
                 return this.formatDate(date, 'HH:mm');
             }
         },
-        alertErrorIfAny(response, singular) {
-            if (singular) {
-                if (response.duplication) {
-                    alert('Timeframe overlapped with other assignments');
-                } else if (response.physically_invalid) {
-                    alert('Physically invalid assignment');
-                }
-            } else {
-                var errorOccurred = false;
-                var errors = "Some of assignments are not placed due to following errors:";
-                if (response.duplication) {
-                    errorOccurred = true;
-                    errors += "\n- Overlapped timeframe";
-                }
-                if (response.physically_invalid) {
-                    errorOccurred = true;
-                    errors += "\n- Physically invalid assignment";
-                }
-                if (errorOccurred) {
-                    alert(errors);
-                }
+        timeConflictObjectText(timeConflict) {
+            if (timeConflict.status == 1) {
+                return `Flight ${timeConflict.flight.number} ${timeConflict.flight.origin}-${timeConflict.flight.destination}`;
+            } else if (timeConflict.status == 2) {
+                return 'Maintenance Assignment';
+            } else if (timeConflict.status == 3) {
+                return `Unscheduled Flight ${timeConflict.flight.origin}-${timeConflict.flight.destination}`;
             }
+        },
+        physicalConflictObjectText(physicalConflict) {
+            return `${physicalConflict.conflict} of Flight ${physicalConflict.flight.number} ${physicalConflict.flight.origin}-${physicalConflict.flight.destination}`;
+        },
+        alertErrorIfAny(responseData, singular) {
+            const timeConflicts = responseData.time_conflicts;
+            const physicalConflicts = responseData.physical_conflicts;
+
+            if (!timeConflicts.length && !physicalConflicts.length) {
+                return;
+            }
+
+            let message = '';
+
+            for (const timeConflict of timeConflicts) {
+                message += `Overlapped with: ${this.timeConflictObjectText(timeConflict)}\n`;
+            }
+            for (const physicalConflict of physicalConflicts) {
+                message += `Physical conflict with: ${this.physicalConflictObjectText(physicalConflict)}\n`;
+            }
+            alert(message);
         },
         getLineTemplates(line) {
             return this.templates[line.id] ? this.templates[line.id] : [];
@@ -1022,6 +1029,7 @@ export default {
                         if (data.success) {
                             this.loadData(true);
                         }
+                        this.alertErrorIfAny(data);
                     });
                 }
             }
@@ -1055,6 +1063,7 @@ export default {
                 } else {
                     vm.$emit('cancel-resize')
                 }
+                this.alertErrorIfAny(data);
             });
         },
         createUnscheduledFlight(origin, destination) {
@@ -1083,6 +1092,7 @@ export default {
                 if (data.success) {
                     this.loadData(true);
                 }
+                this.alertErrorIfAny(data);
             })
             .catch(() => {
                 this.$refs.unscheduledFlightModal.enableSubmit();

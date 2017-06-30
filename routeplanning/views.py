@@ -564,7 +564,7 @@ def api_assign_flight(request):
             if conflict:
                 result['physically_invalid'] = True
                 physical_conflicts.append({
-                    'assigning_flight': {
+                    'flight': {
                         'number': flight.number,
                         'origin': flight.origin,
                         'destination': flight.destination,
@@ -658,7 +658,7 @@ def api_assign_status(request):
             conflict = Assignment.physical_conflict_check(revision, tail, origin, destination, start_time, end_time)
             if conflict:
                 physical_conflicts.append({
-                    'assigning_flight': {
+                    'flight': {
                         'number': 0,
                         'origin': origin,
                         'destination': destination,
@@ -820,7 +820,7 @@ def api_move_assignment(request):
                     conflict = Assignment.physical_conflict_check(revision, tail, assignment.flight.origin, assignment.flight.destination, start_time, end_time, assignment)
                     if conflict:
                         physical_conflicts.append({
-                            'assigning_flight': {
+                            'flight': {
                                 'number': assignment.flight.number,
                                 'origin': assignment.flight.origin,
                                 'destination': assignment.flight.destination,
