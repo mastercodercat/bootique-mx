@@ -541,16 +541,27 @@ def api_assign_flight(request):
             duplicated_assignment = Assignment.duplication_check(revision, tail, flight.departure_datetime, flight.arrival_datetime)
             if duplicated_assignment:
                 time_conflicts.append({
-                    'flight': {
-                        'id': duplicated_assignment.flight.id,
-                        'number': duplicated_assignment.flight.number,
-                        'origin': duplicated_assignment.flight.origin,
-                        'destination': duplicated_assignment.flight.destination,
-                    } if duplicated_assignment.flight else None,
-                    'id': duplicated_assignment.id,
-                    'start_time': duplicated_assignment.start_time,
-                    'end_time': duplicated_assignment.end_time,
-                    'status': duplicated_assignment.status,
+                    'assignment': {
+                        'id': duplicated_assignment.id,
+                        'start_time': duplicated_assignment.start_time,
+                        'end_time': duplicated_assignment.end_time,
+                        'status': duplicated_assignment.status,
+                        'flight': {
+                            'id': duplicated_assignment.flight.id,
+                            'number': duplicated_assignment.flight.number,
+                            'origin': duplicated_assignment.flight.origin,
+                            'destination': duplicated_assignment.flight.destination,
+                        } if duplicated_assignment.flight else None,
+                    },
+                    'editing_assignment': {
+                        'status': Assignment.STATUS_FLIGHT,
+                        'flight': {
+                            'id': flight.id,
+                            'number': flight.number,
+                            'origin': flight.origin,
+                            'destination': flight.destination,
+                        }
+                    }
                 })
                 result['duplication'] = True
                 continue
@@ -565,11 +576,16 @@ def api_assign_flight(request):
                 result['physically_invalid'] = True
                 physical_conflicts.append({
                     'flight': {
+                        'number': conflict['conflict'].flight.number,
+                        'origin': conflict['conflict'].flight.origin,
+                        'destination': conflict['conflict'].flight.destination,
+                    },
+                    'assigning_flight': {
                         'number': flight.number,
                         'origin': flight.origin,
                         'destination': flight.destination,
                     },
-                    'conflict': conflict,
+                    'conflict': conflict['direction'],
                 })
                 continue
 
@@ -639,16 +655,26 @@ def api_assign_status(request):
         duplicated_assignment = Assignment.duplication_check(revision, tail, start_time, end_time)
         if duplicated_assignment:
             time_conflicts.append({
-                'flight': {
-                    'id': duplicated_assignment.flight.id,
-                    'number': duplicated_assignment.flight.number,
-                    'origin': duplicated_assignment.flight.origin,
-                    'destination': duplicated_assignment.flight.destination,
-                } if duplicated_assignment.flight else None,
-                'id': duplicated_assignment.id,
-                'start_time': duplicated_assignment.start_time,
-                'end_time': duplicated_assignment.end_time,
-                'status': duplicated_assignment.status,
+                'assignment': {
+                    'id': duplicated_assignment.id,
+                    'start_time': duplicated_assignment.start_time,
+                    'end_time': duplicated_assignment.end_time,
+                    'status': duplicated_assignment.status,
+                    'flight': {
+                        'id': duplicated_assignment.flight.id,
+                        'number': duplicated_assignment.flight.number,
+                        'origin': duplicated_assignment.flight.origin,
+                        'destination': duplicated_assignment.flight.destination,
+                    } if duplicated_assignment.flight else None,
+                },
+                'editing_assignment': {
+                    'status': status,
+                    'flight': {
+                        'number': 0,
+                        'origin': origin,
+                        'destination': destination,
+                    } if origin and destination else None
+                }
             })
             result['error'] = 'Duplicated assignment'
             result['time_conflicts'] = time_conflicts
@@ -659,11 +685,16 @@ def api_assign_status(request):
             if conflict:
                 physical_conflicts.append({
                     'flight': {
+                        'number': conflict['conflict'].flight.number,
+                        'origin': conflict['conflict'].flight.origin,
+                        'destination': conflict['conflict'].flight.destination,
+                    },
+                    'assigning_flight': {
                         'number': 0,
                         'origin': origin,
                         'destination': destination,
                     },
-                    'conflict': conflict,
+                    'conflict': conflict['direction'],
                 })
                 result['physical_conflicts'] = physical_conflicts
                 result['error'] = 'Physically invalid assignment'
@@ -801,16 +832,26 @@ def api_move_assignment(request):
             duplicated_assignment = Assignment.duplication_check(revision, tail, start_time, end_time, assignment)
             if duplicated_assignment:
                 time_conflicts.append({
-                    'flight': {
-                        'id': duplicated_assignment.flight.id,
-                        'number': duplicated_assignment.flight.number,
-                        'origin': duplicated_assignment.flight.origin,
-                        'destination': duplicated_assignment.flight.destination,
-                    } if duplicated_assignment.flight else None,
-                    'id': duplicated_assignment.id,
-                    'start_time': duplicated_assignment.start_time,
-                    'end_time': duplicated_assignment.end_time,
-                    'status': duplicated_assignment.status,
+                    'assignment': {
+                        'id': duplicated_assignment.id,
+                        'start_time': duplicated_assignment.start_time,
+                        'end_time': duplicated_assignment.end_time,
+                        'status': duplicated_assignment.status,
+                        'flight': {
+                            'id': duplicated_assignment.flight.id,
+                            'number': duplicated_assignment.flight.number,
+                            'origin': duplicated_assignment.flight.origin,
+                            'destination': duplicated_assignment.flight.destination,
+                        } if duplicated_assignment.flight else None,
+                    },
+                    'editing_assignment': {
+                        'status': assignment.status,
+                        'flight': {
+                            'number': assignment.flight.number,
+                            'origin': assignment.flight.origin,
+                            'destination': assignment.flight.destination,
+                        } if assignment.flight else None
+                    }
                 })
                 result['duplication'] = True
                 continue
@@ -821,11 +862,16 @@ def api_move_assignment(request):
                     if conflict:
                         physical_conflicts.append({
                             'flight': {
+                                'number': conflict['conflict'].flight.number,
+                                'origin': conflict['conflict'].flight.origin,
+                                'destination': conflict['conflict'].flight.destination,
+                            },
+                            'assigning_flight': {
                                 'number': assignment.flight.number,
                                 'origin': assignment.flight.origin,
                                 'destination': assignment.flight.destination,
                             },
-                            'conflict': conflict,
+                            'conflict': conflict['direction'],
                         })
                         result['physically_invalid'] = True
                         continue
@@ -907,16 +953,26 @@ def api_resize_assignment(request):
         duplicated_assignment = Assignment.duplication_check(revision, assignment.tail, start_time, end_time, assignment)
         if duplicated_assignment:
             time_conflicts.append({
-                'flight': {
-                    'id': duplicated_assignment.flight.id,
-                    'number': duplicated_assignment.flight.number,
-                    'origin': duplicated_assignment.flight.origin,
-                    'destination': duplicated_assignment.flight.destination,
-                } if duplicated_assignment.flight else None,
-                'id': duplicated_assignment.id,
-                'start_time': duplicated_assignment.start_time,
-                'end_time': duplicated_assignment.end_time,
-                'status': duplicated_assignment.status,
+                'assignment': {
+                    'id': duplicated_assignment.id,
+                    'start_time': duplicated_assignment.start_time,
+                    'end_time': duplicated_assignment.end_time,
+                    'status': duplicated_assignment.status,
+                    'flight': {
+                        'id': duplicated_assignment.flight.id,
+                        'number': duplicated_assignment.flight.number,
+                        'origin': duplicated_assignment.flight.origin,
+                        'destination': duplicated_assignment.flight.destination,
+                    } if duplicated_assignment.flight else None,
+                },
+                'editing_assignment': {
+                    'status': assignment.status,
+                    'flight': {
+                        'number': assignment.flight.number,
+                        'origin': assignment.flight.origin,
+                        'destination': assignment.flight.destination,
+                    } if assignment.flight else None
+                }
             })
             result['time_conflicts'] = time_conflicts
             result['error'] = 'Duplicated assignment'

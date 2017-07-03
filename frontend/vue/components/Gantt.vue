@@ -68,12 +68,14 @@
                 </div>
             </div>
             <div class="cover-wrapper">
+                <!-- Edit toolbar toggle button -->
                 <div class="edit-tools-toggle">
                     <a href="#" class="btn btn-link" @click.prevent="handleClickEditToolsToggle">
                         <i class="fa fa-chevron-down" v-if="editToolsClosed"></i>
                         <i class="fa fa-chevron-up" v-if="!editToolsClosed"></i>
                     </a>
                 </div>
+                <!-- Gantt table labels -->
                 <div class="gantt-labels">
                     <div class="label-cell">
                         <a :href="addTailUrl" class="btn btn-primary btn-circle-xs" type="button" v-if="writable">
@@ -141,6 +143,7 @@
                         <button id="publish-revision" class="btn btn-default" @click="handlePublishRevision">Publish</button>
                     </div>
                 </div>
+                <!-- Gantt table -->
                 <div :class="{ 'cover': true, 'loading': loading }" ref="scrollWrapper">
                     <div class="cover-inner" :style="{ width: ganttWidth + 'px' }">
                         <!-- Gray border -->
@@ -233,6 +236,11 @@
             @submit="createUnscheduledFlight"
             @cancel="cancelUnscheduledFlightCreate">
         </gantt-unscheduled-flight-modal>
+        <!-- Assignment Error modal -->
+        <GanttAssignmentErrorModal
+            ref="assignmentErrorModal"
+            :conflict-data="conflictData">
+        </GanttAssignmentErrorModal>
     </div>
 </template>
 
@@ -248,6 +256,7 @@ import GanttMaintenanceBarPrototype from '@frontend_components/GanttMaintenanceB
 import GanttUnscheduledFlightBarPrototype from '@frontend_components/GanttUnscheduledFlightBarPrototype.vue';
 import GanttRemoveDropzone from '@frontend_components/GanttRemoveDropzone.vue';
 import GanttUnscheduledFlightModal from '@frontend_components/GanttUnscheduledFlightModal.vue';
+import GanttAssignmentErrorModal from '@frontend_components/GanttAssignmentErrorModal.vue';
 
 export default {
     name: 'Gantt',
@@ -268,6 +277,7 @@ export default {
         'gantt-unscheduled-flight-bar-prototype': GanttUnscheduledFlightBarPrototype,
         'gantt-remove-dropzone': GanttRemoveDropzone,
         'gantt-unscheduled-flight-modal': GanttUnscheduledFlightModal,
+        GanttAssignmentErrorModal,
     },
     data() {
         const timezoneOffset = Cookies.get('gantt-timezone-offset');
@@ -308,6 +318,8 @@ export default {
             dragoverRowShadows: {},
             unscheduledFlightCreateData: {},
             editToolsClosed: false,
+            // gantt modal
+            conflictData: [],
             // 2-way bound models
             revision: 0,
             timezone: timezoneOffset ? timezoneOffset : 0,
@@ -406,17 +418,30 @@ export default {
                 return this.formatDate(date, 'HH:mm');
             }
         },
-        timeConflictObjectText(timeConflict) {
-            if (timeConflict.status == 1) {
-                return `Flight ${timeConflict.flight.number} ${timeConflict.flight.origin}-${timeConflict.flight.destination}`;
-            } else if (timeConflict.status == 2) {
-                return 'Maintenance Assignment';
-            } else if (timeConflict.status == 3) {
-                return `Unscheduled Flight ${timeConflict.flight.origin}-${timeConflict.flight.destination}`;
+        flightText(flight) {
+            return (flight.number > 0 ? `Flight ${flight.number}` : 'Unscheduled Flight')
+                + ` ${flight.origin}-${flight.destination}`;
+        },
+        assignmentText(assignment) {
+            if (assignment.flight) {
+                return this.flightText(assignment.flight);
+            } else {
+                return 'Maintenance';
             }
         },
-        physicalConflictObjectText(physicalConflict) {
-            return `${physicalConflict.conflict} of Flight ${physicalConflict.flight.number} ${physicalConflict.flight.origin}-${physicalConflict.flight.destination}`;
+        timeConflictObject(timeConflict) {
+            return {
+                subject: this.assignmentText(timeConflict.editing_assignment) + ' Assignment',
+                conflictType: 'Overlapped with',
+                object: this.assignmentText(timeConflict.assignment),
+            };
+        },
+        physicalConflictObject(physicalConflict) {
+            return {
+                subject: this.flightText(physicalConflict.assigning_flight) + ' Assignment',
+                conflictType: `Physical conflict with ${physicalConflict.conflict} of`,
+                object: this.flightText(physicalConflict.flight),
+            };
         },
         alertErrorIfAny(responseData, singular) {
             const timeConflicts = responseData.time_conflicts;
@@ -427,14 +452,18 @@ export default {
             }
 
             let message = '';
+            const conflictData = [];
 
             for (const timeConflict of timeConflicts) {
-                message += `Overlapped with: ${this.timeConflictObjectText(timeConflict)}\n`;
+                conflictData.push(this.timeConflictObject(timeConflict));
             }
             for (const physicalConflict of physicalConflicts) {
-                message += `Physical conflict with: ${this.physicalConflictObjectText(physicalConflict)}\n`;
+                conflictData.push(this.physicalConflictObject(physicalConflict));
             }
-            alert(message);
+            this.conflictData = conflictData;
+            this.$nextTick(() => {
+                this.$refs.assignmentErrorModal.showModal();
+            });
         },
         getLineTemplates(line) {
             return this.templates[line.id] ? this.templates[line.id] : [];
@@ -951,7 +980,7 @@ export default {
                         if (data.success) {
                             this.loadData(true);
                         }
-                        this.alertErrorIfAny(data, assignmentData.length == 1);
+                        this.alertErrorIfAny(data);
                     });
                 } else {                /* Template flight assign */
                     const flightData = [];
@@ -993,7 +1022,7 @@ export default {
                         if (data.success) {
                             this.loadData(true);
                         }
-                        this.alertErrorIfAny(data, flightData.length == 1);
+                        this.alertErrorIfAny(data);
                     });
                 }
             } else {
@@ -1059,6 +1088,7 @@ export default {
                         }
                     }
 
+                    this.alertErrorIfAny(data);
                     this.loadData(true);
                 } else {
                     vm.$emit('cancel-resize')

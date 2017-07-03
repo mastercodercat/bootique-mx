@@ -176,7 +176,10 @@ class Assignment(models.Model):
             query = query.exclude(pk=exclude_check_assignment.id)
         assignment_just_before = query.first()
         if assignment_just_before and assignment_just_before.flight.destination != origin:
-            return 'origin'
+            return {
+                'conflict': assignment_just_before,
+                'direction': 'destination',     # Origin/direction of conflicted already existing assignment
+            }
 
         query = cls.objects.filter(
                 Q(tail=tail) &
@@ -189,7 +192,10 @@ class Assignment(models.Model):
             query = query.exclude(pk=exclude_check_assignment.id)
         assignment_just_after = query.first()
         if assignment_just_after and assignment_just_after.flight.origin != destination:
-            return 'destination'
+            return {
+                'conflict': assignment_just_after,
+                'direction': 'origin',          # Origin/direction of conflicted already existing assignment
+            }
 
         return None
 
