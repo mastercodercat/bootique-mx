@@ -55,8 +55,9 @@
                             <img class="mini-nav-logo" src="{% static "img/gear.png" %}" />
                         </div>
                     </li>
+                    {% comment %}
                     {% if request.user|can_read_inspection %}
-                        <li{% if 'home' == request.resolver_match.namespace %} class="active"{% endif %}>
+                        <!-- <li{% if 'home' == request.resolver_match.namespace %} class="active"{% endif %}>
                             <a href="#">
                                 <i class="fa fa-globe"></i> <span class="nav-label">Aircraft</span> <span class="fa arrow"></span>
                             </a>
@@ -78,17 +79,18 @@
                                 {% endfor %}
                             </ul>
                         </li>
+                        <li{% if 'inspection' == request.resolver_match.namespace %} class="active"{% endif %}>
+                            <a href="javascript:;">
+                                <i class="fa fa-gears"></i> <span class="nav-label">Inspection Programs</span> <span class="fa arrow"></span>
+                            </a>
+                            <ul class="nav nav-second-level collapse">
+                                <li{% if 'index' == request.resolver_match.url_name and 'inspection' == request.resolver_match.namespace %} class="active" {% endif %}>
+                                    <a href="{% url 'inspection:index' %}">Overview</a>
+                                </li>
+                            </ul>
+                        </li> -->
                     {% endif %}
-                    <li{% if 'inspection' == request.resolver_match.namespace %} class="active"{% endif %}>
-                        <a href="javascript:;">
-                            <i class="fa fa-gears"></i> <span class="nav-label">Inspection Programs</span> <span class="fa arrow"></span>
-                        </a>
-                        <ul class="nav nav-second-level collapse">
-                            <li{% if 'index' == request.resolver_match.url_name and 'inspection' == request.resolver_match.namespace %} class="active" {% endif %}>
-                                <a href="{% url 'inspection:index' %}">Overview</a>
-                            </li>
-                        </ul>
-                    </li>
+                    {% endcomment %}
                     {% if request.user|can_read_gantt %}
                         <li{% if 'routeplanning' == request.resolver_match.namespace %} class="active"{% endif %}>
                             <a href="javascript:;">
