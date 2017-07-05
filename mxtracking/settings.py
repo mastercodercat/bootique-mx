@@ -29,8 +29,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'common',
-    'home',
-    'inspection',
+    'home',           ### disabled for now
+    'inspection',     ### disabled for now
     'routeplanning',
     # Allauth
     'django.contrib.sites',

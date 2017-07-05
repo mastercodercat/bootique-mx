@@ -12,7 +12,7 @@
 <script>
 export default {
     name: 'GanttDragSelect',
-    props: ['item-selector', 'value'],
+    props: ['item-selector', 'value', 'editing'],
     data() {
         return {
             selecting: false,
@@ -21,6 +21,10 @@ export default {
     },
     methods: {
         handleMouseDown(event) {
+            if (!this.editing) {
+                return false;
+            }
+
             event.preventDefault();
 
             if (event.target.className.indexOf('row-line') >= 0) {
@@ -44,6 +48,10 @@ export default {
             }
         },
         handleMouseMove(event) {
+            if (!this.editing) {
+                return false;
+            }
+
             if (this.selecting) {
                 event.preventDefault();
 
@@ -71,6 +79,10 @@ export default {
             }
         },
         handleMouseUp(event) {
+            if (!this.editing) {
+                return false;
+            }
+
             if (this.selecting) {
                 event.preventDefault();
 

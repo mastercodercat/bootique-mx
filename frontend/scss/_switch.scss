@@ -1,0 +1,51 @@
+$toggle-size: 24px;
+
+.toggle-switch {
+  background-color: #fff;
+  border: 1px solid #dfdfdf;
+  border-radius: $toggle-size / 1.5;
+  cursor: pointer;
+  display: inline-block;
+  height: $toggle-size;
+  position: relative;
+  vertical-align: middle;
+  width: $toggle-size * 5 / 3;
+
+  -moz-user-select: none;
+  -khtml-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  box-sizing: content-box;
+  background-clip: content-box;
+  transition: border 0.4s, box-shadow 0.4s;
+
+  > .toggle {
+    background: #fff;
+    border-radius: 100%;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+    height: $toggle-size;
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: $toggle-size;
+    transition: background-color 0.4s, left 0.2s;
+  }
+
+  + .text {
+    margin-left: 10px;
+    line-height: $toggle-size;
+    font-size: 14px;
+  }
+
+  &.on {
+    background-color: rgb(26, 179, 148);
+    border-color: rgb(26, 179, 148);
+    box-shadow: rgb(26, 179, 148) 0px 0px 0px ($toggle-size * 8 / 15) inset;
+    transition: border 0.4s, box-shadow 0.4s, background-color 1.2s;
+
+    > .toggle {
+      left: $toggle-size / 1.5;
+    }
+  }
+}

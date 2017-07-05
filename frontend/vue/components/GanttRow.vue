@@ -11,6 +11,7 @@
             :unit="unit"
             :selected="!!selectedIds[object.id]"
             :assigned="isAssigned(object)"
+            :editing="editing"
             @resized="handleResizeBar"
             v-for="object in objects">
         </gantt-bar>
@@ -45,7 +46,7 @@ export default {
     name: 'GanttRow',
     props: ['row-object', 'start-date', 'timezone', 'objects', 'shadows', 'unit',
         'selected-ids', 'dragging', 'drag-offset', 'dragging-ids', 'assigned-ids',
-        'starting-tail-position'],
+        'starting-tail-position', 'editing'],
     components: {
         'gantt-bar': GanttBar,
         'gantt-bar-shadow': GanttBarShadow,
@@ -72,14 +73,26 @@ export default {
         interact(this.$el).dropzone({
             accept: '.bar',
             ondragenter: (event) => {
+                if (!this.editing) {
+                    return false;
+                }
+
                 const vm = this.getVueInstanceFromBar(event.relatedTarget);
                 this.$emit('drag-enter', this.rowObject, vm.data, vm.status);
             },
             ondragleave: (event) => {
+                if (!this.editing) {
+                    return false;
+                }
+
                 const vm = this.getVueInstanceFromBar(event.relatedTarget);
                 this.$emit('drag-leave', this.rowObject, vm.data, vm.status);
             },
             ondrop: (event) => {
+                if (!this.editing) {
+                    return false;
+                }
+
                 const vm = this.getVueInstanceFromBar(event.relatedTarget);
                 this.$emit('drop-on', this.rowObject, vm.data, vm.status, event, this.$el);
             },

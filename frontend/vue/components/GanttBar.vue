@@ -9,6 +9,7 @@
                 :selected="selected && !assigned"
                 :dragging="dragging"
                 :drag-offset="internalDragOffset"
+                :editing="editing"
                 @resized="handleResizeBar">
             </gantt-maintenance-bar>
         </template>
@@ -21,6 +22,7 @@
                 :selected="selected && !assigned"
                 :dragging="dragging"
                 :drag-offset="internalDragOffset"
+                :editing="editing"
                 @resized="handleResizeBar">
             </gantt-unscheduled-flight-bar>
         </template>
@@ -45,7 +47,7 @@ import GanttUnscheduledFlightBar from '@frontend_components/GanttUnscheduledFlig
 
 export default {
     name: 'GanttBar',
-    props: ['data', 'start-date', 'timezone', 'unit', 'selected', 'assigned', 'dragging', 'drag-offset'],
+    props: ['data', 'start-date', 'timezone', 'unit', 'selected', 'assigned', 'dragging', 'drag-offset', 'editing'],
     components: {
         'gantt-flight-bar': GanttFlightBar,
         'gantt-maintenance-bar': GanttMaintenanceBar,

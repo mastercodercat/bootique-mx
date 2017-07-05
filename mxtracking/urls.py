@@ -20,8 +20,8 @@ from django.views.generic.base import RedirectView
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^account/', include('allauth.urls')),
-    # url(r'^aircraft/', include('home.urls', namespace='home')),
-    # url(r'^inspectionprogram/', include('inspection.urls', namespace='inspection')),
+    url(r'^aircraft/', include('home.urls', namespace='home')),
+    url(r'^inspectionprogram/', include('inspection.urls', namespace='inspection')),
     url(r'^routeplanning/', include('routeplanning.urls', namespace='routeplanning')),
     url('', include('common.urls')),
 ]

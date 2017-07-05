@@ -39,9 +39,12 @@ $gantt-cover-padding-top: 105px;
     .gantt-labels {
         position: absolute;
         left: 0;
-        top: $gantt-cover-padding-top;
+        top: 0;
+        margin-top: $gantt-cover-padding-top;
         z-index: 200;
         background: #e7eaec;
+        transition: margin-top 0.3s;
+
         .label-cell,
         .axis-cell {
             width: $label-cell-width;
@@ -396,6 +399,8 @@ $gantt-cover-padding-top: 105px;
     .table-wrapper {
         position: relative;
         margin-left: $label-cell-width;
+        transition: z-index 0.3s;
+        z-index: 0;
     }
     .now-indicator {
         display: block;
@@ -491,33 +496,50 @@ $gantt-cover-padding-top: 105px;
     .prototype {
         display: none;
     }
-    /* Edit toolbar toggle animation */
-    .gantt-labels {
-        transition: top 0.3s;
-    }
-    .cover .cover-inner {
-        transition: padding-top 0.3s;
-    }
-    .table-wrapper {
-        transition: all 0.3s;
-    }
-    &.edit-tools-closed {
-        $closed-edit-toolbar-height: 35px;
-        .gantt-labels {
-            top: $closed-edit-toolbar-height;
-        }
-        .cover .cover-inner {
-            padding-top: $closed-edit-toolbar-height;
-        }
-        .table-wrapper {
-            z-index: 1;
-        }
-    }
+    /* Gantt row last position of aircraft */
     .last-assignment {
         position: absolute;
         left: 5px;
         top: 50%;
         margin-top: -0.714em;
+    }
+    /* Edit toolbar toggle animation */
+    .cover .cover-inner {
+        transition: padding-top 0.3s;
+    }
+    &.edit-tools-closed {
+        $closed-edit-toolbar-height: 35px;
+        .gantt-labels {
+            margin-top: $closed-edit-toolbar-height;
+        }
+        .cover {
+            &.loading:before {
+                top: $closed-edit-toolbar-height;
+            }
+            .cover-inner {
+                padding-top: $closed-edit-toolbar-height;
+            }
+        }
+        .table-wrapper {
+            z-index: 100;   /* Should be big enough so as soon as animation is started table-wrapper comes on top of control bar */
+        }
+    }
+    /* Readonly mode */
+    &.read-only {
+        .gantt-labels {
+            margin-top: 0 !important;
+        }
+        .cover {
+            &.loading:before {
+                top: 0;
+            }
+            .cover-inner {
+                padding-top: 0;
+            }
+        }
+        .table-wrapper {
+            z-index: 100;   /* Should be big enough so as soon as animation is started table-wrapper comes on top of control bar */
+        }
     }
 }
 

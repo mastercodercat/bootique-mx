@@ -31,7 +31,7 @@ import interact from 'interactjs';
 
 export default {
     name: 'GanttUnscheduledFlightBar',
-    props: ['assignment', 'start-date', 'timezone', 'selected', 'dragging', 'drag-offset', 'unit'],
+    props: ['assignment', 'start-date', 'timezone', 'selected', 'dragging', 'drag-offset', 'unit', 'editing'],
     data() {
         return {
             resizing: false,
@@ -101,10 +101,18 @@ export default {
             edges: { left: true, right: true }
         })
         .on('resizestart', (event) => {
+            if (!this.editing) {
+                return false;
+            }
+
             this.resizing = true;
             this.orgWidth = $(this.$el).width();
         })
         .on('resizemove', (event) => {
+            if (!this.editing) {
+                return false;
+            }
+
             const $bar = $(this.$el);
             const $row = $bar.closest('.row-line');
             const unitWidth = $row.width() / (14 * 24 * 3600) * this.unit;
@@ -121,6 +129,10 @@ export default {
             this.pos = pos;
         })
         .on('resizeend', (event) => {
+            if (!this.editing) {
+                return false;
+            }
+
             this.resizing = false;
 
             const $bar = $(this.$el);

@@ -61,12 +61,12 @@ class UnitTestCase(TestCase):
         d1 = datetime(2017, 5, 24, 16, 30, tzinfo=utc)
         d2 = datetime(2017, 5, 24, 17, 30, tzinfo=utc)
         conflict = Assignment.physical_conflict_check(None, tail, 'LAX', 'OAK', d1, d2)
-        self.assertEqual(conflict, 'origin')
+        self.assertEqual(conflict['direction'], 'destination')
 
         d1 = datetime(2017, 5, 24, 16, 30, tzinfo=utc)
         d2 = datetime(2017, 5, 24, 17, 30, tzinfo=utc)
         conflict = Assignment.physical_conflict_check(None, tail, 'MCE', 'ATL', d1, d2)
-        self.assertEqual(conflict, 'destination')
+        self.assertEqual(conflict['direction'], 'origin')
 
         d1 = datetime(2017, 5, 24, 23, 0, tzinfo=utc)
         d2 = datetime(2017, 5, 25, 0, 10, tzinfo=utc)
@@ -76,7 +76,7 @@ class UnitTestCase(TestCase):
         d1 = datetime(2017, 5, 24, 23, 0, tzinfo=utc)
         d2 = datetime(2017, 5, 25, 0, 10, tzinfo=utc)
         conflict = Assignment.physical_conflict_check(None, tail, 'MCE', 'LAX', d1, d2)
-        self.assertEqual(conflict, 'destination')
+        self.assertEqual(conflict['direction'], 'origin')
 
         assignment_to_move = Assignment.objects.select_related('flight').get(pk=455)
         d1 = datetime(2017, 5, 25, 13, 30, tzinfo=utc)

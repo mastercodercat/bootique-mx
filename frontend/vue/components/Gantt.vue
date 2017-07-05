@@ -1,6 +1,19 @@
 <template>
     <div>
         <div :class="componentClass" ref="gantt">
+            <div class="m-b-md" v-if="writable">
+                <span :class="{ 'toggle-switch': true, 'on': editing }" @click="toggleEditing">
+                    <span class="toggle"></span>
+                </span>
+                <span class="text">
+                    <span v-if="editing">
+                        Editable Route Plans
+                    </span>
+                    <span v-else>
+                        Current Published Route Plan
+                    </span>
+                </span>
+            </div>
             <div class="clearfix m-b-md"><!-- Top controls -->
                 <div class="unit-control btn-group">
                     <a :class="{ 'btn btn-white': true, 'active': mode == 1 }"
@@ -68,13 +81,6 @@
                 </div>
             </div>
             <div class="cover-wrapper">
-                <!-- Edit toolbar toggle button -->
-                <div class="edit-tools-toggle">
-                    <a href="#" class="btn btn-link" @click.prevent="handleClickEditToolsToggle">
-                        <i class="fa fa-chevron-down" v-if="editToolsClosed"></i>
-                        <i class="fa fa-chevron-up" v-if="!editToolsClosed"></i>
-                    </a>
-                </div>
                 <!-- Gantt table labels -->
                 <div class="gantt-labels">
                     <div class="label-cell">
@@ -125,6 +131,7 @@
                     </div>
                     <gantt-remove-dropzone
                         acceptable-selector="#flight-assignment-table .bar"
+                        :editing="editing"
                         @drop-on="handleDropOnRemoveZone">
                     </gantt-remove-dropzone>
                     <div class="revision-controls pull-right">
@@ -166,7 +173,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <gantt-drag-select item-selector=".bar" v-model="selectedAssignmentIds">
+                                <gantt-drag-select item-selector=".bar" :editing="editing" v-model="selectedAssignmentIds">
                                     <gantt-row
                                         :key="tail.id"
                                         :row-object="tail"
@@ -180,6 +187,7 @@
                                         :drag-offset="dragOffset"
                                         :dragging-ids="draggingAssignmentIds"
                                         :starting-tail-position="startingTailPositions[tail.number]"
+                                        :editing="editing"
                                         @drag-enter="handleDragEnterAssignmentRow"
                                         @drag-leave="handleDragLeaveAssignmentRow"
                                         @drop-on="handleDropOnAssignmentRow"
@@ -208,7 +216,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <gantt-drag-select item-selector=".bar" v-model="selectedTemplateIds">
+                                <gantt-drag-select item-selector=".bar" :editing="editing" v-model="selectedTemplateIds">
                                     <gantt-row
                                         :key="line.id"
                                         :row-object="line"
@@ -221,12 +229,21 @@
                                         :drag-offset="dragOffset"
                                         :dragging-ids="draggingTemplateIds"
                                         :assigned-ids="assignedFlightIds"
+                                        :editing="editing"
                                         v-for="line in lines">
                                     </gantt-row>
                                 </gantt-drag-select>
                             </div>
                         </div>
                     </div>
+                </div>
+                <!-- Edit toolbar toggle button -->
+                <!-- This button is placed at the bottom due to Vue rendering interferes with CSS3 animation -->
+                <div class="edit-tools-toggle" v-if="writable">
+                    <a href="#" class="btn btn-link" @click.prevent="handleClickEditToolsToggle">
+                        <i class="fa fa-chevron-down" v-if="editToolsClosed"></i>
+                        <i class="fa fa-chevron-up" v-if="!editToolsClosed"></i>
+                    </a>
                 </div>
             </div>
         </div>
@@ -318,10 +335,11 @@ export default {
             dragoverRowShadows: {},
             unscheduledFlightCreateData: {},
             editToolsClosed: false,
+            editing: !!this.writable,
             // gantt modal
             conflictData: [],
             // 2-way bound models
-            revision: 0,
+            revision: revisions.length > 0 ? revisions[0].id : 0,
             timezone: timezoneOffset ? timezoneOffset : 0,
             selectedAssignmentIds: {},
             selectedTemplateIds: {},
@@ -334,6 +352,7 @@ export default {
                 'small-cells': this.days > 1,
                 'no-flight-number': this.days > 3,
                 'edit-tools-closed': this.editToolsClosed,
+                'read-only': !this.editing,
             };
         },
         startDate() {
@@ -479,6 +498,15 @@ export default {
                 this.loading = true;
             }
 
+            if (!this.writable && !this.revision) {
+                if (this.revisions.length) {
+                    alert('You don\'t permission to view gantt draft.');
+                } else {
+                    alert('There is no published route plan.');
+                }
+                return;
+            }
+
             this.$http.get(this.loadDataApiUrl, {
                 params: {
                     startdate: this.startDate.getTime() / 1000,
@@ -534,6 +562,10 @@ export default {
             interact('.gantt-bar .bar:not(.assigned)').draggable({
                 autoScroll: true,
                 onstart: (event) => {
+                    if (!this.editing) {
+                        return false;
+                    }
+
                     const $bar = $(event.target);
                     const vm = $bar.closest('.gantt-bar')[0].__vue__;
                     const data = vm.data;
@@ -565,6 +597,10 @@ export default {
                     this.dragging = true;
                 },
                 onmove: (event) => {
+                    if (!this.editing) {
+                        return false;
+                    }
+
                     const x = (this.dragOffset.x ? this.dragOffset.x : 0) + event.dx;
                     const y = (this.dragOffset.y ? this.dragOffset.y : 0) + event.dy;
 
@@ -572,12 +608,20 @@ export default {
                     this.dragOffset.y = y;
                 },
                 onend: (event) => {
+                    if (!this.editing) {
+                        return false;
+                    }
+
                     this.draggingAssignmentIds = {}
                     this.draggingTemplateIds = {}
                     this.dragging = false;
                 },
             })
-            .actionChecker(function (pointer, event, action) {
+            .actionChecker((pointer, event, action) => {
+                if (!this.editing) {
+                    return null;
+                }
+
                 const pos = event.offsetX / $(event.target).closest('.bar').width();
                 if (pos <= 0.15 || pos >= 0.85) {
                     action.name = 'resize';
@@ -594,6 +638,10 @@ export default {
                 return action;
             })
             .on('click', (event) => {
+                if (!this.editing) {
+                    return false;
+                }
+
                 const $bar = $(event.target);
                 const vm = $bar.closest('.gantt-bar')[0].__vue__;
                 const data = vm.data;
@@ -625,6 +673,10 @@ export default {
             interact('.status-prototype').draggable({
                 autoScroll: true,
                 onstart: (event) => {
+                    if (!this.editing) {
+                        return false;
+                    }
+
                     const $bar = $(event.target);
                     const vm = $bar.closest('.bar.status-prototype')[0].__vue__;
 
@@ -634,6 +686,10 @@ export default {
                     this.draggingStatus = vm.status;
                 },
                 onmove: (event) => {
+                    if (!this.editing) {
+                        return false;
+                    }
+
                     const x = (this.dragOffset.x ? this.dragOffset.x : 0) + event.dx;
                     const y = (this.dragOffset.y ? this.dragOffset.y : 0) + event.dy;
 
@@ -641,10 +697,18 @@ export default {
                     this.dragOffset.y = y;
                 },
                 onend: (event) => {
+                    if (!this.editing) {
+                        return false;
+                    }
+
                     this.draggingStatusPrototype = false;
                 },
             })
-            .actionChecker(function (pointer, event, action) {
+            .actionChecker((pointer, event, action) => {
+                if (!this.editing) {
+                    return null;
+                }
+
                 if (event.button !== 0) {
                     return null;
                 }
@@ -734,6 +798,10 @@ export default {
             window.location.href = url;
         },
         handleDeleteRevision() {
+            if (!this.editing) {
+                return false;
+            }
+
             this.$http.post(this.deleteRevisionApiUrl, {
                 revision: this.revision,
             })
@@ -763,6 +831,10 @@ export default {
             });
         },
         handleClearRevision() {
+            if (!this.editing) {
+                return false;
+            }
+
             this.$http.post(this.clearRevisionApiUrl, {
                 revision: this.revision,
             })
@@ -774,6 +846,10 @@ export default {
             });
         },
         handlePublishRevision() {
+            if (!this.editing) {
+                return false;
+            }
+
             this.$http.post(this.publishRevisionApiUrl, {
                 revision: this.revision,
             })
@@ -1133,6 +1209,16 @@ export default {
         },
         handleClickEditToolsToggle() {
             this.editToolsClosed = !this.editToolsClosed;
+        },
+        toggleEditing() {
+            this.editing = !this.editing;
+            if (!this.editing) {
+                if (this.revisions.length > 0) {
+                    this.revision = this.revisions[0].id;
+                } else {
+                    this.revision = 0;
+                }
+            }
         },
     },
     watch: {
