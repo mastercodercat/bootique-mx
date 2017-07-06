@@ -3,6 +3,8 @@ from __future__ import unicode_literals
 from django.db import models
 from django.db.models import Q, Sum
 
+from common.helpers import *
+
 
 class Tail(models.Model):
     number = models.CharField(max_length=20, blank=True, unique=True)
@@ -85,6 +87,22 @@ class Revision(models.Model):
         if self.has_draft:
             model_str += ' (edited)'
         return model_str
+
+    @classmethod
+    def get_latest_revision(cls):
+        revision = Revision.objects.order_by('-published_datetime').first()
+        return revision
+
+    @classmethod
+    def create_draft(cls):
+        latest_revision = Revision.get_latest_revision()
+        if latest_revision:
+            assignments = Assignment.get_revision_assignments(latest_revision).filter(start_time__lte=datetime_now_utc())
+            for assignment in assignments:
+                assignment.pk = None
+                assignment.is_draft = True
+                assignment.revision = None
+                assignment.save()
 
     def check_draft_created(self):
         if not self.has_draft:

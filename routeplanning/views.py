@@ -1345,6 +1345,9 @@ def api_publish_revision(request):
         if revision and revision.has_draft:
             revision.has_draft = False
             revision.save()
+        elif not revision:
+            # Copy past and current assignments from last revision
+            Revision.create_draft()
     except Exception as e:
         result['error'] = str(e)
         return Response(result, status=500)
@@ -1385,6 +1388,9 @@ def api_clear_revision(request):
         if revision:
             revision.has_draft = False
             revision.save()
+        else:
+            # Copy past and current assignments from last revision
+            Revision.create_draft()
     except Exception as e:
         result['error'] = str(e)
         return Response(result, status=500)
@@ -1417,6 +1423,9 @@ def api_delete_revision(request):
 
         if revision:
             revision.delete()
+        else:
+            # Copy past and current assignments from last revision
+            Revision.create_draft()
     except Exception as e:
         result['error'] = str(e)
         return Response(result, status=500)

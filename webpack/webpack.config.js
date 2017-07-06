@@ -16,9 +16,6 @@ plugins = [
         jQuery: "jquery",
         "window.jQuery": "jquery",
         Utils: path.resolve(__dirname, '../frontend/js/utils.js'),
-        RoutePlanningGantt: path.resolve(__dirname, '../frontend/js/gantt.js'),
-        ComingDueList: path.resolve(__dirname, '../frontend/js/comingduelist.js'),
-        HobbsForm: path.resolve(__dirname, '../frontend/js/hobbsform.js'),
     }),
 ];
 
