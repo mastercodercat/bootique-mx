@@ -37,8 +37,8 @@ class Command(BaseCommand):
                         number=int(row[1][3:]),
                         origin=row[2],
                         destination=row[3],
-                        departure_datetime=self.str_to_datetime(row[4]),
-                        arrival_datetime=self.str_to_datetime(row[6])
+                        scheduled_out_datetime=self.str_to_datetime(row[4]),
+                        scheduled_in_datetime=self.str_to_datetime(row[6])
                     )
                     flight.save()
                 except Exception as e:

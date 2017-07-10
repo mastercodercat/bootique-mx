@@ -287,7 +287,7 @@ def api_flight_get_page(request):
         'data': [],
     }
 
-    order_columns = ('id', 'number', 'origin', 'destination', 'departure_datetime', 'arrival_datetime')
+    order_columns = ('id', 'number', 'origin', 'destination', 'scheduled_out_datetime', 'scheduled_in_datetime')
 
     try:
         start = int(request.data.get('start'))
@@ -306,8 +306,8 @@ def api_flight_get_page(request):
                 Q(number__contains=search) |
                 Q(origin__icontains=search) |
                 Q(destination__icontains=search) |
-                Q(departure_datetime__contains=search) |
-                Q(arrival_datetime__contains=search)
+                Q(scheduled_out_datetime__contains=search) |
+                Q(scheduled_in_datetime__contains=search)
             )
         flights = flights.order_by(order_column)
         flights_page = flights[start:(start + length)]
@@ -321,8 +321,8 @@ def api_flight_get_page(request):
                 flight.number,
                 flight.origin,
                 flight.destination,
-                totimestamp(flight.departure_datetime),
-                totimestamp(flight.arrival_datetime),
+                totimestamp(flight.scheduled_out_datetime),
+                totimestamp(flight.scheduled_in_datetime),
                 buttons,
             ))
         result['data'] = data
@@ -457,9 +457,9 @@ def api_load_data(request):
         lines = Line.objects.all()
         for line in lines:
             flights = line.flights.filter(
-                (Q(departure_datetime__gte=start_time) & Q(departure_datetime__lte=end_time)) |
-                (Q(arrival_datetime__gte=start_time) & Q(arrival_datetime__lte=end_time)) |
-                (Q(departure_datetime__lte=start_time) & Q(arrival_datetime__gte=end_time))
+                (Q(scheduled_out_datetime__gte=start_time) & Q(scheduled_out_datetime__lte=end_time)) |
+                (Q(scheduled_in_datetime__gte=start_time) & Q(scheduled_in_datetime__lte=end_time)) |
+                (Q(scheduled_out_datetime__lte=start_time) & Q(scheduled_in_datetime__gte=end_time))
             )
             for flight in flights:
                 flight_data = {
@@ -467,8 +467,20 @@ def api_load_data(request):
                     'number': flight.number,
                     'origin': flight.origin,
                     'destination': flight.destination,
-                    'departure_datetime': flight.departure_datetime,
-                    'arrival_datetime': flight.arrival_datetime,
+                    'scheduled_out_datetime': flight.scheduled_out_datetime,
+                    'scheduled_in_datetime': flight.scheduled_in_datetime,
+                    'scheduled_out_datetime': flight.scheduled_out_datetime,
+                    'scheduled_in_datetime': flight.scheduled_in_datetime,
+                    'scheduled_off_datetime': flight.scheduled_off_datetime,
+                    'scheduled_on_datetime': flight.scheduled_on_datetime,
+                    'estimated_out_datetime': flight.estimated_out_datetime,
+                    'estimated_in_datetime': flight.estimated_in_datetime,
+                    'estimated_off_datetime': flight.estimated_off_datetime,
+                    'estimated_on_datetime': flight.estimated_on_datetime,
+                    'actual_out_datetime': flight.actual_out_datetime,
+                    'actual_in_datetime': flight.actual_in_datetime,
+                    'actual_off_datetime': flight.actual_off_datetime,
+                    'actual_on_datetime': flight.actual_on_datetime,
                     'line_id': line.id,
                 }
                 template_data.append(flight_data)
@@ -488,18 +500,6 @@ def api_load_data(request):
             'number': assignment.flight_number,
             'start_time': assignment.start_time,
             'end_time': assignment.end_time,
-            'scheduled_out_datetime': assignment.scheduled_out_datetime,
-            'scheduled_in_datetime': assignment.scheduled_in_datetime,
-            'scheduled_off_datetime': assignment.scheduled_off_datetime,
-            'scheduled_on_datetime': assignment.scheduled_on_datetime,
-            'estimated_out_datetime': assignment.estimated_out_datetime,
-            'estimated_in_datetime': assignment.estimated_in_datetime,
-            'estimated_off_datetime': assignment.estimated_off_datetime,
-            'estimated_on_datetime': assignment.estimated_on_datetime,
-            'actual_out_datetime': assignment.actual_out_datetime,
-            'actual_in_datetime': assignment.actual_in_datetime,
-            'actual_off_datetime': assignment.actual_off_datetime,
-            'actual_on_datetime': assignment.actual_on_datetime,
             'status': assignment.status,
             'tail': assignment.tail.number,
             'actual_hobbs': Hobbs.get_projected_value(assignment.tail, assignment.end_time, revision),
@@ -509,8 +509,8 @@ def api_load_data(request):
         if assignment.flight:
             assignment_data['origin'] = assignment.flight.origin
             assignment_data['destination'] = assignment.flight.destination
-            assignment_data['departure_datetime'] = assignment.flight.departure_datetime
-            assignment_data['arrival_datetime'] = assignment.flight.arrival_datetime
+            assignment_data['scheduled_out_datetime'] = assignment.flight.scheduled_out_datetime
+            assignment_data['scheduled_in_datetime'] = assignment.flight.scheduled_in_datetime
             assignment_data['flight_id'] = assignment.flight.id
         assignments_data.append(assignment_data)
 
@@ -562,7 +562,7 @@ def api_assign_flight(request):
             tail = Tail.objects.get(number=tail_number)
             flight = Flight.objects.get(pk=flight_id)
 
-            duplicated_assignment = Assignment.duplication_check(revision, tail, flight.departure_datetime, flight.arrival_datetime)
+            duplicated_assignment = Assignment.duplication_check(revision, tail, flight.scheduled_out_datetime, flight.scheduled_in_datetime)
             if duplicated_assignment:
                 time_conflicts.append({
                     'assignment': {
@@ -594,7 +594,7 @@ def api_assign_flight(request):
                 revision,
                 tail,
                 flight.origin, flight.destination,
-                flight.departure_datetime, flight.arrival_datetime
+                flight.scheduled_out_datetime, flight.scheduled_in_datetime
             )
             if conflict:
                 result['physically_invalid'] = True
@@ -615,8 +615,8 @@ def api_assign_flight(request):
 
             assignment = Assignment(
                 flight_number=flight.number,
-                start_time=flight.departure_datetime,
-                end_time=flight.arrival_datetime,
+                start_time=flight.scheduled_out_datetime,
+                end_time=flight.scheduled_in_datetime,
                 status=Assignment.STATUS_FLIGHT,
                 flight=flight,
                 tail=tail
@@ -736,8 +736,8 @@ def api_assign_status(request):
             flight = Flight(
                 origin=origin,
                 destination=destination,
-                departure_datetime=start_time,
-                arrival_datetime=end_time,
+                scheduled_out_datetime=start_time,
+                scheduled_in_datetime=end_time,
                 type=Flight.TYPE_UNSCHEDULED
             )
             flight.save()
@@ -906,8 +906,8 @@ def api_move_assignment(request):
             try:
                 if start_time_str:
                     if assignment.status == Assignment.STATUS_UNSCHEDULED_FLIGHT:
-                        assignment.flight.departure_datetime = start_time
-                        assignment.flight.arrival_datetime = end_time
+                        assignment.flight.scheduled_out_datetime = start_time
+                        assignment.flight.scheduled_in_datetime = end_time
                         assignment.flight.save()
 
                     assignment.start_time = start_time
@@ -1008,8 +1008,8 @@ def api_resize_assignment(request):
         assignment.save()
 
         if assignment.status == Assignment.STATUS_UNSCHEDULED_FLIGHT:
-            assignment.flight.departure_datetime = start_time
-            assignment.flight.arrival_datetime = end_time
+            assignment.flight.scheduled_out_datetime = start_time
+            assignment.flight.scheduled_in_datetime = end_time
             assignment.flight.save()
 
     except Exception as e:
@@ -1067,59 +1067,59 @@ def api_upload_csv(request): # pragma: no cover
                 flight_number = int(row[1][3:])
                 origin = row[2]
                 destination = row[3]
-                departure_datetime = str_to_datetime(row[4])
-                arrival_datetime = str_to_datetime(row[6])
+                scheduled_out_datetime = str_to_datetime(row[4])
+                scheduled_in_datetime = str_to_datetime(row[6])
 
-                # if departure_datetime < now:
+                # if scheduled_out_datetime < now:
                 #     continue
 
                 flight_to_update = None
 
                 closest_past_date = Flight.objects \
-                    .filter(number=flight_number, departure_datetime__lte=departure_datetime) \
-                    .aggregate(closest_past_date=Max('departure_datetime'))['closest_past_date']
-                if closest_past_date and closest_past_date.year == departure_datetime.year \
-                    and closest_past_date.month == departure_datetime.month \
-                    and closest_past_date.day == departure_datetime.day:
+                    .filter(number=flight_number, scheduled_out_datetime__lte=scheduled_out_datetime) \
+                    .aggregate(closest_past_date=Max('scheduled_out_datetime'))['closest_past_date']
+                if closest_past_date and closest_past_date.year == scheduled_out_datetime.year \
+                    and closest_past_date.month == scheduled_out_datetime.month \
+                    and closest_past_date.day == scheduled_out_datetime.day:
                     flight_to_update = Flight.objects.select_related('assignment').get(
                         number=flight_number,
-                        departure_datetime=closest_past_date
+                        scheduled_out_datetime=closest_past_date
                     )
 
                 if not flight_to_update:
                     closest_next_date = Flight.objects \
-                        .filter(number=flight_number, departure_datetime__gt=departure_datetime) \
-                        .aggregate(closest_next_date=Max('departure_datetime'))['closest_next_date']
-                    if closest_next_date and closest_next_date.year == departure_datetime.year \
-                        and closest_next_date.month == departure_datetime.month \
-                        and closest_next_date.day == departure_datetime.day:
+                        .filter(number=flight_number, scheduled_out_datetime__gt=scheduled_out_datetime) \
+                        .aggregate(closest_next_date=Max('scheduled_out_datetime'))['closest_next_date']
+                    if closest_next_date and closest_next_date.year == scheduled_out_datetime.year \
+                        and closest_next_date.month == scheduled_out_datetime.month \
+                        and closest_next_date.day == scheduled_out_datetime.day:
                         flight_to_update = Flight.objects.select_related('assignment').get(
                             number=flight_number,
-                            departure_datetime=closest_next_date
+                            scheduled_out_datetime=closest_next_date
                         )
 
                 if flight_to_update:
-                    flight_to_update.departure_datetime = departure_datetime
-                    flight_to_update.arrival_datetime = arrival_datetime
+                    flight_to_update.scheduled_out_datetime = scheduled_out_datetime
+                    flight_to_update.scheduled_in_datetime = scheduled_in_datetime
                     flight_to_update.save()
 
                     assignment = flight_to_update.get_assignment()
                     if assignment:
-                        dup_assignments = Assignment.get_duplicated_assignments(assignment.tail, departure_datetime, arrival_datetime, assignment)
+                        dup_assignments = Assignment.get_duplicated_assignments(assignment.tail, scheduled_out_datetime, scheduled_in_datetime, assignment)
                         if dup_assignments.count() > 0:
                             assignment.delete()
                             dup_assignments.delete()
                         else:
-                            assignment.start_time = departure_datetime
-                            assignment.end_time = arrival_datetime
+                            assignment.start_time = scheduled_out_datetime
+                            assignment.end_time = scheduled_in_datetime
                             assignment.save()
                 else:
                     flight=Flight(
                         number=flight_number,
                         origin=origin,
                         destination=destination,
-                        departure_datetime=departure_datetime,
-                        arrival_datetime=arrival_datetime
+                        scheduled_out_datetime=scheduled_out_datetime,
+                        scheduled_in_datetime=scheduled_in_datetime
                     )
                     flight.save()
 

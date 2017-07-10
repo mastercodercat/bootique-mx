@@ -58,13 +58,9 @@ class Flight(models.Model):
     number = models.CharField(db_index=True, max_length=10, default=0, null=False, blank=False)
     origin = models.CharField(max_length=10, blank=False)
     destination = models.CharField(max_length=10, blank=False)
-    departure_datetime = models.DateTimeField(null=False, blank=False)
-    arrival_datetime = models.DateTimeField(null=False, blank=False)
     type = models.IntegerField(default=TYPE_SCHEDULED, choices=TYPE_CHOICES)
-
-    # Additional schedule/estimated/actual datetime fields
-    # scheduled_out_datetime is start_time and defined as property, but can't use in query (means start_time should be used)
-    # scheduled_in_datetime is end_time and defined as property, but can't use in query (means end_time should be used)
+    scheduled_out_datetime = models.DateTimeField(null=True, blank=False)
+    scheduled_in_datetime = models.DateTimeField(null=True, blank=False)
     scheduled_off_datetime = models.DateTimeField(null=True, blank=False)
     scheduled_on_datetime = models.DateTimeField(null=True, blank=False)
     estimated_out_datetime = models.DateTimeField(null=True, blank=False)
@@ -84,15 +80,7 @@ class Flight(models.Model):
 
     @property
     def length(self):
-        return (self.arrival_datetime - self.departure_datetime).total_seconds()
-
-    @property
-    def scheduled_out_datetime(self):
-        return self.start_time
-
-    @property
-    def scheduled_in_datetime(self):
-        return self.end_time
+        return (self.scheduled_in_datetime - self.scheduled_out_datetime).total_seconds()
 
     def get_assignment(self):
         try:

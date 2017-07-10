@@ -396,8 +396,8 @@ class ViewsTestCase(TestCase):
             'number': '801',
             'origin': 'MCE',
             'destination': 'LAX',
-            'departure_datetime': '2017-05-15 10:00:00',
-            'arrival_datetime': '2017-05-15 12:00:00',
+            'scheduled_out_datetime': '2017-05-15 10:00:00',
+            'scheduled_in_datetime': '2017-05-15 12:00:00',
             'type': 1,
         })
         flight = Flight.objects.get(number='801')
@@ -420,8 +420,8 @@ class ViewsTestCase(TestCase):
             'number': '801',
             'origin': 'XXX',
             'destination': 'YYY',
-            'departure_datetime': '2017-05-15 10:00:00',
-            'arrival_datetime': '2017-05-15 12:00:00',
+            'scheduled_out_datetime': '2017-05-15 10:00:00',
+            'scheduled_in_datetime': '2017-05-15 12:00:00',
             'type': 1,
         })
         self.assertTemplateUsed(response, 'flight.html')
