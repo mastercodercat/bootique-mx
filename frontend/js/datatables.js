@@ -1,5 +1,6 @@
 require('datatables.net');
 require('datatables.net-bs/js/dataTables.bootstrap.js');
+require('datatables.net-responsive');
 
 window.datatables = {
 
@@ -25,11 +26,18 @@ window.datatables = {
         var self = this;
 
         var initSortColumn = $datatable.data('default-sort-column') ? parseInt($datatable.data('default-sort-column')) : 0;
+        var responsive = !!$datatable.data('responsive');
 
         var options = {
-            responsive: false,
+            responsive: (responsive ? {
+                details: {
+                    display: $.fn.dataTable.Responsive.display.childRowImmediate,
+                    type: 'column',
+                }
+            } : false),
             lengthMenu: [10, 25, 50, 100],
             aaSorting: [[initSortColumn, 'asc']],
+            autowidth: false,
         };
 
         if ($datatable.data('selectable')) {
@@ -45,6 +53,26 @@ window.datatables = {
             options['select'] = {
                 style: 'multi'
             };
+        }
+
+        if (responsive) {
+            if (!options['columnDefs']) {
+                options['columnDefs'] = [];
+            }
+            options['columnDefs'].push({
+                responsivePriority: 1,
+                targets: 0,
+            });
+            if ($datatable.data('selectable')) {
+                options['columnDefs'].push({
+                    responsivePriority: 1,
+                    targets: 1,
+                });
+            }
+            options['columnDefs'].push({
+                responsivePriority: 2,
+                targets: -1,
+            });
         }
 
         if ($datatable.data('timestamp-columns')) {

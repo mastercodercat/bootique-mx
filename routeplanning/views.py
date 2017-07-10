@@ -335,6 +335,10 @@ def api_flight_get_page(request):
                 totimestamp(flight.estimated_off_datetime) if flight.estimated_off_datetime else '',
                 totimestamp(flight.estimated_on_datetime) if flight.estimated_on_datetime else '',
                 totimestamp(flight.estimated_in_datetime) if flight.estimated_in_datetime else '',
+                totimestamp(flight.actual_out_datetime) if flight.actual_out_datetime else '',
+                totimestamp(flight.actual_off_datetime) if flight.actual_off_datetime else '',
+                totimestamp(flight.actual_on_datetime) if flight.actual_on_datetime else '',
+                totimestamp(flight.actual_in_datetime) if flight.actual_in_datetime else '',
                 buttons,
             ))
         result['data'] = data

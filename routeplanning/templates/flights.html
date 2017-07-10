@@ -43,25 +43,29 @@
             <div class="clearfix">
                 <table id="flights-table" class="datatable table table-stripped toggle-arrow-tiny"
                     data-name="flights_table"
-                    data-default-sort-column="1"
-                    data-selectable="true"
-                    data-timestamp-columns="4,5,6,7,8,9,10,11"
+                    data-default-sort-column="0"
+                    data-responsive="true"
+                    data-timestamp-columns="4,5,6,7,8,9,10,11,12,13,14,15"
                     data-ajax-url="{% url 'routeplanning:api_flight_get_page' %}"
                     data-ajax-csrf-token="{{ csrf_token }}">
                     <thead>
                         <tr>
-                            <th data-sortable="false"><input type="checkbox" class="select-all"></th>
+                            <th></th>
                             <th>Number</th>
                             <th>Origin</th>
                             <th>Destination</th>
-                            <th>Scheduled OUT Time</th>
-                            <th>Scheduled OFF Time</th>
-                            <th>Scheduled ON Time</th>
-                            <th>Scheduled IN Time</th>
-                            <th>Estimated OUT Time</th>
-                            <th>Estimated OFF Time</th>
-                            <th>Estimated ON Time</th>
-                            <th>Estimated IN Time</th>
+                            <th><span style="white-space: nowrap;">Scheduled OUT Time</span></th>
+                            <th><span style="white-space: nowrap;">Scheduled OFF Time</span></th>
+                            <th><span style="white-space: nowrap;">Scheduled ON Time</span></th>
+                            <th><span style="white-space: nowrap;">Scheduled IN Time</span></th>
+                            <th><span style="white-space: nowrap;">Estimated OUT Time</span></th>
+                            <th><span style="white-space: nowrap;">Estimated OFF Time</span></th>
+                            <th><span style="white-space: nowrap;">Estimated ON Time</span></th>
+                            <th><span style="white-space: nowrap;">Estimated IN Time</span></th>
+                            <th><span style="white-space: nowrap;">Actual OUT Time</span></th>
+                            <th><span style="white-space: nowrap;">Actual OFF Time</span></th>
+                            <th><span style="white-space: nowrap;">Actual ON Time</span></th>
+                            <th><span style="white-space: nowrap;">Actual IN Time</span></th>
                             <th data-sortable="false"></th>
                         </tr>
                     </thead>
