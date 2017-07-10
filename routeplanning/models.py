@@ -62,6 +62,20 @@ class Flight(models.Model):
     arrival_datetime = models.DateTimeField(null=False, blank=False)
     type = models.IntegerField(default=TYPE_SCHEDULED, choices=TYPE_CHOICES)
 
+    # Additional schedule/estimated/actual datetime fields
+    # scheduled_out_datetime is start_time and defined as property, but can't use in query (means start_time should be used)
+    # scheduled_in_datetime is end_time and defined as property, but can't use in query (means end_time should be used)
+    scheduled_off_datetime = models.DateTimeField(null=True, blank=False)
+    scheduled_on_datetime = models.DateTimeField(null=True, blank=False)
+    estimated_out_datetime = models.DateTimeField(null=True, blank=False)
+    estimated_in_datetime = models.DateTimeField(null=True, blank=False)
+    estimated_off_datetime = models.DateTimeField(null=True, blank=False)
+    estimated_on_datetime = models.DateTimeField(null=True, blank=False)
+    actual_out_datetime = models.DateTimeField(null=True, blank=False)
+    actual_in_datetime = models.DateTimeField(null=True, blank=False)
+    actual_off_datetime = models.DateTimeField(null=True, blank=False)
+    actual_on_datetime = models.DateTimeField(null=True, blank=False)
+
     def __unicode__(self):
         if self.type == Flight.TYPE_SCHEDULED:
             return str(self.number) + '. ' + self.origin + '-' + self.destination
@@ -71,6 +85,14 @@ class Flight(models.Model):
     @property
     def length(self):
         return (self.arrival_datetime - self.departure_datetime).total_seconds()
+
+    @property
+    def scheduled_out_datetime(self):
+        return self.start_time
+
+    @property
+    def scheduled_in_datetime(self):
+        return self.end_time
 
     def get_assignment(self):
         try:
@@ -140,20 +162,6 @@ class Assignment(models.Model):
     tail = models.ForeignKey(Tail, null=True, blank=False, on_delete=models.PROTECT)
     revision = models.ForeignKey(Revision, null=True, blank=False, on_delete=models.PROTECT)
 
-    # Additional schedule/estimated/actual datetime fields
-    # scheduled_out_datetime is start_time and defined as property, but can't use in query (means start_time should be used)
-    # scheduled_in_datetime is end_time and defined as property, but can't use in query (means end_time should be used)
-    scheduled_off_datetime = models.DateTimeField(null=True, blank=False)
-    scheduled_on_datetime = models.DateTimeField(null=True, blank=False)
-    estimated_out_datetime = models.DateTimeField(null=True, blank=False)
-    estimated_in_datetime = models.DateTimeField(null=True, blank=False)
-    estimated_off_datetime = models.DateTimeField(null=True, blank=False)
-    estimated_on_datetime = models.DateTimeField(null=True, blank=False)
-    actual_out_datetime = models.DateTimeField(null=True, blank=False)
-    actual_in_datetime = models.DateTimeField(null=True, blank=False)
-    actual_off_datetime = models.DateTimeField(null=True, blank=False)
-    actual_on_datetime = models.DateTimeField(null=True, blank=False)
-
     def __unicode__(self):
         if self.status == Assignment.STATUS_FLIGHT:
             return 'Flight ' + str(self.flight_number) + ' Assignment'
@@ -167,14 +175,6 @@ class Assignment(models.Model):
     @property
     def length(self):
         return (self.end_time - self.start_time).total_seconds()
-
-    @property
-    def scheduled_out_datetime(self):
-        return self.start_time
-
-    @property
-    def scheduled_in_datetime(self):
-        return self.end_time
 
     @classmethod
     def get_revision_assignments(cls, revision):
