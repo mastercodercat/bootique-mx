@@ -45,7 +45,7 @@
                     data-name="flights_table"
                     data-default-sort-column="1"
                     data-selectable="true"
-                    data-timestamp-columns="4,5"
+                    data-timestamp-columns="4,5,6,7,8,9,10,11"
                     data-ajax-url="{% url 'routeplanning:api_flight_get_page' %}"
                     data-ajax-csrf-token="{{ csrf_token }}">
                     <thead>
@@ -54,8 +54,14 @@
                             <th>Number</th>
                             <th>Origin</th>
                             <th>Destination</th>
-                            <th>Departure Time</th>
-                            <th>Arrival Time</th>
+                            <th>Scheduled OUT Time</th>
+                            <th>Scheduled OFF Time</th>
+                            <th>Scheduled ON Time</th>
+                            <th>Scheduled IN Time</th>
+                            <th>Estimated OUT Time</th>
+                            <th>Estimated OFF Time</th>
+                            <th>Estimated ON Time</th>
+                            <th>Estimated IN Time</th>
                             <th data-sortable="false"></th>
                         </tr>
                     </thead>

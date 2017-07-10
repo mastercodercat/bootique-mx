@@ -43,19 +43,19 @@ export default {
     },
     computed: {
         departureTime() {
-            const date = new Date(this.flight.departure_datetime);
+            const date = new Date(this.flight.scheduled_out_datetime);
             return this.formatDate(date);
         },
         arrivalTime() {
-            const date = new Date(this.flight.arrival_datetime);
+            const date = new Date(this.flight.scheduled_in_datetime);
             return this.formatDate(date);
         },
         width() {
-            var duration = (new Date(this.flight.arrival_datetime) - new Date(this.flight.departure_datetime)) / 1000;
+            var duration = (new Date(this.flight.scheduled_in_datetime) - new Date(this.flight.scheduled_out_datetime)) / 1000;
             return duration / (14 * 24 * 3600) * 100;
         },
         left() {
-            var start = (new Date(this.flight.departure_datetime) - new Date(this.startDate)) / 1000;
+            var start = (new Date(this.flight.scheduled_out_datetime) - new Date(this.startDate)) / 1000;
             return start / (14 * 24 * 3600) * 100;
         },
         hobbs() {

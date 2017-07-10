@@ -287,7 +287,11 @@ def api_flight_get_page(request):
         'data': [],
     }
 
-    order_columns = ('id', 'number', 'origin', 'destination', 'scheduled_out_datetime', 'scheduled_in_datetime')
+    order_columns = (
+        'id', 'number', 'origin', 'destination',
+        'scheduled_out_datetime', 'scheduled_off_datetime', 'scheduled_on_datetime', 'scheduled_in_datetime',
+        'estimated_out_datetime', 'estimated_off_datetime', 'estimated_on_datetime', 'estimated_in_datetime',
+    )
 
     try:
         start = int(request.data.get('start'))
@@ -314,15 +318,23 @@ def api_flight_get_page(request):
         data = []
         for flight in flights_page:
             flight_edit_link = reverse('routeplanning:edit_flight', kwargs={ 'flight_id': flight.id })
-            buttons = '<a href="' + flight_edit_link + '" class="btn btn-primary btn-xs"><i class="fa fa-fw fa-edit"></i></a> '
+            buttons = '<span style="white-space: nowrap;">'
+            buttons += '<a href="' + flight_edit_link + '" class="btn btn-primary btn-xs"><i class="fa fa-fw fa-edit"></i></a> '
             buttons += '<a href="javascript:void();" class="btn-delete-flight btn btn-danger btn-xs"><i class="fa fa-fw fa-trash"></i></a>'
+            buttons += '</span>'
             data.append((
                 flight.id,
                 flight.number,
                 flight.origin,
                 flight.destination,
-                totimestamp(flight.scheduled_out_datetime),
-                totimestamp(flight.scheduled_in_datetime),
+                totimestamp(flight.scheduled_out_datetime) if flight.scheduled_out_datetime else '',
+                totimestamp(flight.scheduled_off_datetime) if flight.scheduled_off_datetime else '',
+                totimestamp(flight.scheduled_on_datetime) if flight.scheduled_on_datetime else '',
+                totimestamp(flight.scheduled_in_datetime) if flight.scheduled_in_datetime else '',
+                totimestamp(flight.estimated_out_datetime) if flight.estimated_out_datetime else '',
+                totimestamp(flight.estimated_off_datetime) if flight.estimated_off_datetime else '',
+                totimestamp(flight.estimated_on_datetime) if flight.estimated_on_datetime else '',
+                totimestamp(flight.estimated_in_datetime) if flight.estimated_in_datetime else '',
                 buttons,
             ))
         result['data'] = data

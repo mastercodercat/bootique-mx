@@ -9,10 +9,10 @@ export default {
     props: ['data', 'start-date'],
     computed: {
         startTime() {
-            return this.data.start_time ? new Date(this.data.start_time) : new Date(this.data.departure_datetime);
+            return this.data.start_time ? new Date(this.data.start_time) : new Date(this.data.scheduled_out_datetime);
         },
         endTime() {
-            return this.data.end_time ? new Date(this.data.end_time) : new Date(this.data.arrival_datetime);
+            return this.data.end_time ? new Date(this.data.end_time) : new Date(this.data.scheduled_in_datetime);
         },
         width() {
             var duration = (this.endTime - this.startTime) / 1000;

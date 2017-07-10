@@ -1080,9 +1080,9 @@ export default {
                     flightData.sort((data1, data2) => {
                         var flight1 = this.getTemplateById(data1.flight);
                         var flight2 = this.getTemplateById(data2.flight);
-                        if (flight1.departure_datetime > flight2.departure_datetime) {
+                        if (flight1.scheduled_out_datetime > flight2.scheduled_out_datetime) {
                             return 1;
-                        } else if (flight1.departure_datetime < flight2.departure_datetime) {
+                        } else if (flight1.scheduled_out_datetime < flight2.scheduled_out_datetime) {
                             return -1;
                         } else {
                             return 0;
@@ -1156,9 +1156,9 @@ export default {
                         if (this.assignments[tailNumber][assignment_id]) {
                             this.$set(this.assignments[tailNumber][assignment_id], 'start_time', startTime.toISOString());
                             this.$set(this.assignments[tailNumber][assignment_id], 'end_time', endTime.toISOString());
-                            if (this.assignments[tailNumber][assignment_id].departure_datetime) {
-                                this.$set(this.assignments[tailNumber][assignment_id], 'departure_datetime', startTime.toISOString());
-                                this.$set(this.assignments[tailNumber][assignment_id], 'arrival_datetime', endTime.toISOString());
+                            if (this.assignments[tailNumber][assignment_id].scheduled_out_datetime) {
+                                this.$set(this.assignments[tailNumber][assignment_id], 'scheduled_out_datetime', startTime.toISOString());
+                                this.$set(this.assignments[tailNumber][assignment_id], 'scheduled_in_datetime', endTime.toISOString());
                             }
                             break;
                         }

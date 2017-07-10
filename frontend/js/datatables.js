@@ -53,6 +53,10 @@ window.datatables = {
             for(var col of cols) {
                 options['columnDefs'].push({
                     render: function(data, type, full, meta) {
+                        if (!data) {
+                            return '';
+                        }
+
                         var date = new Date(data * 1000);
                         return (date.getMonth() + 1) + '/' +
                             date.getDate() + '/' +
