@@ -652,10 +652,20 @@ def api_assign_flight(request):
                 })
                 continue
 
+            if flight.actual_out_datetime and flight.actual_in_datetime:
+                start_time = flight.actual_out_datetime
+                end_time = flight.actual_in_datetime
+            elif flight.estimated_out_datetime and flight.estimated_in_datetime:
+                start_time = flight.estimated_out_datetime
+                end_time = flight.estimated_in_datetime
+            else:
+                start_time = flight.scheduled_out_datetime
+                end_time = flight.scheduled_in_datetime
+
             assignment = Assignment(
                 flight_number=flight.number,
-                start_time=flight.scheduled_out_datetime,
-                end_time=flight.scheduled_in_datetime,
+                start_time=start_time,
+                end_time=end_time,
                 status=Assignment.STATUS_FLIGHT,
                 flight=flight,
                 tail=tail

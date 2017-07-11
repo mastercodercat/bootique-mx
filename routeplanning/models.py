@@ -221,7 +221,8 @@ class Assignment(models.Model):
         ).filter(revision=revision)
 
         if exclude_check_assignment:
-            query = query.exclude(pk=exclude_check_assignment.id)
+            query = query.filter(is_draft=exclude_check_assignment.is_draft) \
+                .exclude(pk=exclude_check_assignment.id)
 
         return query.first()
 
@@ -236,7 +237,8 @@ class Assignment(models.Model):
             .order_by('-start_time') \
             .select_related('flight')
         if exclude_check_assignment:
-            query = query.exclude(pk=exclude_check_assignment.id)
+            query = query.filter(is_draft=exclude_check_assignment.is_draft) \
+                .exclude(pk=exclude_check_assignment.id)
         assignment_just_before = query.first()
         if assignment_just_before and assignment_just_before.flight.destination != origin:
             return {
@@ -252,7 +254,8 @@ class Assignment(models.Model):
             .order_by('start_time') \
             .select_related('flight')
         if exclude_check_assignment:
-            query = query.exclude(pk=exclude_check_assignment.id)
+            query = query.filter(is_draft=exclude_check_assignment.is_draft) \
+                .exclude(pk=exclude_check_assignment.id)
         assignment_just_after = query.first()
         if assignment_just_after and assignment_just_after.flight.origin != destination:
             return {
@@ -273,7 +276,8 @@ class Assignment(models.Model):
             )
         ).filter(revision=revision)
         if exclude_check_assignment:
-            query = query.exclude(pk=exclude_check_assignment.id)
+            query = query.filter(is_draft=exclude_check_assignment.is_draft) \
+                .exclude(pk=exclude_check_assignment.id)
         return query.all()
 
     def apply_revision(self, revision):
