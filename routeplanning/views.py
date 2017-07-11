@@ -388,7 +388,8 @@ def edit_flight(request, flight_id=None):
     form = FlightForm(request.POST or None, instance=flight)
     if request.method == 'POST':
         if form.is_valid():
-            form.save()
+            updated_flight = form.save()
+            updated_flight.update_assignment_datetimes()
 
     context = {
         'form': form,
@@ -535,9 +536,21 @@ def api_load_data(request):
         if assignment.flight:
             assignment_data['origin'] = assignment.flight.origin
             assignment_data['destination'] = assignment.flight.destination
+            assignment_data['flight_id'] = assignment.flight.id
             assignment_data['scheduled_out_datetime'] = assignment.flight.scheduled_out_datetime
             assignment_data['scheduled_in_datetime'] = assignment.flight.scheduled_in_datetime
-            assignment_data['flight_id'] = assignment.flight.id
+            assignment_data['scheduled_out_datetime'] = assignment.flight.scheduled_out_datetime
+            assignment_data['scheduled_in_datetime'] = assignment.flight.scheduled_in_datetime
+            assignment_data['scheduled_off_datetime'] = assignment.flight.scheduled_off_datetime
+            assignment_data['scheduled_on_datetime'] = assignment.flight.scheduled_on_datetime
+            assignment_data['estimated_out_datetime'] = assignment.flight.estimated_out_datetime
+            assignment_data['estimated_in_datetime'] = assignment.flight.estimated_in_datetime
+            assignment_data['estimated_off_datetime'] = assignment.flight.estimated_off_datetime
+            assignment_data['estimated_on_datetime'] = assignment.flight.estimated_on_datetime
+            assignment_data['actual_out_datetime'] = assignment.flight.actual_out_datetime
+            assignment_data['actual_in_datetime'] = assignment.flight.actual_in_datetime
+            assignment_data['actual_off_datetime'] = assignment.flight.actual_off_datetime
+            assignment_data['actual_on_datetime'] = assignment.flight.actual_on_datetime
         assignments_data.append(assignment_data)
 
     data = {

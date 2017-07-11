@@ -88,6 +88,40 @@ class Flight(models.Model):
         except:
             return None
 
+    def update_flight_estimates_and_actuals(self):
+        length_delta = self.scheduled_in_datetime - self.scheduled_out_datetime
+        updated = False
+        if self.estimated_out_datetime:
+            new_estimated_in_datetime = self.estimated_out_datetime + length_delta
+            if self.estimated_in_datetime != new_estimated_in_datetime:
+                self.estimated_in_datetime = new_estimated_in_datetime
+                updated = True
+        if self.actual_out_datetime:
+            new_actual_in_datetime = self.actual_out_datetime + length_delta
+            if self.actual_in_datetime != new_actual_in_datetime:
+                self.actual_in_datetime = new_actual_in_datetime
+                updated = True
+        if updated:
+            self.save()
+        return updated
+
+    def update_assignment_datetimes(self):
+        self.update_flight_estimates_and_actuals()
+        assignments = self.assignment_set.all()
+        for assignment in assignments:
+            if self.actual_out_datetime:
+                assignment.start_time = self.actual_out_datetime
+                assignment.end_time = self.actual_in_datetime
+                assignment.save()
+            elif self.estimated_out_datetime:
+                assignment.start_time = self.estimated_out_datetime
+                assignment.end_time = self.estimated_in_datetime
+                assignment.save()
+            else:
+                assignment.start_time = self.scheduled_out_datetime
+                assignment.end_time = self.scheduled_in_datetime
+                assignment.save()
+
 
 class Revision(models.Model):
     published_datetime = models.DateTimeField(null=False, blank=False)

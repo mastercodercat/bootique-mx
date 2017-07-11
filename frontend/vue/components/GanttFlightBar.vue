@@ -13,8 +13,16 @@
             <div class="field">Flight <span class="number">{{ flight.number }}</span></div>
             <div class="field">Origin: <span class="org">{{ flight.origin }}</span></div>
             <div class="field">Destination: <span class="dest">{{ flight.destination }}</span></div>
-            <div class="field">Sched. Depature Time: <span class="departure">{{ departureTime }}</span></div>
-            <div class="field">Sched. Arrival Time: <span class="arrival">{{ arrivalTime }}</span></div>
+            <div class="field">Sched. OUT Time: <span class="departure">{{ scheduledOutDateTimeFormatted }}</span></div>
+            <div class="field">Sched. IN Time: <span class="arrival">{{ scheduledInDateTimeFormatted }}</span></div>
+            <template v-if="isEstimated">
+                <div class="field">Estimated OUT Time: <span class="departure">{{ estimatedOutDateTimeFormatted }}</span></div>
+                <div class="field">Estimated IN Time: <span class="arrival">{{ estimatedInDateTimeFormatted }}</span></div>
+            </template>
+            <template v-if="isActual">
+                <div class="field">Actual OUT Time: <span class="departure">{{ actualOutDateTimeFormatted }}</span></div>
+                <div class="field">Actual IN Time: <span class="arrival">{{ actualInDateTimeFormatted }}</span></div>
+            </template>
             <div class="assignment-only" v-if="flight.actual_hobbs">
                 <hr />
                 <div class="field">
@@ -42,20 +50,36 @@ export default {
         };
     },
     computed: {
-        departureTime() {
+        scheduledOutDateTimeFormatted() {
             const date = new Date(this.flight.scheduled_out_datetime);
             return this.formatDate(date);
         },
-        arrivalTime() {
+        scheduledInDateTimeFormatted() {
             const date = new Date(this.flight.scheduled_in_datetime);
             return this.formatDate(date);
         },
+        estimatedOutDateTimeFormatted() {
+            const date = new Date(this.flight.estimated_out_datetime);
+            return this.formatDate(date);
+        },
+        estimatedInDateTimeFormatted() {
+            const date = new Date(this.flight.estimated_in_datetime);
+            return this.formatDate(date);
+        },
+        actualOutDateTimeFormatted() {
+            const date = new Date(this.flight.actual_out_datetime);
+            return this.formatDate(date);
+        },
+        actualInDateTimeFormatted() {
+            const date = new Date(this.flight.actual_in_datetime);
+            return this.formatDate(date);
+        },
         width() {
-            var duration = (new Date(this.flight.scheduled_in_datetime) - new Date(this.flight.scheduled_out_datetime)) / 1000;
+            var duration = (this.endTime - this.startTime) / 1000;
             return duration / (14 * 24 * 3600) * 100;
         },
         left() {
-            var start = (new Date(this.flight.scheduled_out_datetime) - new Date(this.startDate)) / 1000;
+            var start = (this.startTime - new Date(this.startDate)) / 1000;
             return start / (14 * 24 * 3600) * 100;
         },
         hobbs() {
@@ -89,7 +113,35 @@ export default {
                 'hobbs-yellow': this.hobbs < 8 && this.hobbs >= 0,
                 'hobbs-red': this.hobbs < 0,
             };
-        }
+        },
+        isEstimated() {
+            return this.flight.estimated_in_datetime && this.flight.estimated_out_datetime;
+        },
+        isActual() {
+            return this.flight.actual_in_datetime && this.flight.actual_out_datetime;
+        },
+        startTime() {
+            if (this.isActual) {
+                return new Date(this.flight.actual_out_datetime);
+            }
+            else if (this.isEstimated) {
+                return new Date(this.flight.estimated_out_datetime);
+            }
+            else {
+                return new Date(this.flight.scheduled_out_datetime)
+            }
+        },
+        endTime() {
+            if (this.isActual) {
+                return new Date(this.flight.actual_in_datetime);
+            }
+            else if (this.isEstimated) {
+                return new Date(this.flight.estimated_in_datetime);
+            }
+            else {
+                return new Date(this.flight.scheduled_in_datetime)
+            }
+        },
     },
     methods: {
         formatDate(date, dateFormat = 'MM/DD/YYYY HH:mm:ss') {
