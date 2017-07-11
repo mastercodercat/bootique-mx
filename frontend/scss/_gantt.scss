@@ -26,8 +26,14 @@ $gantt-cover-padding-top: 105px;
     min-width: 600px;
     overflow: visible;
 
+    .datetime-controls {
+        position: relative;
+        z-index: 2;
+    }
+
     .cover-wrapper {
         position: relative;
+        z-index: 1;
         background: #fff;
     }
     .edit-tools-toggle {

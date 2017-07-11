@@ -22,9 +22,7 @@ from common.helpers import *
 from common.decorators import *
 
 
-@login_required
-@gantt_readable_required
-def index(request):
+def gantt_page_context(request, read_only):
     mode = request.GET.get('mode') if request.GET.get('mode') else '4'
     start_tmstmp = request.GET.get('start')
     end_tmstmp = request.GET.get('end')
@@ -53,7 +51,7 @@ def index(request):
     big_unit_count = 14 * (24 / hours) if days == 1 else 14
     table_length_in_secs = 14 * 24 * 3600
 
-    context = {
+    return {
         'tails': tails,
         'lines': lines,
         'big_units': big_unit_count,
@@ -72,7 +70,19 @@ def index(request):
         'csrf_token': csrf.get_token(request),
         'window_at_end': request.GET.get('window_at_end') or 0,
         'revisions': Revision.objects.order_by('-published_datetime'),
+        'read_only': read_only,
     }
+
+@login_required
+@gantt_readable_required
+def index(request):
+    context = gantt_page_context(request, not can_write_gantt(request.user))
+    return render(request, 'gantt.html', context)
+
+@login_required
+@gantt_readable_required
+def view_gantt(request):
+    context = gantt_page_context(request, True)
     return render(request, 'gantt.html', context)
 
 @login_required

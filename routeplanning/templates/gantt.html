@@ -31,7 +31,7 @@
 
 {% block pagejs %}
     <script type="text/javascript">
-        var readOnly = {{ request.user|can_write_gantt|yesno:"false,true" }};
+        var readOnly = {% if read_only %}true{% else %}false{% endif %};
         var unit = 3600 / {{ units_per_hour }};
         var lines = [
             {% for line in lines %}

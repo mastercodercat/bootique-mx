@@ -35,4 +35,5 @@ urlpatterns = [
     url(r'^api/revision/delete/*$', views.api_delete_revision, name='api_delete_revision'),
 
     url(r'^$', views.index, name='index'),
+    url(r'^view-gantt/*$', views.view_gantt, name='view_gantt'),
 ]

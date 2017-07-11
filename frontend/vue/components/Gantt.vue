@@ -14,7 +14,7 @@
                     </span>
                 </span>
             </div>
-            <div class="clearfix m-b-md"><!-- Top controls -->
+            <div class="datetime-controls clearfix m-b-md"><!-- Top controls -->
                 <div class="unit-control btn-group">
                     <a :class="{ 'btn btn-white': true, 'active': mode == 1 }"
                         :href="ganttUrl + '?mode=1&start=' + startTmstmp">3 Hours</a>
