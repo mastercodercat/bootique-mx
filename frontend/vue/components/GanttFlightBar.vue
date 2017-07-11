@@ -35,6 +35,11 @@
                     Hobbs Left: <span class="hobbs-left">{{ (flight.next_due_hobbs - flight.actual_hobbs).toFixed(1) }}</span>
                 </div>
             </div>
+            <a class="edit-flight-link"
+                :href="`/routeplanning/flights/${flight.flight_id}`"
+                v-if="writable">
+                <i class="fa fa-pencil-square-o"></i>
+            </a>
         </div>
     </div>
 </template>
@@ -44,7 +49,10 @@ import moment from 'moment-timezone';
 
 export default {
     name: 'GanttFlightBar',
-    props: ['flight', 'start-date', 'timezone', 'selected', 'assigned', 'dragging', 'drag-offset'],
+    props: [
+        'flight', 'start-date', 'timezone', 'selected', 'assigned',
+        'dragging', 'drag-offset', 'writable',
+    ],
     data() {
         return {
         };

@@ -10,12 +10,13 @@
                 :dragging="dragging"
                 :drag-offset="internalDragOffset"
                 :editing="editing"
+                :writable="writable"
                 @resized="handleResizeBar">
             </gantt-maintenance-bar>
         </template>
         <template v-else-if="data.status == 3">
             <gantt-unscheduled-flight-bar
-                :assignment="data"
+                :flight="data"
                 :start-date="startDate"
                 :timezone="timezone"
                 :unit="unit"
@@ -23,6 +24,7 @@
                 :dragging="dragging"
                 :drag-offset="internalDragOffset"
                 :editing="editing"
+                :writable="writable"
                 @resized="handleResizeBar">
             </gantt-unscheduled-flight-bar>
         </template>
@@ -34,7 +36,8 @@
                 :selected="selected && !assigned"
                 :assigned="assigned"
                 :dragging="dragging"
-                :drag-offset="internalDragOffset">
+                :drag-offset="internalDragOffset"
+                :writable="writable">
             </gantt-flight-bar>
         </template>
     </div>
@@ -47,7 +50,11 @@ import GanttUnscheduledFlightBar from '@frontend_components/GanttUnscheduledFlig
 
 export default {
     name: 'GanttBar',
-    props: ['data', 'start-date', 'timezone', 'unit', 'selected', 'assigned', 'dragging', 'drag-offset', 'editing'],
+    props: [
+        'data', 'start-date', 'timezone', 'unit',
+        'selected', 'assigned', 'dragging', 'drag-offset',
+        'editing', 'writable',
+    ],
     components: {
         'gantt-flight-bar': GanttFlightBar,
         'gantt-maintenance-bar': GanttMaintenanceBar,

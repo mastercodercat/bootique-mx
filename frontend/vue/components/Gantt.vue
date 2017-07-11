@@ -188,6 +188,7 @@
                                         :dragging-ids="draggingAssignmentIds"
                                         :starting-tail-position="startingTailPositions[tail.number]"
                                         :editing="editing"
+                                        :writable="writable"
                                         @drag-enter="handleDragEnterAssignmentRow"
                                         @drag-leave="handleDragLeaveAssignmentRow"
                                         @drop-on="handleDropOnAssignmentRow"
@@ -230,6 +231,7 @@
                                         :dragging-ids="draggingTemplateIds"
                                         :assigned-ids="assignedFlightIds"
                                         :editing="editing"
+                                        :writable="writable"
                                         v-for="line in lines">
                                     </gantt-row>
                                 </gantt-drag-select>

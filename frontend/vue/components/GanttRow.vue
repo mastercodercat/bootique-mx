@@ -12,6 +12,7 @@
             :selected="!!selectedIds[object.id]"
             :assigned="isAssigned(object)"
             :editing="editing"
+            :writable="writable"
             @resized="handleResizeBar"
             v-for="object in objects">
         </gantt-bar>
@@ -46,7 +47,7 @@ export default {
     name: 'GanttRow',
     props: ['row-object', 'start-date', 'timezone', 'objects', 'shadows', 'unit',
         'selected-ids', 'dragging', 'drag-offset', 'dragging-ids', 'assigned-ids',
-        'starting-tail-position', 'editing'],
+        'starting-tail-position', 'editing', 'writable'],
     components: {
         'gantt-bar': GanttBar,
         'gantt-bar-shadow': GanttBarShadow,
