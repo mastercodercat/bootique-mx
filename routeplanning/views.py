@@ -77,12 +77,14 @@ def gantt_page_context(request, read_only):
 @gantt_readable_required
 def index(request):
     context = gantt_page_context(request, not can_write_gantt(request.user))
+    context['page'] = 'routeplanning:index'
     return render(request, 'gantt.html', context)
 
 @login_required
 @gantt_readable_required
 def view_gantt(request):
     context = gantt_page_context(request, True)
+    context['page'] = 'routeplanning:view_gantt'
     return render(request, 'gantt.html', context)
 
 @login_required
