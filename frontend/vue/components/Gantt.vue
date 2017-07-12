@@ -152,7 +152,7 @@
                 </div>
                 <!-- Gantt table -->
                 <div :class="{ 'cover': true, 'loading': loading }" ref="scrollWrapper">
-                    <div class="cover-inner" :style="{ width: ganttWidth + 'px' }">
+                    <div class="cover-inner" :style="`width: calc(${ganttWidth * 100}% - ${labelCellWidth * (ganttWidth - 1)}px)`">
                         <!-- Gray border -->
                         <div class="border-top-line"></div>
                         <!-- Tails table -->
@@ -303,8 +303,8 @@ export default {
 
         const ganttContainer = document.getElementById('gantt-container');
         const timeWindowCount = this.days > 1 ? 14 / this.days : 14 * (24 / this.hours);
-        const timeWindowWidth = ganttContainer.clientWidth - 90;
-        const ganttWidth = 90 + timeWindowWidth * timeWindowCount;
+        const timeWindowWidth = ganttContainer.clientWidth - this.labelCellWidth;
+        const ganttWidth = timeWindowCount;
         let scrollLeft = 0;
         if (this.windowAtEnd) {
             scrollLeft = (timeWindowCount - 1) * timeWindowWidth;
@@ -357,6 +357,9 @@ export default {
                 'read-only': !this.editing,
             };
         },
+        labelCellWidth() {
+            return 90;
+        },
         startDate() {
             return new Date(this.startTmstmp * 1000);
         },
@@ -396,7 +399,7 @@ export default {
         },
         setScrollPosition() {
             const timeWindowCount = this.days > 1 ? 14 / this.days : 14 * (24 / this.hours);
-            const timeWindowWidth = this.$refs.gantt.clientWidth - 90;
+            const timeWindowWidth = this.$refs.gantt.clientWidth - this.labelCellWidth;
             let scrollLeft = 0;
             if (this.windowAtEnd) {
                 scrollLeft = (timeWindowCount - 1) * timeWindowWidth;
@@ -720,7 +723,7 @@ export default {
         handleClickPrevTimeWindow() {
             const offset = 0.01;
 
-            const timeWindowWidth = this.$refs.gantt.clientWidth - 90;
+            const timeWindowWidth = this.$refs.gantt.clientWidth - this.labelCellWidth;
             const timeWindowCount = this.days > 1 ? 14 / this.days : 14 * (24 / this.hours);
             let pos = this.$refs.scrollWrapper.scrollLeft / timeWindowWidth;
             if (pos <= offset) {
@@ -737,7 +740,7 @@ export default {
         handleClickNextTimeWindow() {
             const offset = 0.01;
 
-            const timeWindowWidth = this.$refs.gantt.clientWidth - 90;
+            const timeWindowWidth = this.$refs.gantt.clientWidth - this.labelCellWidth;
             const timeWindowCount = this.days > 1 ? 14 / this.days : 14 * (24 / this.hours);
             let pos = this.$refs.scrollWrapper.scrollLeft / timeWindowWidth;
             if (Math.abs(timeWindowCount - 1 - pos) <= offset) {
@@ -759,7 +762,7 @@ export default {
             if (now >= this.startDate && now < this.endDate) {
                 const diffSeconds = (now - this.startDate) / 1000;
                 const windowPage = parseInt(diffSeconds / 3600 / windowLength);
-                const timeWindowWidth = this.$refs.gantt.clientWidth - 90;
+                const timeWindowWidth = this.$refs.gantt.clientWidth - this.labelCellWidth;
 
                 this.$refs.scrollWrapper.scrollLeft = windowPage * timeWindowWidth;
             }
