@@ -34,7 +34,7 @@ class ViewsTestCase(TestCase):
         user_profile.role = user_role
         user_profile.save()
         response = self.client.get(view_url)
-        self.assertRedirects(response, reverse('routeplanning:index'))
+        self.assertRedirects(response, reverse('routeplanning:view_current_published_gantt'))
 
         # User without role will see no-permissions page
         user_profile.role = None

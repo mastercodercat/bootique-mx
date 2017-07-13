@@ -9,7 +9,7 @@ from home.models import *
 from common.helpers import *
 
 
-class UnitTestCase(TestCase):
+class RoutePlanningUnitTestCase(TestCase):
     fixtures = ['tails', 'assignments_test', 'flights_test']
 
     def test_assignment_duplication_check_method(self):
@@ -92,7 +92,50 @@ class UnitTestCase(TestCase):
         )
         self.assertIs(conflict, None)
 
-class ViewsTestCase(TestCase):
+    def test_flight_update_flight_estimates_and_actuals_method(self):
+        flight = Flight.objects.get(pk=13069)
+        flight.estimated_out_datetime = datetime(2017, 5, 24, 15, 0, tzinfo=utc)
+        flight.actual_out_datetime = datetime(2017, 5, 24, 16, 0, tzinfo=utc)
+        flight.update_flight_estimates_and_actuals()
+        self.assertEqual(
+            flight.estimated_in_datetime,
+            datetime(2017, 5, 24, 16, 15, tzinfo=utc)
+        )
+        self.assertEqual(
+            flight.actual_in_datetime,
+            datetime(2017, 5, 24, 17, 15, tzinfo=utc)
+        )
+
+    def test_flight_update_assignment_datetimes_method_on_estimated(self):
+        flight = Flight.objects.get(pk=13069)
+        flight.estimated_out_datetime = datetime(2017, 5, 24, 15, 0, tzinfo=utc)
+        flight.update_assignment_datetimes()
+        assignment = flight.assignment_set.first()
+        self.assertEqual(
+            assignment.start_time,
+            datetime(2017, 5, 24, 15, 0, tzinfo=utc)
+        )
+        self.assertEqual(
+            assignment.end_time,
+            datetime(2017, 5, 24, 16, 15, tzinfo=utc)
+        )
+
+    def test_flight_update_assignment_datetimes_method_on_actual(self):
+        flight = Flight.objects.get(pk=13069)
+        flight.actual_out_datetime = datetime(2017, 5, 24, 16, 0, tzinfo=utc)
+        flight.update_assignment_datetimes()
+        assignment = flight.assignment_set.first()
+        self.assertEqual(
+            assignment.start_time,
+            datetime(2017, 5, 24, 16, 0, tzinfo=utc)
+        )
+        self.assertEqual(
+            assignment.end_time,
+            datetime(2017, 5, 24, 17, 15, tzinfo=utc)
+        )
+
+
+class RoutePlanningViewsTestCase(TestCase):
     fixtures = ['roles', 'lines', 'lineparts', 'tails', 'assignments_test', 'flights_test']
 
     def setUp(self):
@@ -148,6 +191,20 @@ class ViewsTestCase(TestCase):
 
     def test_view_index(self):
         view_url = reverse('routeplanning:index')
+
+        self.guest_attempt(view_url)
+        self.no_role_user_attempt(view_url)
+        self.force_login()
+        self.authorized_attempt(view_url, 'gantt.html')
+        self.authorized_attempt(view_url + '?mode=1', 'gantt.html')
+        self.authorized_attempt(view_url + '?mode=2', 'gantt.html')
+        self.authorized_attempt(view_url + '?mode=3&start=1494799200', 'gantt.html')
+        self.authorized_attempt(view_url + '?mode=4', 'gantt.html')
+        self.authorized_attempt(view_url + '?mode=5&end=1496008800', 'gantt.html')
+        self.authorized_attempt(view_url + '?mode=6&end=1496008800', 'gantt.html')
+
+    def test_view_current_published_gantt(self):
+        view_url = reverse('routeplanning:view_current_published_gantt')
 
         self.guest_attempt(view_url)
         self.no_role_user_attempt(view_url)

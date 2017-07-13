@@ -82,9 +82,9 @@ def index(request):
 
 @login_required
 @gantt_readable_required
-def view_gantt(request):
+def view_current_published_gantt(request):
     context = gantt_page_context(request, True)
-    context['page'] = 'routeplanning:view_gantt'
+    context['page'] = 'routeplanning:view_current_published_gantt'
     return render(request, 'gantt.html', context)
 
 @login_required

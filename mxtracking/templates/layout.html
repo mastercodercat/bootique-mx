@@ -97,8 +97,8 @@
                                 <i class="fa fa-binoculars"></i> <span class="nav-label">Route Planning Gantt</span> <span class="fa arrow"></span>
                             </a>
                             <ul class="nav nav-second-level collapse">
-                                <li{% if 'view_gantt' in request.resolver_match.url_name and 'routeplanning' == request.resolver_match.namespace %} class="active" {% endif %}>
-                                    <a href="{% url 'routeplanning:view_gantt' %}">View Gantt</a>
+                                <li{% if 'view_current_published_gantt' in request.resolver_match.url_name and 'routeplanning' == request.resolver_match.namespace %} class="active" {% endif %}>
+                                    <a href="{% url 'routeplanning:view_current_published_gantt' %}">View Gantt</a>
                                 </li>
                                 {% if request.user|can_write_gantt %}
                                     <li{% if 'index' in request.resolver_match.url_name and 'routeplanning' == request.resolver_match.namespace %} class="active" {% endif %}>
