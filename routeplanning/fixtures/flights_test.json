@@ -115,5 +115,18 @@
             "scheduled_in_datetime": "2017-05-25T16:20:00Z",
             "type": 1
         }
+    },
+    {
+        "model": "routeplanning.flight",
+        "pk": 14001,
+        "fields": 
+        {
+            "number": "381",
+            "origin": "LAX",
+            "destination": "OAK",
+            "scheduled_out_datetime": "2017-05-24T14:50:00Z",
+            "scheduled_in_datetime": "2017-05-24T15:50:00Z",
+            "type": 1
+        }
     }
 ]

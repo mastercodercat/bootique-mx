@@ -144,7 +144,13 @@ class RoutePlanningViewsTestCase(TestCase):
         self.user_profile = UserProfile(is_admin=False, personal_data=None, user=self.user, role=user_role)
         self.user_profile.save()
 
-    def force_login(self):
+    def gantt_readonly_login(self):
+        user_role = UserRole.objects.get(name='Maintenance')
+        self.user_profile.role = user_role
+        self.user_profile.save()
+        self.client.login(username=self.user.username, password='tester_password')
+
+    def dispatch_user_login(self):
         user_role = UserRole.objects.get(name='Admin')
         self.user_profile.role = user_role
         self.user_profile.save()
@@ -153,26 +159,26 @@ class RoutePlanningViewsTestCase(TestCase):
     def logout(self):
         self.client.logout()
 
-    def guest_attempt(self, url):
+    def guest_attempt_test(self, url):
         login_url = reverse('account_login')
 
         self.logout()
         response = self.client.get(url)
         self.assertRedirects(response, login_url + '?next=' + url)
 
-    def no_role_user_attempt(self, url):
+    def no_role_user_attempt_test(self, url):
         self.user_profile.role = None
         self.user_profile.save()
         self.client.login(username=self.user.username, password='tester_password')
         response = self.client.get(url)
         self.assertEqual(response.status_code, 403)
 
-    def authorized_attempt(self, url, template):
+    def authorized_attempt_test(self, url, template):
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, template)
 
-    def url_not_found_attempt(self, url):
+    def url_not_found_attempt_test(self, url):
         response = self.client.get(url)
         self.assertEqual(response.status_code, 404)
 
@@ -192,38 +198,38 @@ class RoutePlanningViewsTestCase(TestCase):
     def test_view_index(self):
         view_url = reverse('routeplanning:index')
 
-        self.guest_attempt(view_url)
-        self.no_role_user_attempt(view_url)
-        self.force_login()
-        self.authorized_attempt(view_url, 'gantt.html')
-        self.authorized_attempt(view_url + '?mode=1', 'gantt.html')
-        self.authorized_attempt(view_url + '?mode=2', 'gantt.html')
-        self.authorized_attempt(view_url + '?mode=3&start=1494799200', 'gantt.html')
-        self.authorized_attempt(view_url + '?mode=4', 'gantt.html')
-        self.authorized_attempt(view_url + '?mode=5&end=1496008800', 'gantt.html')
-        self.authorized_attempt(view_url + '?mode=6&end=1496008800', 'gantt.html')
+        self.guest_attempt_test(view_url)
+        self.no_role_user_attempt_test(view_url)
+        self.dispatch_user_login()
+        self.authorized_attempt_test(view_url, 'gantt.html')
+        self.authorized_attempt_test(view_url + '?mode=1', 'gantt.html')
+        self.authorized_attempt_test(view_url + '?mode=2', 'gantt.html')
+        self.authorized_attempt_test(view_url + '?mode=3&start=1494799200', 'gantt.html')
+        self.authorized_attempt_test(view_url + '?mode=4', 'gantt.html')
+        self.authorized_attempt_test(view_url + '?mode=5&end=1496008800', 'gantt.html')
+        self.authorized_attempt_test(view_url + '?mode=6&end=1496008800', 'gantt.html')
 
     def test_view_current_published_gantt(self):
         view_url = reverse('routeplanning:view_current_published_gantt')
 
-        self.guest_attempt(view_url)
-        self.no_role_user_attempt(view_url)
-        self.force_login()
-        self.authorized_attempt(view_url, 'gantt.html')
-        self.authorized_attempt(view_url + '?mode=1', 'gantt.html')
-        self.authorized_attempt(view_url + '?mode=2', 'gantt.html')
-        self.authorized_attempt(view_url + '?mode=3&start=1494799200', 'gantt.html')
-        self.authorized_attempt(view_url + '?mode=4', 'gantt.html')
-        self.authorized_attempt(view_url + '?mode=5&end=1496008800', 'gantt.html')
-        self.authorized_attempt(view_url + '?mode=6&end=1496008800', 'gantt.html')
+        self.guest_attempt_test(view_url)
+        self.no_role_user_attempt_test(view_url)
+        self.dispatch_user_login()
+        self.authorized_attempt_test(view_url, 'gantt.html')
+        self.authorized_attempt_test(view_url + '?mode=1', 'gantt.html')
+        self.authorized_attempt_test(view_url + '?mode=2', 'gantt.html')
+        self.authorized_attempt_test(view_url + '?mode=3&start=1494799200', 'gantt.html')
+        self.authorized_attempt_test(view_url + '?mode=4', 'gantt.html')
+        self.authorized_attempt_test(view_url + '?mode=5&end=1496008800', 'gantt.html')
+        self.authorized_attempt_test(view_url + '?mode=6&end=1496008800', 'gantt.html')
 
     def test_view_add_tail(self):
         view_url = reverse('routeplanning:add_tail')
 
-        self.guest_attempt(view_url)
-        self.no_role_user_attempt(view_url)
-        self.force_login()
-        self.authorized_attempt(view_url, 'tail.html')
+        self.guest_attempt_test(view_url)
+        self.no_role_user_attempt_test(view_url)
+        self.dispatch_user_login()
+        self.authorized_attempt_test(view_url, 'tail.html')
 
         response = self.client.post(view_url, {
             'number': 'N990XX',
@@ -255,10 +261,18 @@ class RoutePlanningViewsTestCase(TestCase):
             'tail_id': tail.id,
         })
 
-        self.guest_attempt(view_url)
-        self.no_role_user_attempt(view_url)
-        self.force_login()
-        self.authorized_attempt(view_url, 'tail.html')
+        self.guest_attempt_test(view_url)
+        self.no_role_user_attempt_test(view_url)
+
+        self.gantt_readonly_login()
+        response = self.client.post(view_url, {
+            'number': 'N993XX',
+            'action_after_save': 'save',
+        })
+        self.assertEqual(response.status_code, 403)
+
+        self.dispatch_user_login()
+        self.authorized_attempt_test(view_url, 'tail.html')
 
         response = self.client.post(view_url, {
             'number': 'N993XX',
@@ -285,9 +299,10 @@ class RoutePlanningViewsTestCase(TestCase):
             'tail_id': tail.id,
         })
 
-        self.guest_attempt(view_url)
-        self.no_role_user_attempt(view_url)
-        self.force_login()
+        self.guest_attempt_test(view_url)
+        self.no_role_user_attempt_test(view_url)
+
+        self.dispatch_user_login()
 
         response = self.client.delete(view_url)
         data = json.loads(response.content)
@@ -320,18 +335,18 @@ class RoutePlanningViewsTestCase(TestCase):
             'revision_id': 0,
         })
 
-        self.guest_attempt(view_url)
-        self.no_role_user_attempt(view_url)
-        self.force_login()
-        self.authorized_attempt(view_url, 'comingdue.html')
+        self.guest_attempt_test(view_url)
+        self.no_role_user_attempt_test(view_url)
+        self.dispatch_user_login()
+        self.authorized_attempt_test(view_url, 'comingdue.html')
 
     def test_view_add_line(self):
         view_url = reverse('routeplanning:add_line')
 
-        self.guest_attempt(view_url)
-        self.no_role_user_attempt(view_url)
-        self.force_login()
-        self.authorized_attempt(view_url, 'line.html')
+        self.guest_attempt_test(view_url)
+        self.no_role_user_attempt_test(view_url)
+        self.dispatch_user_login()
+        self.authorized_attempt_test(view_url, 'line.html')
 
         response = self.client.post(view_url, {
             'name': 'XXX/YYY',
@@ -369,10 +384,21 @@ class RoutePlanningViewsTestCase(TestCase):
             'line_id': line.id,
         })
 
-        self.guest_attempt(view_url)
-        self.no_role_user_attempt(view_url)
-        self.force_login()
-        self.authorized_attempt(view_url, 'line.html')
+        self.guest_attempt_test(view_url)
+        self.no_role_user_attempt_test(view_url)
+
+        self.gantt_readonly_login()
+        response = self.client.post(view_url, {
+            'name': 'XXX/ZZZ',
+            'part1': '701',
+            'part2': '702',
+            'action_after_save': 'save',
+        })
+        self.assertEqual(response.status_code, 403)
+
+        self.dispatch_user_login()
+
+        self.authorized_attempt_test(view_url, 'line.html')
 
         response = self.client.post(view_url, {
             'name': 'XXX/ZZZ',
@@ -405,9 +431,9 @@ class RoutePlanningViewsTestCase(TestCase):
             'line_id': line.id,
         })
 
-        self.guest_attempt(view_url)
-        self.no_role_user_attempt(view_url)
-        self.force_login()
+        self.guest_attempt_test(view_url)
+        self.no_role_user_attempt_test(view_url)
+        self.dispatch_user_login()
 
         response = self.client.delete(view_url)
         data = json.loads(response.content)
@@ -436,18 +462,18 @@ class RoutePlanningViewsTestCase(TestCase):
     def test_view_flights(self):
         view_url = reverse('routeplanning:flights')
 
-        self.guest_attempt(view_url)
-        self.no_role_user_attempt(view_url)
-        self.force_login()
-        self.authorized_attempt(view_url, 'flights.html')
+        self.guest_attempt_test(view_url)
+        self.no_role_user_attempt_test(view_url)
+        self.dispatch_user_login()
+        self.authorized_attempt_test(view_url, 'flights.html')
 
     def test_view_add_flight(self):
         view_url = reverse('routeplanning:add_flight')
 
-        self.guest_attempt(view_url)
-        self.no_role_user_attempt(view_url)
-        self.force_login()
-        self.authorized_attempt(view_url, 'flight.html')
+        self.guest_attempt_test(view_url)
+        self.no_role_user_attempt_test(view_url)
+        self.dispatch_user_login()
+        self.authorized_attempt_test(view_url, 'flight.html')
 
         response = self.client.post(view_url, {
             'number': '801',
@@ -468,10 +494,10 @@ class RoutePlanningViewsTestCase(TestCase):
             'flight_id': 13069,
         })
 
-        self.guest_attempt(view_url)
-        self.no_role_user_attempt(view_url)
-        self.force_login()
-        self.authorized_attempt(view_url, 'flight.html')
+        self.guest_attempt_test(view_url)
+        self.no_role_user_attempt_test(view_url)
+        self.dispatch_user_login()
+        self.authorized_attempt_test(view_url, 'flight.html')
 
         response = self.client.post(view_url, {
             'number': '801',
@@ -487,7 +513,7 @@ class RoutePlanningViewsTestCase(TestCase):
     def test_view_delete_flight(self):
         view_url = reverse('routeplanning:delete_flights')
 
-        self.force_login()
+        self.dispatch_user_login()
 
         response = self.client.post(view_url, {
             'flight_ids': '13069, 13070'
@@ -497,7 +523,7 @@ class RoutePlanningViewsTestCase(TestCase):
     def test_api_get_flight_page(self):
         api_url = reverse('routeplanning:api_flight_get_page')
 
-        self.force_login()
+        self.dispatch_user_login()
 
         response = self.client.post(api_url, {
             'start': 0,
@@ -511,13 +537,70 @@ class RoutePlanningViewsTestCase(TestCase):
         self.assertEqual(data['success'], True)
         self.assertNotEqual(len(data['data']), 0)
 
+        response = self.client.post(api_url, {
+            'start': 0,
+            'length': 10,
+            'order[0][dir]': 'desc',
+            'order[0][column]': 1,
+            'search[value]': 'MCE',
+        })
+        data = json.loads(response.content)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertNotEqual(len(data['data']), 0)
+
+        response = self.client.post(api_url, {
+            'start': 0,
+            'length': 10,
+            'order[0][dir]': 'desc',
+            'order[0][column]': 'nnn',  # Force to throw an exception
+            'search[value]': 'MCE',
+        })
+        data = json.loads(response.content)
+        self.assertEqual(response.status_code, 500)
+        self.assertEqual(data['success'], False)
+
     def test_api_load_data(self):
         api_url = reverse('routeplanning:api_load_data')
 
-        self.force_login()
+        self.gantt_readonly_login()
 
         response = self.client.get(api_url, {
             'startdate': 1494799200,
+            'enddate': 1496008800,
+            'revision': 0,
+        });
+        data = json.loads(response.content)
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(data['error'], 'Not allowed to get draft route plan')
+
+        revision = Revision(published_datetime=datetime(2017, 7, 10, 0, 0, tzinfo=utc))
+        revision.save()
+        revision1 = Revision(published_datetime=datetime(2017, 7, 05, 0, 0, tzinfo=utc))
+        revision1.save()
+
+        response = self.client.get(api_url, {
+            'startdate': 1494799200,
+            'enddate': 1496008800,
+            'revision': revision1.id,
+        });
+        data = json.loads(response.content)
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(data['error'], 'Not allowed to get route plans other than current published version')
+
+        self.dispatch_user_login()
+
+        response = self.client.get(api_url, {
+            'startdate': 1494799200,
+            'enddate': 1496008800,
+            'revision': 999,
+        });
+        data = json.loads(response.content)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(data['error'], 'Revision not found')
+
+        response = self.client.get(api_url, {
+            'startdate': 1495648800,
             'enddate': 1496008800,
             'revision': 0,
         });
@@ -526,12 +609,40 @@ class RoutePlanningViewsTestCase(TestCase):
         self.assertNotEqual(len(data['assignments']), 0)
         self.assertNotEqual(len(data['templates']), 0)
 
+        response = self.client.get(api_url, {
+            'startdate': 1495648800,
+            'enddate': 1496008800,
+            'revision': revision.id,
+        });
+        data = json.loads(response.content)
+        self.assertEqual(response.status_code, 200)
+
     def test_api_assign_flight(self):
         api_url = reverse('routeplanning:api_assign_flight')
 
-        self.force_login()
+        self.dispatch_user_login()
 
         Assignment.objects.all().delete()
+
+        response = self.client.post(api_url, {
+            'flight_data': 'invalid_json_string',
+            'revision': 0,
+        })
+        data = json.loads(response.content)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['error'], 'Invalid parameters')
+
+        response = self.client.post(api_url, {
+            'flight_data': json.dumps([{
+                'flight': 13069,
+                'tail': 'N455BC',
+            }]),
+            'revision': 1,
+        })
+        data = json.loads(response.content)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['error'], 'Revision not found')
 
         response = self.client.post(api_url, {
             'flight_data': json.dumps([{
@@ -567,11 +678,53 @@ class RoutePlanningViewsTestCase(TestCase):
         self.assertEqual(data['duplication'], False)
         self.assertEqual(data['physically_invalid'], False)
 
+        response = self.client.post(api_url, {
+            'flight_data': json.dumps([{
+                'flight': 14001,
+                'tail': 'N455BC',
+            }]),
+            'revision': 0,
+        })
+        data = json.loads(response.content)
+        self.assertEqual(data['duplication'], True)
+
+        # Testing estimated and actual flight times
+        flight = Flight.objects.get(pk=13070)
+        flight.estimated_out_datetime = datetime(2017, 5, 24, 19, 30, tzinfo=utc)
+        flight.update_flight_estimates_and_actuals()
+        response = self.client.post(api_url, {
+            'flight_data': json.dumps([{
+                'flight': 13070,
+                'tail': 'N455BC',
+            }]),
+            'revision': 0,
+        })
+        data = json.loads(response.content)
+        self.assertEqual(data['success'], True)
+        self.assertEqual(data['duplication'], False)
+        self.assertEqual(data['physically_invalid'], False)
+
+        flight = Flight.objects.get(pk=13263)
+        flight.estimated_out_datetime = datetime(2017, 5, 24, 21, 50, tzinfo=utc)
+        flight.actual_out_datetime = datetime(2017, 5, 24, 22, 0, tzinfo=utc)
+        flight.update_flight_estimates_and_actuals()
+        response = self.client.post(api_url, {
+            'flight_data': json.dumps([{
+                'flight': 13263,
+                'tail': 'N455BC',
+            }]),
+            'revision': 0,
+        })
+        data = json.loads(response.content)
+        self.assertEqual(data['success'], True)
+        self.assertEqual(data['duplication'], False)
+        self.assertEqual(data['physically_invalid'], False)
+
         # Testing with existing revision
         revision = self.prepare_revision()
         response = self.client.post(api_url, {
             'flight_data': json.dumps([{
-                'flight': 13132,
+                'flight': 13072,
                 'tail': 'N455BC',
             }]),
             'revision': revision.id,
@@ -584,7 +737,31 @@ class RoutePlanningViewsTestCase(TestCase):
     def test_api_assign_status(self):
         api_url = reverse('routeplanning:api_assign_status')
 
-        self.force_login()
+        self.dispatch_user_login()
+
+        response = self.client.post(api_url, {
+            'tail': 'N455BC',
+            'start_time': '2017-05-24 17:30:00+00',
+            'end_time': '2017-05-24 18:00:00+00',
+            'status': 'n',
+            'revision': 0,
+        })
+        data = json.loads(response.content)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['error'], 'Invalid parameters')
+
+        response = self.client.post(api_url, {
+            'tail': 'N455BC',
+            'start_time': '2017-05-24 17:30:00+00',
+            'end_time': '2017-05-24 18:00:00+00',
+            'status': 2,
+            'revision': 999,
+        })
+        data = json.loads(response.content)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['error'], 'Revision not found')
 
         response = self.client.post(api_url, {
             'tail': 'N455BC',
@@ -622,6 +799,7 @@ class RoutePlanningViewsTestCase(TestCase):
         data = json.loads(response.content)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(data['success'], False)
+        self.assertEqual(data['error'], 'Duplicated assignment')
 
         response = self.client.post(api_url, {
             'tail': 'N584JV',
@@ -634,6 +812,18 @@ class RoutePlanningViewsTestCase(TestCase):
         })
         data = json.loads(response.content)
         self.assertEqual(response.status_code, 200)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['error'], 'Physically invalid assignment')
+
+        response = self.client.post(api_url, {
+            'tail': 'N999XX',   # invalid tail number which will lead to error
+            'start_time': '2017-05-24 17:50:00+00',
+            'end_time': '2017-05-24 18:50:00+00',
+            'status': 2,
+            'revision': 0,
+        })
+        data = json.loads(response.content)
+        self.assertEqual(response.status_code, 500)
         self.assertEqual(data['success'], False)
 
         # Testing with existing revision
@@ -651,7 +841,7 @@ class RoutePlanningViewsTestCase(TestCase):
     def test_api_remove_assignment(self):
         api_url = reverse('routeplanning:api_remove_assignment')
 
-        self.force_login()
+        self.dispatch_user_login()
 
         response = self.client.post(api_url, {
             'assignment_data': '[450, 451]',
@@ -664,7 +854,7 @@ class RoutePlanningViewsTestCase(TestCase):
     def test_api_move_assignment(self):
         api_url = reverse('routeplanning:api_move_assignment')
 
-        self.force_login()
+        self.dispatch_user_login()
 
         Assignment.objects.exclude(pk=455).exclude(pk=451).delete()
 
@@ -718,7 +908,7 @@ class RoutePlanningViewsTestCase(TestCase):
     def test_api_resize_assignment(self):
         api_url = reverse('routeplanning:api_resize_assignment')
 
-        self.force_login()
+        self.dispatch_user_login()
 
         response = self.client.post(api_url, {
             'assignment_id': 451,
@@ -754,7 +944,7 @@ class RoutePlanningViewsTestCase(TestCase):
     def test_api_save_hobbs(self):
         api_url = reverse('routeplanning:api_save_hobbs')
 
-        self.force_login()
+        self.dispatch_user_login()
 
         response = self.client.post(api_url, {
             'tail_id': 14,
@@ -768,7 +958,7 @@ class RoutePlanningViewsTestCase(TestCase):
         self.assertEqual(data['success'], True)
 
     def test_api_get_hobbs(self):
-        self.force_login()
+        self.dispatch_user_login()
 
         r = self.client.post(reverse('routeplanning:api_save_hobbs'), {
             'tail_id': 14,
@@ -790,7 +980,7 @@ class RoutePlanningViewsTestCase(TestCase):
         self.assertEqual(data['success'], True)
 
     def test_api_delete_actual_hobbs(self):
-        self.force_login()
+        self.dispatch_user_login()
 
         r = self.client.post(reverse('routeplanning:api_save_hobbs'), {
             'tail_id': 14,
@@ -812,7 +1002,7 @@ class RoutePlanningViewsTestCase(TestCase):
         self.assertEqual(data['success'], True)
 
     def test_api_coming_due_list(self):
-        self.force_login()
+        self.dispatch_user_login()
 
         r = self.client.post(reverse('routeplanning:api_save_hobbs'), {
             'tail_id': 14,
@@ -835,7 +1025,7 @@ class RoutePlanningViewsTestCase(TestCase):
         self.assertNotEqual(len(data['hobbs_list']), 0)
 
     def test_api_publish_revision(self):
-        self.force_login()
+        self.dispatch_user_login()
 
         Assignment.objects.update(is_draft=True)
 
@@ -868,7 +1058,7 @@ class RoutePlanningViewsTestCase(TestCase):
         self.assertEqual(data['success'], False)
 
     def test_api_clear_revision(self):
-        self.force_login()
+        self.dispatch_user_login()
 
         Assignment.objects.update(is_draft=True)
 
@@ -899,7 +1089,7 @@ class RoutePlanningViewsTestCase(TestCase):
         self.assertEqual(response.status_code, 400)
 
     def test_api_delete_revision(self):
-        self.force_login()
+        self.dispatch_user_login()
 
         Assignment.objects.update(is_draft=True)
 

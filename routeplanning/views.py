@@ -426,6 +426,7 @@ def api_load_data(request):
             revision = Revision.objects.get(pk=revision_id)
         except Revision.DoesNotExist:
             result = {
+                'success': False,
                 'error': 'Revision not found',
             }
             return Response(result, status=400)
@@ -435,24 +436,18 @@ def api_load_data(request):
     if not can_write_gantt(request.user):
         if not revision:    # Current draft gantt
             result = {
+                'success': False,
                 'error': 'Not allowed to get draft route plan',
             }
             return Response(result, status=403)
         else:
-            ### TODO: This part is not included in test coverage
             latest_published_datetime_row = Revision.objects.all().aggregate(Max('published_datetime'))
-            if not latest_published_datetime_row:
+            latest_published_datetime = latest_published_datetime_row['published_datetime__max']
+            if revision.published_datetime != latest_published_datetime:
                 result = {
-                    'error': 'No published route plan exists',
+                    'error': 'Not allowed to get route plans other than current published version',
                 }
                 return Response(result, status=403)
-            else:
-                latest_published_datetime = latest_published_datetime_row['published_datetime__max']
-                if revision.published_datetime != latest_published_datetime:
-                    result = {
-                        'error': 'Not allowed to get route plans other than current published version',
-                    }
-                    return Response(result, status=403)
 
     # Date for tails and its last assignment on current revision
 
