@@ -3,28 +3,10 @@ import csv, datetime, sys
 from django.core.management.base import BaseCommand, CommandError
 
 from routeplanning.models import Flight
-from common.helpers import utc
+from common.helpers import utc, str_to_datetime
 
 class Command(BaseCommand):
     help = 'Load flights from fixtures/flights.csv'
-
-    def str_to_datetime(self, str):
-        parts = str.split(' ')
-        date_parts = parts[0].split('/')
-        date = int(date_parts[0])
-        month = int(date_parts[1])
-        year = int(date_parts[2])
-        hour = 0
-        minute = 0
-        second = 0
-
-        if len(parts) > 1:
-            time_parts = parts[1].split(':')
-            hour = int(time_parts[0])
-            minute = int(time_parts[1])
-            second = int(time_parts[2])
-
-        return datetime.datetime(year, month, date, hour, minute, second, tzinfo=utc)
 
     def handle(self, *args, **options):
         count = 1
@@ -37,8 +19,8 @@ class Command(BaseCommand):
                         number=int(row[1][3:]),
                         origin=row[2],
                         destination=row[3],
-                        scheduled_out_datetime=self.str_to_datetime(row[4]),
-                        scheduled_in_datetime=self.str_to_datetime(row[6])
+                        scheduled_out_datetime=str_to_datetime(row[4]),
+                        scheduled_in_datetime=str_to_datetime(row[6])
                     )
                     flight.save()
                 except Exception as e:

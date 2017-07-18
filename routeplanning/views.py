@@ -676,7 +676,8 @@ def api_assign_flight(request):
                 'next_due_hobbs': Hobbs.get_next_due_value(tail, assignment.end_time),
             }
         except Exception as e:
-            print(str(e))
+            # print(str(e))
+            pass
 
     result['physical_conflicts'] = physical_conflicts
     result['time_conflicts'] = time_conflicts
@@ -837,7 +838,8 @@ def api_remove_assignment(request):
 
             result['removed_assignments'].append(assignment_id)
         except Exception as e:
-            print(str(e))
+            # print(str(e))
+            pass
 
     result['success'] = True
     return Response(result)
@@ -968,7 +970,8 @@ def api_move_assignment(request):
                 'end_time': assignment.end_time.isoformat(),
             }
         except Exception as e:
-            print(str(e))
+            # print(str(e))
+            pass
 
     result['physical_conflicts'] = physical_conflicts
     result['time_conflicts'] = time_conflicts
@@ -1007,7 +1010,11 @@ def api_resize_assignment(request):
     time_conflicts = []
 
     try:
-        assignment = Assignment.objects.get(pk=assignment_id)
+        try:
+            assignment = Assignment.objects.get(pk=assignment_id)
+        except:
+            result['error'] = 'Invalid assignment ID'
+            return Response(result, status=400)
 
         start_time = assignment.start_time
         end_time = assignment.end_time
@@ -1059,31 +1066,14 @@ def api_resize_assignment(request):
             assignment.flight.save()
 
     except Exception as e:
-        result['error'] = str(e)
+        # print(str(e))
+        result['error'] = 'Error occurred during operations'
         return Response(result, status=500)
 
     result['success'] = True
     result['start_time'] = assignment.start_time.isoformat()
     result['end_time'] = assignment.end_time.isoformat()
     return Response(result)
-
-def str_to_datetime(str): # pragma: no cover
-    parts = str.split(' ')
-    date_parts = parts[0].split('/')
-    date = int(date_parts[0])
-    month = int(date_parts[1])
-    year = int(date_parts[2])
-    hour = 0
-    minute = 0
-    second = 0
-
-    if len(parts) > 1:
-        time_parts = parts[1].split(':')
-        hour = int(time_parts[0])
-        minute = int(time_parts[1])
-        second = int(time_parts[2])
-
-    return datetime(year, month, date, hour, minute, second, tzinfo=utc)
 
 @login_required
 @gantt_writable_required
@@ -1170,7 +1160,8 @@ def api_upload_csv(request): # pragma: no cover
                     flight.save()
 
             except Exception as e:
-                print(str(e))
+                # print(str(e))
+                pass
 
     try:
         os.remove(filepath)
@@ -1190,7 +1181,7 @@ def api_get_hobbs(request, hobbs_id=None):
 
     try:
         hobbs = Hobbs.objects.filter(pk=hobbs_id)
-    except:
+    except:     # pragma: no cover
         return Response(result, status=400)
 
     result['success'] = True
@@ -1207,7 +1198,7 @@ def api_delete_actual_hobbs(request, hobbs_id=None):
 
     try:
         Hobbs.objects.filter(pk=hobbs_id).filter(type=Hobbs.TYPE_ACTUAL).delete()
-    except:
+    except:     # pragma: no cover
         return Response(result, status=400)
 
     result['success'] = True
@@ -1241,7 +1232,7 @@ def api_save_hobbs(request):
         if hobbs and hobbs.type != hobbs_type:
             raise Exception('Invalid parameters')
     except Exception as e:
-        print(str(e))
+        # print(str(e))
         result['error'] = 'Invalid parameters'
         return Response(result, status=400)
 
@@ -1254,7 +1245,7 @@ def api_save_hobbs(request):
         hobbs.hobbs = hobbs_value
         hobbs.tail = tail
         hobbs.save()
-    except Exception as e:
+    except Exception as e:      # pragma: no cover
         result['error'] = str(e)
         return Response(result, status=500)
 

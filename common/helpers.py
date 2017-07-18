@@ -63,3 +63,21 @@ def ndigits(value, digits = 1):
     while len(s) < digits:
         s = '0' + s
     return s
+
+def str_to_datetime(str):
+    parts = str.split(' ')
+    date_parts = parts[0].split('/')
+    date = int(date_parts[0])
+    month = int(date_parts[1])
+    year = int(date_parts[2])
+    hour = 0
+    minute = 0
+    second = 0
+
+    if len(parts) > 1:
+        time_parts = parts[1].split(':')
+        hour = int(time_parts[0])
+        minute = int(time_parts[1])
+        second = int(time_parts[2])
+
+    return datetime(year, month, date, hour, minute, second, tzinfo=utc)

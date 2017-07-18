@@ -844,7 +844,25 @@ class RoutePlanningViewsTestCase(TestCase):
         self.dispatch_user_login()
 
         response = self.client.post(api_url, {
+            'assignment_data': 'invalid_json_data',
+            'revision': 0,
+        })
+        data = json.loads(response.content)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['error'], 'Invalid parameters')
+
+        response = self.client.post(api_url, {
             'assignment_data': '[450, 451]',
+            'revision': 999,
+        })
+        data = json.loads(response.content)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['error'], 'Revision not found')
+
+        response = self.client.post(api_url, {
+            'assignment_data': '[450, 451, 999]',
             'revision': 0,
         })
         data = json.loads(response.content)
@@ -856,7 +874,53 @@ class RoutePlanningViewsTestCase(TestCase):
 
         self.dispatch_user_login()
 
-        Assignment.objects.exclude(pk=455).exclude(pk=451).delete()
+        response = self.client.post(api_url, {
+            'assignment_data': 'invalid_json_data',
+            'revision': 0,
+        })
+        data = json.loads(response.content)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['error'], 'Invalid parameters')
+
+        response = self.client.post(api_url, {
+            'assignment_data': '[]',
+            'revision': 999,
+        })
+        data = json.loads(response.content)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['error'], 'Revision not found')
+
+        Assignment.objects.exclude(pk=450).exclude(pk=451).exclude(pk=455).delete()
+        Assignment.objects.all().update(is_draft=True)
+
+        response = self.client.post(api_url, {
+            'assignment_data': json.dumps([{
+                'assignment_id': 455,
+                'tail': 'N165TG',
+            }]),
+            'revision': 0,
+        })
+        data = json.loads(response.content)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertEqual(data['duplication'], False)
+        self.assertEqual(data['physically_invalid'], False)
+
+        response = self.client.post(api_url, {
+            'assignment_data': json.dumps([{
+                'assignment_id': 455,
+                'tail': 'N166TG',
+                'start_time': 'invalid_date_string',
+            }]),
+            'revision': 0,
+        })
+        data = json.loads(response.content)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertEqual(data['duplication'], False)
+        self.assertEqual(data['physically_invalid'], False)
 
         response = self.client.post(api_url, {
             'assignment_data': json.dumps([{
@@ -874,41 +938,74 @@ class RoutePlanningViewsTestCase(TestCase):
 
         response = self.client.post(api_url, {
             'assignment_data': json.dumps([{
-                'assignment_id': 451,
-                'tail': 'N584JV',
-                'start_time': '2017-05-25T12:30:00Z',
+                'assignment_id': 450,
+                'tail': 'N166TG',
             }]),
             'revision': 0,
         })
         data = json.loads(response.content)
-        ### TODO: check
-        # self.assertEqual(response.status_code, 200)
-        # self.assertEqual(data['success'], True)
-        # self.assertEqual(data['duplication'], True)
-        # self.assertEqual(data['physically_invalid'], False)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(data['physically_invalid'], True)
 
-        assignment = Assignment.objects.get(pk=451)
-        assignment.flight.origin = 'OAK'
-        assignment.flight.save()
         response = self.client.post(api_url, {
             'assignment_data': json.dumps([{
                 'assignment_id': 451,
-                'tail': 'N584JV',
-                'start_time': '2017-05-26T12:30:00Z',
+                'tail': 'N166TG',
+                'start_time': '2017-05-25T13:30:00Z',
             }]),
             'revision': 0,
         })
         data = json.loads(response.content)
-        ### TODO: check
-        # self.assertEqual(response.status_code, 200)
-        # self.assertEqual(data['success'], True)
-        # self.assertEqual(data['duplication'], False)
-        # self.assertEqual(data['physically_invalid'], True)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(data['duplication'], True)
 
     def test_api_resize_assignment(self):
         api_url = reverse('routeplanning:api_resize_assignment')
 
         self.dispatch_user_login()
+
+        response = self.client.post(api_url, {
+            'assignment_id': 451,
+            'position': 'start',
+            'diff_seconds': 'not-a-number',
+            'revision': 0,
+        })
+        data = json.loads(response.content)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['error'], 'Invalid parameters')
+
+        response = self.client.post(api_url, {
+            'assignment_id': 451,
+            'position': 'start',
+            'diff_seconds': 600,
+            'revision': 999,
+        })
+        data = json.loads(response.content)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['error'], 'Revision not found')
+
+        response = self.client.post(api_url, {
+            'assignment_id': 451,
+            'position': 'start',
+            'diff_seconds': -12000,   # start_time would get bigger than end_time which should be detected as error
+            'revision': 0,
+        })
+        data = json.loads(response.content)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['error'], 'Start time cannot be later than end time')
+
+        response = self.client.post(api_url, {
+            'assignment_id': 999,
+            'position': 'start',
+            'diff_seconds': 600,
+            'revision': 0,
+        })
+        data = json.loads(response.content)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(data['error'], 'Invalid assignment ID')
 
         response = self.client.post(api_url, {
             'assignment_id': 451,
@@ -930,21 +1027,35 @@ class RoutePlanningViewsTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(data['success'], True)
 
+        # Prepare an assignment for simulating time overlap
+        Assignment.objects.filter(pk=453).update(is_draft=True)
         response = self.client.post(api_url, {
             'assignment_id': 451,
-            'position': 'start',
-            'diff_seconds': 18000,
+            'position': 'end',
+            'diff_seconds': 180000,
             'revision': 0,
         })
         data = json.loads(response.content)
-        ### TODO: check
-        # self.assertEqual(response.status_code, 200)
-        # self.assertEqual(data['success'], False)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['error'], 'Duplicated assignment')
 
     def test_api_save_hobbs(self):
         api_url = reverse('routeplanning:api_save_hobbs')
 
         self.dispatch_user_login()
+
+        response = self.client.post(api_url, {
+            'tail_id': 14,
+            'type': Hobbs.TYPE_ACTUAL,
+            'hobbs': 10,
+            'datetime': 'invalid_date_string',
+            'flight_id': 13072,
+        })
+        data = json.loads(response.content)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['error'], 'Invalid parameters')
 
         response = self.client.post(api_url, {
             'tail_id': 14,
@@ -973,7 +1084,6 @@ class RoutePlanningViewsTestCase(TestCase):
         api_url = reverse('routeplanning:api_get_hobbs', kwargs={
             'hobbs_id': hobbs.id,
         })
-
         response = self.client.get(api_url)
         data = json.loads(response.content)
         self.assertEqual(response.status_code, 200)
@@ -995,7 +1105,6 @@ class RoutePlanningViewsTestCase(TestCase):
         api_url = reverse('routeplanning:api_delete_actual_hobbs', kwargs={
             'hobbs_id': hobbs.id,
         })
-
         response = self.client.post(api_url)
         data = json.loads(response.content)
         self.assertEqual(response.status_code, 200)
