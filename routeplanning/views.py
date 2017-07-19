@@ -1350,7 +1350,7 @@ def api_coming_due_list(request):
                 'flight': '',
             })
 
-    except Exception as e:
+    except Exception as e:      # pragma: no cover
         result['error'] = str(e)
         return Response(result, status=500)
 
@@ -1397,7 +1397,7 @@ def api_publish_revision(request):
         elif not revision:
             # Copy past and current assignments from last revision
             Revision.create_draft()
-    except Exception as e:
+    except Exception as e:      # pragma: no cover
         result['error'] = str(e)
         return Response(result, status=500)
 
@@ -1440,7 +1440,7 @@ def api_clear_revision(request):
         else:
             # Copy past and current assignments from last revision
             Revision.create_draft()
-    except Exception as e:
+    except Exception as e:      # pragma: no cover
         result['error'] = str(e)
         return Response(result, status=500)
 
@@ -1475,7 +1475,7 @@ def api_delete_revision(request):
         else:
             # Copy past and current assignments from last revision
             Revision.create_draft()
-    except Exception as e:
+    except Exception as e:      # pragma: no cover
         result['error'] = str(e)
         return Response(result, status=500)
 

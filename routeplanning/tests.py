@@ -1068,6 +1068,32 @@ class RoutePlanningViewsTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(data['success'], True)
 
+        hobbs = Hobbs.objects.first()
+
+        response = self.client.post(api_url, {
+            'tail_id': 14,
+            'id': hobbs.id,
+            'type': Hobbs.TYPE_NEXT_DUE,
+            'hobbs': 10,
+            'datetime': '2017-05-24T13:00:00Z',
+            'flight_id': 13072,
+        })
+        data = json.loads(response.content)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['error'], 'Invalid parameters')
+
+        response = self.client.post(api_url, {
+            'tail_id': 14,
+            'type': Hobbs.TYPE_ACTUAL,
+            'hobbs': hobbs.id,
+            'hobbs': 8,
+            'datetime': '2017-05-25T05:00:00Z',
+        })
+        data = json.loads(response.content)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(data['success'], True)
+
     def test_api_get_hobbs(self):
         self.dispatch_user_login()
 
@@ -1113,6 +1139,29 @@ class RoutePlanningViewsTestCase(TestCase):
     def test_api_coming_due_list(self):
         self.dispatch_user_login()
 
+        api_url = reverse('routeplanning:api_coming_due_list')
+
+        response = self.client.post(api_url, {
+            'tail_id': 14,
+            'start': 'invalid_date_string',
+            'days': 7,
+        })
+        data = json.loads(response.content)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['error'], 'Invalid parameters')
+
+        response = self.client.post(api_url, {
+            'tail_id': 14,
+            'start': '2017-05-23T10:00:00Z',
+            'days': 7,
+            'revision': 999,
+        })
+        data = json.loads(response.content)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['error'], 'Revision not found')
+
         r = self.client.post(reverse('routeplanning:api_save_hobbs'), {
             'tail_id': 14,
             'type': Hobbs.TYPE_ACTUAL,
@@ -1120,8 +1169,6 @@ class RoutePlanningViewsTestCase(TestCase):
             'datetime': '2017-05-24T13:00:00Z',
             'flight_id': 13072,
         })
-
-        api_url = reverse('routeplanning:api_coming_due_list')
 
         response = self.client.post(api_url, {
             'tail_id': 14,
@@ -1133,12 +1180,32 @@ class RoutePlanningViewsTestCase(TestCase):
         self.assertEqual(data['success'], True)
         self.assertNotEqual(len(data['hobbs_list']), 0)
 
+        revision = Revision(published_datetime=datetime(2017, 7, 10, 0, 0, tzinfo=utc))
+        revision.save()
+        response = self.client.post(api_url, {
+            'tail_id': 14,
+            'start': '2017-05-23T10:00:00Z',
+            'days': 7,
+            'revision': revision.id,
+        })
+        data = json.loads(response.content)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(data['success'], True)
+
     def test_api_publish_revision(self):
         self.dispatch_user_login()
 
         Assignment.objects.update(is_draft=True)
 
         api_url = reverse('routeplanning:api_publish_revision')
+
+        response = self.client.post(api_url, {
+            'revision': 999,
+        })
+        data = json.loads(response.content)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['error'], 'Revision not found')
 
         response = self.client.post(api_url, {
             # 'revision': '0',
@@ -1159,15 +1226,27 @@ class RoutePlanningViewsTestCase(TestCase):
         self.assertEqual(data['success'], True)
         self.assertEqual(len(data['revisions']), 2)
 
+        revision.check_draft_created()
+
+        response = self.client.post(api_url, {
+            'revision': revision.id,
+        })
+        data = json.loads(response.content)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertEqual(len(data['revisions']), 3)
+
+    def test_api_clear_revision(self):
+        self.dispatch_user_login()
+
+        api_url = reverse('routeplanning:api_clear_revision')
+
         response = self.client.post(api_url, {
             'revision': '999',
         })
         data = json.loads(response.content)
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(data['success'], False)
-
-    def test_api_clear_revision(self):
-        self.dispatch_user_login()
+        self.assertEqual(data['error'], 'Revision not found')
 
         Assignment.objects.update(is_draft=True)
 
@@ -1180,8 +1259,6 @@ class RoutePlanningViewsTestCase(TestCase):
         self.assertEqual(len(data['revisions']), 1)
 
         revision = Revision.objects.first()
-
-        api_url = reverse('routeplanning:api_clear_revision')
 
         response = self.client.post(api_url, {
             'revision': revision.id,
@@ -1191,16 +1268,21 @@ class RoutePlanningViewsTestCase(TestCase):
         self.assertEqual(data['success'], True)
         self.assertEqual(revision.assignment_set.filter(is_draft=True).count(), 0)
 
+    def test_api_delete_revision(self):
+        self.dispatch_user_login()
+
+        api_url = reverse('routeplanning:api_delete_revision')
+
         response = self.client.post(api_url, {
             'revision': '999',
         })
         data = json.loads(response.content)
         self.assertEqual(response.status_code, 400)
-
-    def test_api_delete_revision(self):
-        self.dispatch_user_login()
+        self.assertEqual(data['error'], 'Revision not found')
 
         Assignment.objects.update(is_draft=True)
+        revision_to_remove = Revision(published_datetime=datetime(2017, 7, 10, 0, 0, tzinfo=utc))
+        revision_to_remove.save()
 
         response = self.client.post(reverse('routeplanning:api_publish_revision'), {
             # 'revision': '0',
@@ -1208,22 +1290,12 @@ class RoutePlanningViewsTestCase(TestCase):
         data = json.loads(response.content)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(data['success'], True)
-        self.assertEqual(len(data['revisions']), 1)
-
-        revision = Revision.objects.first()
-
-        api_url = reverse('routeplanning:api_delete_revision')
+        self.assertEqual(len(data['revisions']), 2)
 
         response = self.client.post(api_url, {
-            'revision': revision.id,
+            'revision': revision_to_remove.id,
         })
         data = json.loads(response.content)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(data['success'], True)
-
-        response = self.client.post(api_url, {
-            'revision': '999',
-        })
-        data = json.loads(response.content)
-        self.assertEqual(response.status_code, 400)
-
+        self.assertEqual(len(data['revisions']), 1)
