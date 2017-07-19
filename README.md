@@ -57,17 +57,17 @@ To run the application on local for development, please follow these steps.
 ### Load fixures
 
 Run all the commands in the following order:
-`python manage.py loaddata roles.json`
-`python manage.py loaddata inspection.json`
-`python manage.py loaddata aircraft.json`
-`python manage.py loaddata airframes.json`
-`python manage.py loaddata engines.json`
-`python manage.py loaddata propellers.json`
-`python manage.py loaddata lines.json`
-`python manage.py loaddata lineparts.json`
-`python manage.py loaddata tails.json`
-`python manage.py loadflightcsv` (Before running this, put CSV file as `flights.csv` in routeplanning/fixtures/)
-`python manage.py loadlinecsv` (Before running this, put `lines.csv` and `lineparts.csv` in routeplanning/fixtures/)
+- `python manage.py loaddata roles.json`
+- `python manage.py loaddata inspection.json`
+- `python manage.py loaddata aircraft.json`
+- `python manage.py loaddata airframes.json`
+- `python manage.py loaddata engines.json`
+- `python manage.py loaddata propellers.json`
+- `python manage.py loaddata lines.json`
+- `python manage.py loaddata lineparts.json`
+- `python manage.py loaddata tails.json`
+- `python manage.py loadflightcsv` (Before running this, put CSV file as `flights.csv` in routeplanning/fixtures/)
+- `python manage.py loadlinecsv` (Before running this, put `lines.csv` and `lineparts.csv` in routeplanning/fixtures/)
 
 (Note that default CSV data is already in fixtures. Put CSV file into fixtures folder when you need to use new or updated data.)
 
