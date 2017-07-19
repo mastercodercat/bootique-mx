@@ -40,10 +40,12 @@ To run the application on local for development, please follow these steps.
 - Run `python manage.py migrate` to migrate database
 - Load fixtures(See below.)
 - Run `python manage.py runserver` to run project
-- For building front end assets,
-  = install node
-  = Run `npm install` to install dependencies
-  = Run `npm run watch` to watch and compile resource changes
+
+### Build front end
+
+- install node
+- Run `npm install` to install dependencies
+- Run `npm run watch` to watch and compile resource changes
 
 ### Initial project configuration
 
