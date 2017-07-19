@@ -26,31 +26,33 @@ Project has deployment setup to deploy using fabric and docker on staging/produc
 
 To run the application on local for development, please follow these steps.
 
-Configure database connection
+### Configure database connection
 
 - In `[project folder]/mxtracking` directory, copy local_settings.py.example to local_settings.py
 - Edit `DATABASES['default']` parameter to connection string of local database (postgres is used as default currently)
 
-To run the project:
+### Run the project
 
 - Activate virtual environment
 - Go to project root directory
+- Run `pip install -r requirements/local.txt` to install local development dependencies (which includes test libraries in addition to main dependencies.)
 - Run `python manage.py makemigrations inspection home routeplanning` to create migrations
 - Run `python manage.py migrate` to migrate database
+- Load fixtures(See below.)
 - Run `python manage.py runserver` to run project
 - For building front end assets,
   = install node
   = Run `npm install` to install dependencies
   = Run `npm run watch` to watch and compile resource changes
 
-Initial project configuration:
+### Initial project configuration
 
 - Run `python manage.py createsuperuser` to create an admin
 - Login to `http://localhost:8000/admin` to enter django admin
 - Add Site model with site name `localhost`
 - Add Social auth application as Google with api key and secret
 
-Load fixures:
+### Load fixures
 
 Run all the commands in the following order:
 `python manage.py loaddata roles.json`
@@ -67,8 +69,8 @@ Run all the commands in the following order:
 
 (Note that default CSV data is already in fixtures. Put CSV file into fixtures folder when you need to use new or updated data.)
 
-Run test:
+### Run test
 
-`python manage.py test`
+`npm run test:coverage`
 
-* Note when SCSS file is modified, please restart django appserver.
+This command executes all the tests and reports coverage at the end.
