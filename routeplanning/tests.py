@@ -687,742 +687,803 @@ class RoutePlanningViewsTestCase(TestCase):
         self.assertEqual(response.status_code, 500)
         self.assertEqual(data['success'], False)
 
-    # def test_api_load_data(self):
-    #     api_url = reverse('routeplanning:api_load_data')
-
-    #     self.gantt_readonly_login()
-
-    #     response = self.client.get(api_url, {
-    #         'startdate': 1494799200,
-    #         'enddate': 1496008800,
-    #         'revision': 0,
-    #     });
-    #     data = json.loads(response.content)
-    #     self.assertEqual(response.status_code, 403)
-    #     self.assertEqual(data['error'], 'Not allowed to get draft route plan')
-
-    #     revision = Revision(published_datetime=datetime(2017, 7, 10, 0, 0, tzinfo=utc))
-    #     revision.save()
-    #     revision1 = Revision(published_datetime=datetime(2017, 7, 05, 0, 0, tzinfo=utc))
-    #     revision1.save()
-
-    #     response = self.client.get(api_url, {
-    #         'startdate': 1494799200,
-    #         'enddate': 1496008800,
-    #         'revision': revision1.id,
-    #     });
-    #     data = json.loads(response.content)
-    #     self.assertEqual(response.status_code, 403)
-    #     self.assertEqual(data['error'], 'Not allowed to get route plans other than current published version')
-
-    #     self.dispatch_user_login()
-
-    #     response = self.client.get(api_url, {
-    #         'startdate': 1494799200,
-    #         'enddate': 1496008800,
-    #         'revision': 999,
-    #     });
-    #     data = json.loads(response.content)
-    #     self.assertEqual(response.status_code, 400)
-    #     self.assertEqual(data['error'], 'Revision not found')
-
-    #     response = self.client.get(api_url, {
-    #         'startdate': 1495648800,
-    #         'enddate': 1496008800,
-    #         'revision': 0,
-    #     });
-    #     data = json.loads(response.content)
-    #     self.assertEqual(response.status_code, 200)
-    #     self.assertNotEqual(len(data['assignments']), 0)
-    #     self.assertNotEqual(len(data['templates']), 0)
-
-    #     response = self.client.get(api_url, {
-    #         'startdate': 1495648800,
-    #         'enddate': 1496008800,
-    #         'revision': revision.id,
-    #     });
-    #     data = json.loads(response.content)
-    #     self.assertEqual(response.status_code, 200)
-
-    # def test_api_assign_flight(self):
-    #     api_url = reverse('routeplanning:api_assign_flight')
-
-    #     self.dispatch_user_login()
-
-    #     Assignment.objects.all().delete()
-
-    #     response = self.client.post(api_url, {
-    #         'flight_data': 'invalid_json_string',
-    #         'revision': 0,
-    #     })
-    #     data = json.loads(response.content)
-    #     self.assertEqual(response.status_code, 400)
-    #     self.assertEqual(data['success'], False)
-    #     self.assertEqual(data['error'], 'Invalid parameters')
-
-    #     response = self.client.post(api_url, {
-    #         'flight_data': json.dumps([{
-    #             'flight': 13069,
-    #             'tail': 'N455BC',
-    #         }]),
-    #         'revision': 1,
-    #     })
-    #     data = json.loads(response.content)
-    #     self.assertEqual(data['success'], False)
-    #     self.assertEqual(data['error'], 'Revision not found')
-
-    #     response = self.client.post(api_url, {
-    #         'flight_data': json.dumps([{
-    #             'flight': 13069,
-    #             'tail': 'N455BC',
-    #         }]),
-    #         'revision': 0,
-    #     })
-    #     data = json.loads(response.content)
-    #     self.assertEqual(data['success'], True)
-    #     self.assertEqual(data['duplication'], False)
-    #     self.assertEqual(data['physically_invalid'], False)
-
-    #     response = self.client.post(api_url, {
-    #         'flight_data': json.dumps([{
-    #             'flight': 13072,
-    #             'tail': 'N455BC',
-    #         }]),
-    #         'revision': 0,
-    #     })
-    #     data = json.loads(response.content)
-    #     self.assertEqual(data['physically_invalid'], True)
-
-    #     response = self.client.post(api_url, {
-    #         'flight_data': json.dumps([{
-    #             'flight': 13262,
-    #             'tail': 'N455BC',
-    #         }]),
-    #         'revision': 0,
-    #     })
-    #     data = json.loads(response.content)
-    #     self.assertEqual(data['success'], True)
-    #     self.assertEqual(data['duplication'], False)
-    #     self.assertEqual(data['physically_invalid'], False)
-
-    #     response = self.client.post(api_url, {
-    #         'flight_data': json.dumps([{
-    #             'flight': 14001,
-    #             'tail': 'N455BC',
-    #         }]),
-    #         'revision': 0,
-    #     })
-    #     data = json.loads(response.content)
-    #     self.assertEqual(data['duplication'], True)
-
-    #     # Testing estimated and actual flight times
-    #     flight = Flight.objects.get(pk=13070)
-    #     flight.estimated_out_datetime = datetime(2017, 5, 24, 19, 30, tzinfo=utc)
-    #     flight.update_flight_estimates_and_actuals()
-    #     response = self.client.post(api_url, {
-    #         'flight_data': json.dumps([{
-    #             'flight': 13070,
-    #             'tail': 'N455BC',
-    #         }]),
-    #         'revision': 0,
-    #     })
-    #     data = json.loads(response.content)
-    #     self.assertEqual(data['success'], True)
-    #     self.assertEqual(data['duplication'], False)
-    #     self.assertEqual(data['physically_invalid'], False)
-
-    #     flight = Flight.objects.get(pk=13263)
-    #     flight.estimated_out_datetime = datetime(2017, 5, 24, 21, 50, tzinfo=utc)
-    #     flight.actual_out_datetime = datetime(2017, 5, 24, 22, 0, tzinfo=utc)
-    #     flight.update_flight_estimates_and_actuals()
-    #     response = self.client.post(api_url, {
-    #         'flight_data': json.dumps([{
-    #             'flight': 13263,
-    #             'tail': 'N455BC',
-    #         }]),
-    #         'revision': 0,
-    #     })
-    #     data = json.loads(response.content)
-    #     self.assertEqual(data['success'], True)
-    #     self.assertEqual(data['duplication'], False)
-    #     self.assertEqual(data['physically_invalid'], False)
-
-    #     # Testing with existing revision
-    #     revision = self.prepare_revision()
-    #     response = self.client.post(api_url, {
-    #         'flight_data': json.dumps([{
-    #             'flight': 13072,
-    #             'tail': 'N455BC',
-    #         }]),
-    #         'revision': revision.id,
-    #     })
-    #     data = json.loads(response.content)
-    #     self.assertEqual(data['success'], True)
-    #     self.assertEqual(data['duplication'], False)
-    #     self.assertEqual(data['physically_invalid'], False)
-
-    # def test_api_assign_status(self):
-    #     api_url = reverse('routeplanning:api_assign_status')
-
-    #     self.dispatch_user_login()
-
-    #     response = self.client.post(api_url, {
-    #         'tail': 'N455BC',
-    #         'start_time': '2017-05-24 17:30:00+00',
-    #         'end_time': '2017-05-24 18:00:00+00',
-    #         'status': 'n',
-    #         'revision': 0,
-    #     })
-    #     data = json.loads(response.content)
-    #     self.assertEqual(response.status_code, 400)
-    #     self.assertEqual(data['success'], False)
-    #     self.assertEqual(data['error'], 'Invalid parameters')
-
-    #     response = self.client.post(api_url, {
-    #         'tail': 'N455BC',
-    #         'start_time': '2017-05-24 17:30:00+00',
-    #         'end_time': '2017-05-24 18:00:00+00',
-    #         'status': 2,
-    #         'revision': 999,
-    #     })
-    #     data = json.loads(response.content)
-    #     self.assertEqual(response.status_code, 400)
-    #     self.assertEqual(data['success'], False)
-    #     self.assertEqual(data['error'], 'Revision not found')
-
-    #     response = self.client.post(api_url, {
-    #         'tail': 'N455BC',
-    #         'start_time': '2017-05-24 17:30:00+00',
-    #         'end_time': '2017-05-24 18:00:00+00',
-    #         'status': 2,
-    #         'revision': 0,
-    #     })
-    #     data = json.loads(response.content)
-    #     self.assertEqual(response.status_code, 200)
-    #     self.assertEqual(data['success'], True)
-
-    #     Assignment.objects.exclude(pk=450).delete()
-
-    #     response = self.client.post(api_url, {
-    #         'tail': 'N584JV',
-    #         'start_time': '2017-05-24 18:30:00+00',
-    #         'end_time': '2017-05-24 19:30:00+00',
-    #         'status': 3,
-    #         'origin': 'LAX',
-    #         'destination': 'MCE',
-    #         'revision': 0,
-    #     })
-    #     data = json.loads(response.content)
-    #     self.assertEqual(response.status_code, 200)
-    #     self.assertEqual(data['success'], True)
-
-    #     response = self.client.post(api_url, {
-    #         'tail': 'N584JV',
-    #         'start_time': '2017-05-24 17:50:00+00',
-    #         'end_time': '2017-05-24 18:50:00+00',
-    #         'status': 2,
-    #         'revision': 0,
-    #     })
-    #     data = json.loads(response.content)
-    #     self.assertEqual(response.status_code, 200)
-    #     self.assertEqual(data['success'], False)
-    #     self.assertEqual(data['error'], 'Duplicated assignment')
-
-    #     response = self.client.post(api_url, {
-    #         'tail': 'N584JV',
-    #         'start_time': '2017-05-24 20:00:00+00',
-    #         'end_time': '2017-05-24 21:30:00+00',
-    #         'status': 3,
-    #         'origin': 'LAX',
-    #         'destination': 'OAK',
-    #         'revision': 0,
-    #     })
-    #     data = json.loads(response.content)
-    #     self.assertEqual(response.status_code, 200)
-    #     self.assertEqual(data['success'], False)
-    #     self.assertEqual(data['error'], 'Physically invalid assignment')
-
-    #     response = self.client.post(api_url, {
-    #         'tail': 'N999XX',   # invalid tail number which will lead to error
-    #         'start_time': '2017-05-24 17:50:00+00',
-    #         'end_time': '2017-05-24 18:50:00+00',
-    #         'status': 2,
-    #         'revision': 0,
-    #     })
-    #     data = json.loads(response.content)
-    #     self.assertEqual(response.status_code, 500)
-    #     self.assertEqual(data['success'], False)
-
-    #     # Testing with existing revision
-    #     revision = self.prepare_revision()
-    #     response = self.client.post(api_url, {
-    #         'tail': 'N584JV',
-    #         'start_time': '2017-05-25 17:50:00+00',
-    #         'end_time': '2017-05-25 18:50:00+00',
-    #         'status': 2,
-    #         'revision': revision.id,
-    #     })
-    #     data = json.loads(response.content)
-    #     self.assertEqual(data['success'], True)
-
-    # def test_api_remove_assignment(self):
-    #     api_url = reverse('routeplanning:api_remove_assignment')
-
-    #     self.dispatch_user_login()
-
-    #     response = self.client.post(api_url, {
-    #         'assignment_data': 'invalid_json_data',
-    #         'revision': 0,
-    #     })
-    #     data = json.loads(response.content)
-    #     self.assertEqual(response.status_code, 400)
-    #     self.assertEqual(data['success'], False)
-    #     self.assertEqual(data['error'], 'Invalid parameters')
-
-    #     response = self.client.post(api_url, {
-    #         'assignment_data': '[450, 451]',
-    #         'revision': 999,
-    #     })
-    #     data = json.loads(response.content)
-    #     self.assertEqual(response.status_code, 400)
-    #     self.assertEqual(data['success'], False)
-    #     self.assertEqual(data['error'], 'Revision not found')
-
-    #     response = self.client.post(api_url, {
-    #         'assignment_data': '[450, 451, 999]',
-    #         'revision': 0,
-    #     })
-    #     data = json.loads(response.content)
-    #     self.assertEqual(response.status_code, 200)
-    #     self.assertEqual(data['success'], True)
-
-    # def test_api_move_assignment(self):
-    #     api_url = reverse('routeplanning:api_move_assignment')
-
-    #     self.dispatch_user_login()
-
-    #     response = self.client.post(api_url, {
-    #         'assignment_data': 'invalid_json_data',
-    #         'revision': 0,
-    #     })
-    #     data = json.loads(response.content)
-    #     self.assertEqual(response.status_code, 400)
-    #     self.assertEqual(data['success'], False)
-    #     self.assertEqual(data['error'], 'Invalid parameters')
-
-    #     response = self.client.post(api_url, {
-    #         'assignment_data': '[]',
-    #         'revision': 999,
-    #     })
-    #     data = json.loads(response.content)
-    #     self.assertEqual(response.status_code, 400)
-    #     self.assertEqual(data['success'], False)
-    #     self.assertEqual(data['error'], 'Revision not found')
-
-    #     Assignment.objects.exclude(pk=450).exclude(pk=451).exclude(pk=455).delete()
-    #     Assignment.objects.all().update(is_draft=True)
-
-    #     response = self.client.post(api_url, {
-    #         'assignment_data': json.dumps([{
-    #             'assignment_id': 455,
-    #             'tail': 'N165TG',
-    #         }]),
-    #         'revision': 0,
-    #     })
-    #     data = json.loads(response.content)
-    #     self.assertEqual(response.status_code, 200)
-    #     self.assertEqual(data['success'], True)
-    #     self.assertEqual(data['duplication'], False)
-    #     self.assertEqual(data['physically_invalid'], False)
-
-    #     response = self.client.post(api_url, {
-    #         'assignment_data': json.dumps([{
-    #             'assignment_id': 455,
-    #             'tail': 'N166TG',
-    #             'start_time': 'invalid_date_string',
-    #         }]),
-    #         'revision': 0,
-    #     })
-    #     data = json.loads(response.content)
-    #     self.assertEqual(response.status_code, 200)
-    #     self.assertEqual(data['success'], True)
-    #     self.assertEqual(data['duplication'], False)
-    #     self.assertEqual(data['physically_invalid'], False)
-
-    #     response = self.client.post(api_url, {
-    #         'assignment_data': json.dumps([{
-    #             'assignment_id': 451,
-    #             'tail': 'N584JV',
-    #             'start_time': '2017-05-25T11:00:00Z',
-    #         }]),
-    #         'revision': 0,
-    #     })
-    #     data = json.loads(response.content)
-    #     self.assertEqual(response.status_code, 200)
-    #     self.assertEqual(data['success'], True)
-    #     self.assertEqual(data['duplication'], False)
-    #     self.assertEqual(data['physically_invalid'], False)
-
-    #     response = self.client.post(api_url, {
-    #         'assignment_data': json.dumps([{
-    #             'assignment_id': 450,
-    #             'tail': 'N166TG',
-    #         }]),
-    #         'revision': 0,
-    #     })
-    #     data = json.loads(response.content)
-    #     self.assertEqual(response.status_code, 200)
-    #     self.assertEqual(data['physically_invalid'], True)
-
-    #     response = self.client.post(api_url, {
-    #         'assignment_data': json.dumps([{
-    #             'assignment_id': 451,
-    #             'tail': 'N166TG',
-    #             'start_time': '2017-05-25T13:30:00Z',
-    #         }]),
-    #         'revision': 0,
-    #     })
-    #     data = json.loads(response.content)
-    #     self.assertEqual(response.status_code, 200)
-    #     self.assertEqual(data['duplication'], True)
-
-    # def test_api_resize_assignment(self):
-    #     api_url = reverse('routeplanning:api_resize_assignment')
-
-    #     self.dispatch_user_login()
-
-    #     response = self.client.post(api_url, {
-    #         'assignment_id': 451,
-    #         'position': 'start',
-    #         'diff_seconds': 'not-a-number',
-    #         'revision': 0,
-    #     })
-    #     data = json.loads(response.content)
-    #     self.assertEqual(response.status_code, 400)
-    #     self.assertEqual(data['success'], False)
-    #     self.assertEqual(data['error'], 'Invalid parameters')
-
-    #     response = self.client.post(api_url, {
-    #         'assignment_id': 451,
-    #         'position': 'start',
-    #         'diff_seconds': 600,
-    #         'revision': 999,
-    #     })
-    #     data = json.loads(response.content)
-    #     self.assertEqual(response.status_code, 400)
-    #     self.assertEqual(data['success'], False)
-    #     self.assertEqual(data['error'], 'Revision not found')
-
-    #     response = self.client.post(api_url, {
-    #         'assignment_id': 451,
-    #         'position': 'start',
-    #         'diff_seconds': -12000,   # start_time would get bigger than end_time which should be detected as error
-    #         'revision': 0,
-    #     })
-    #     data = json.loads(response.content)
-    #     self.assertEqual(response.status_code, 400)
-    #     self.assertEqual(data['success'], False)
-    #     self.assertEqual(data['error'], 'Start time cannot be later than end time')
-
-    #     response = self.client.post(api_url, {
-    #         'assignment_id': 999,
-    #         'position': 'start',
-    #         'diff_seconds': 600,
-    #         'revision': 0,
-    #     })
-    #     data = json.loads(response.content)
-    #     self.assertEqual(response.status_code, 400)
-    #     self.assertEqual(data['error'], 'Invalid assignment ID')
-
-    #     response = self.client.post(api_url, {
-    #         'assignment_id': 451,
-    #         'position': 'start',
-    #         'diff_seconds': 600,
-    #         'revision': 0,
-    #     })
-    #     data = json.loads(response.content)
-    #     self.assertEqual(response.status_code, 200)
-    #     self.assertEqual(data['success'], True)
-
-    #     response = self.client.post(api_url, {
-    #         'assignment_id': 451,
-    #         'position': 'end',
-    #         'diff_seconds': 600,
-    #         'revision': 0,
-    #     })
-    #     data = json.loads(response.content)
-    #     self.assertEqual(response.status_code, 200)
-    #     self.assertEqual(data['success'], True)
-
-    #     # Prepare an assignment for simulating time overlap
-    #     Assignment.objects.filter(pk=453).update(is_draft=True)
-    #     response = self.client.post(api_url, {
-    #         'assignment_id': 451,
-    #         'position': 'end',
-    #         'diff_seconds': 180000,
-    #         'revision': 0,
-    #     })
-    #     data = json.loads(response.content)
-    #     self.assertEqual(response.status_code, 200)
-    #     self.assertEqual(data['success'], False)
-    #     self.assertEqual(data['error'], 'Duplicated assignment')
-
-    # def test_api_save_hobbs(self):
-    #     api_url = reverse('routeplanning:api_save_hobbs')
-
-    #     self.dispatch_user_login()
-
-    #     response = self.client.post(api_url, {
-    #         'tail_id': 14,
-    #         'type': Hobbs.TYPE_ACTUAL,
-    #         'hobbs': 10,
-    #         'datetime': 'invalid_date_string',
-    #         'flight_id': 13072,
-    #     })
-    #     data = json.loads(response.content)
-    #     self.assertEqual(response.status_code, 400)
-    #     self.assertEqual(data['success'], False)
-    #     self.assertEqual(data['error'], 'Invalid parameters')
-
-    #     response = self.client.post(api_url, {
-    #         'tail_id': 14,
-    #         'type': Hobbs.TYPE_ACTUAL,
-    #         'hobbs': 10,
-    #         'datetime': '2017-05-24T13:00:00Z',
-    #         'flight_id': 13072,
-    #     })
-    #     data = json.loads(response.content)
-    #     self.assertEqual(response.status_code, 200)
-    #     self.assertEqual(data['success'], True)
-
-    #     hobbs = Hobbs.objects.first()
-
-    #     response = self.client.post(api_url, {
-    #         'tail_id': 14,
-    #         'id': hobbs.id,
-    #         'type': Hobbs.TYPE_NEXT_DUE,
-    #         'hobbs': 10,
-    #         'datetime': '2017-05-24T13:00:00Z',
-    #         'flight_id': 13072,
-    #     })
-    #     data = json.loads(response.content)
-    #     self.assertEqual(response.status_code, 400)
-    #     self.assertEqual(data['success'], False)
-    #     self.assertEqual(data['error'], 'Invalid parameters')
-
-    #     response = self.client.post(api_url, {
-    #         'tail_id': 14,
-    #         'type': Hobbs.TYPE_ACTUAL,
-    #         'hobbs': hobbs.id,
-    #         'hobbs': 8,
-    #         'datetime': '2017-05-25T05:00:00Z',
-    #     })
-    #     data = json.loads(response.content)
-    #     self.assertEqual(response.status_code, 200)
-    #     self.assertEqual(data['success'], True)
-
-    # def test_api_get_hobbs(self):
-    #     self.dispatch_user_login()
-
-    #     r = self.client.post(reverse('routeplanning:api_save_hobbs'), {
-    #         'tail_id': 14,
-    #         'type': Hobbs.TYPE_ACTUAL,
-    #         'hobbs': 10,
-    #         'datetime': '2017-05-24T13:00:00Z',
-    #         'flight_id': 13072,
-    #     })
-
-    #     hobbs = Hobbs.objects.first()
-
-    #     api_url = reverse('routeplanning:api_get_hobbs', kwargs={
-    #         'hobbs_id': hobbs.id,
-    #     })
-    #     response = self.client.get(api_url)
-    #     data = json.loads(response.content)
-    #     self.assertEqual(response.status_code, 200)
-    #     self.assertEqual(data['success'], True)
-
-    # def test_api_delete_actual_hobbs(self):
-    #     self.dispatch_user_login()
-
-    #     r = self.client.post(reverse('routeplanning:api_save_hobbs'), {
-    #         'tail_id': 14,
-    #         'type': Hobbs.TYPE_ACTUAL,
-    #         'hobbs': 10,
-    #         'datetime': '2017-05-24T13:00:00Z',
-    #         'flight_id': 13072,
-    #     })
-
-    #     hobbs = Hobbs.objects.first()
-
-    #     api_url = reverse('routeplanning:api_delete_actual_hobbs', kwargs={
-    #         'hobbs_id': hobbs.id,
-    #     })
-    #     response = self.client.post(api_url)
-    #     data = json.loads(response.content)
-    #     self.assertEqual(response.status_code, 200)
-    #     self.assertEqual(data['success'], True)
-
-    # def test_api_coming_due_list(self):
-    #     self.dispatch_user_login()
-
-    #     api_url = reverse('routeplanning:api_coming_due_list')
-
-    #     response = self.client.post(api_url, {
-    #         'tail_id': 14,
-    #         'start': 'invalid_date_string',
-    #         'days': 7,
-    #     })
-    #     data = json.loads(response.content)
-    #     self.assertEqual(response.status_code, 400)
-    #     self.assertEqual(data['success'], False)
-    #     self.assertEqual(data['error'], 'Invalid parameters')
-
-    #     response = self.client.post(api_url, {
-    #         'tail_id': 14,
-    #         'start': '2017-05-23T10:00:00Z',
-    #         'days': 7,
-    #         'revision': 999,
-    #     })
-    #     data = json.loads(response.content)
-    #     self.assertEqual(response.status_code, 400)
-    #     self.assertEqual(data['success'], False)
-    #     self.assertEqual(data['error'], 'Revision not found')
-
-    #     r = self.client.post(reverse('routeplanning:api_save_hobbs'), {
-    #         'tail_id': 14,
-    #         'type': Hobbs.TYPE_ACTUAL,
-    #         'hobbs': 10,
-    #         'datetime': '2017-05-24T13:00:00Z',
-    #         'flight_id': 13072,
-    #     })
-
-    #     response = self.client.post(api_url, {
-    #         'tail_id': 14,
-    #         'start': '2017-05-23T10:00:00Z',
-    #         'days': 7,
-    #     })
-    #     data = json.loads(response.content)
-    #     self.assertEqual(response.status_code, 200)
-    #     self.assertEqual(data['success'], True)
-    #     self.assertNotEqual(len(data['hobbs_list']), 0)
-
-    #     revision = Revision(published_datetime=datetime(2017, 7, 10, 0, 0, tzinfo=utc))
-    #     revision.save()
-    #     response = self.client.post(api_url, {
-    #         'tail_id': 14,
-    #         'start': '2017-05-23T10:00:00Z',
-    #         'days': 7,
-    #         'revision': revision.id,
-    #     })
-    #     data = json.loads(response.content)
-    #     self.assertEqual(response.status_code, 200)
-    #     self.assertEqual(data['success'], True)
-
-    # def test_api_publish_revision(self):
-    #     self.dispatch_user_login()
-
-    #     Assignment.objects.update(is_draft=True)
-
-    #     api_url = reverse('routeplanning:api_publish_revision')
-
-    #     response = self.client.post(api_url, {
-    #         'revision': 999,
-    #     })
-    #     data = json.loads(response.content)
-    #     self.assertEqual(response.status_code, 400)
-    #     self.assertEqual(data['success'], False)
-    #     self.assertEqual(data['error'], 'Revision not found')
-
-    #     response = self.client.post(api_url, {
-    #         # 'revision': '0',
-    #     })
-    #     data = json.loads(response.content)
-    #     self.assertEqual(response.status_code, 200)
-    #     self.assertEqual(data['success'], True)
-    #     self.assertEqual(len(data['revisions']), 1)
-
-    #     revision = Revision.objects.first()
-    #     self.assertNotEqual(revision.assignment_set.count(), 0)
-
-    #     response = self.client.post(api_url, {
-    #         'revision': revision.id,
-    #     })
-    #     data = json.loads(response.content)
-    #     self.assertEqual(response.status_code, 200)
-    #     self.assertEqual(data['success'], True)
-    #     self.assertEqual(len(data['revisions']), 2)
-
-    #     revision.check_draft_created()
-
-    #     response = self.client.post(api_url, {
-    #         'revision': revision.id,
-    #     })
-    #     data = json.loads(response.content)
-    #     self.assertEqual(response.status_code, 200)
-    #     self.assertEqual(data['success'], True)
-    #     self.assertEqual(len(data['revisions']), 3)
-
-    # def test_api_clear_revision(self):
-    #     self.dispatch_user_login()
-
-    #     api_url = reverse('routeplanning:api_clear_revision')
-
-    #     response = self.client.post(api_url, {
-    #         'revision': '999',
-    #     })
-    #     data = json.loads(response.content)
-    #     self.assertEqual(response.status_code, 400)
-    #     self.assertEqual(data['error'], 'Revision not found')
-
-    #     Assignment.objects.update(is_draft=True)
-
-    #     response = self.client.post(reverse('routeplanning:api_publish_revision'), {
-    #         # 'revision': '0',
-    #     })
-    #     data = json.loads(response.content)
-    #     self.assertEqual(response.status_code, 200)
-    #     self.assertEqual(data['success'], True)
-    #     self.assertEqual(len(data['revisions']), 1)
-
-    #     revision = Revision.objects.first()
-
-    #     response = self.client.post(api_url, {
-    #         'revision': revision.id,
-    #     })
-    #     data = json.loads(response.content)
-    #     self.assertEqual(response.status_code, 200)
-    #     self.assertEqual(data['success'], True)
-    #     self.assertEqual(revision.assignment_set.filter(is_draft=True).count(), 0)
-
-    # def test_api_delete_revision(self):
-    #     self.dispatch_user_login()
-
-    #     api_url = reverse('routeplanning:api_delete_revision')
-
-    #     response = self.client.post(api_url, {
-    #         'revision': '999',
-    #     })
-    #     data = json.loads(response.content)
-    #     self.assertEqual(response.status_code, 400)
-    #     self.assertEqual(data['error'], 'Revision not found')
-
-    #     Assignment.objects.update(is_draft=True)
-    #     revision_to_remove = Revision(published_datetime=datetime(2017, 7, 10, 0, 0, tzinfo=utc))
-    #     revision_to_remove.save()
-
-    #     response = self.client.post(reverse('routeplanning:api_publish_revision'), {
-    #         # 'revision': '0',
-    #     })
-    #     data = json.loads(response.content)
-    #     self.assertEqual(response.status_code, 200)
-    #     self.assertEqual(data['success'], True)
-    #     self.assertEqual(len(data['revisions']), 2)
-
-    #     response = self.client.post(api_url, {
-    #         'revision': revision_to_remove.id,
-    #     })
-    #     data = json.loads(response.content)
-    #     self.assertEqual(response.status_code, 200)
-    #     self.assertEqual(data['success'], True)
-    #     self.assertEqual(len(data['revisions']), 1)
+    @patch('common.decorators.can_read_gantt', return_value=True)
+    @patch('routeplanning.views.can_write_gantt', return_value=False)
+    def test_api_load_data_fail_on_draft(self, mock_can_write_gantt, mock_can_read_gantt):
+        api_url = reverse('routeplanning:api_load_data')
+        response = self.client.get(api_url, {
+            'startdate': 1494799200,
+            'enddate': 1496008800,
+            'revision': 0,
+        });
+        data = json.loads(response.content)
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(data['error'], 'Not allowed to get draft route plan')
+
+    @patch('common.decorators.can_read_gantt', return_value=True)
+    @patch('routeplanning.views.can_write_gantt', return_value=False)
+    def test_api_load_data_fail_on_non_latest_revision(self, mock_can_write_gantt, mock_can_read_gantt):
+        api_url = reverse('routeplanning:api_load_data')
+
+        revision = Revision(published_datetime=datetime(2017, 7, 10, 0, 0, tzinfo=utc))
+        revision.save()
+        revision1 = Revision(published_datetime=datetime(2017, 7, 05, 0, 0, tzinfo=utc))
+        revision1.save()
+
+        response = self.client.get(api_url, {
+            'startdate': 1494799200,
+            'enddate': 1496008800,
+            'revision': revision1.id,
+        });
+        data = json.loads(response.content)
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(data['error'], 'Not allowed to get route plans other than current published version')
+
+    @patch('common.decorators.can_read_gantt', return_value=True)
+    @patch('routeplanning.views.can_write_gantt', return_value=True)
+    def test_api_load_data_fail_no_revision(self, mock_can_write_gantt, mock_can_read_gantt):
+        api_url = reverse('routeplanning:api_load_data')
+        response = self.client.get(api_url, {
+            'startdate': 1494799200,
+            'enddate': 1496008800,
+            'revision': 999,
+        });
+        data = json.loads(response.content)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(data['error'], 'Revision not found')
+
+    @patch('common.decorators.can_read_gantt', return_value=True)
+    @patch('routeplanning.views.can_write_gantt', return_value=True)
+    def test_api_load_data_success_on_draft(self, mock_can_write_gantt, mock_can_read_gantt):
+        api_url = reverse('routeplanning:api_load_data')
+        response = self.client.get(api_url, {
+            'startdate': 1495648800,
+            'enddate': 1496008800,
+            'revision': 0,
+        });
+        data = json.loads(response.content)
+        self.assertEqual(response.status_code, 200)
+        self.assertNotEqual(len(data['assignments']), 0)
+        self.assertNotEqual(len(data['templates']), 0)
+
+    @patch('common.decorators.can_read_gantt', return_value=True)
+    @patch('routeplanning.views.can_write_gantt', return_value=True)
+    def test_api_load_data_success_on_revision(self, mock_can_write_gantt, mock_can_read_gantt):
+        api_url = reverse('routeplanning:api_load_data')
+
+        revision = Revision(published_datetime=datetime(2017, 7, 10, 0, 0, tzinfo=utc))
+        revision.save()
+        revision1 = Revision(published_datetime=datetime(2017, 7, 05, 0, 0, tzinfo=utc))
+        revision1.save()
+
+        response = self.client.get(api_url, {
+            'startdate': 1495648800,
+            'enddate': 1496008800,
+            'revision': revision1.id,
+        });
+        data = json.loads(response.content)
+        self.assertEqual(response.status_code, 200)
+
+    @patch('common.decorators.can_write_gantt', return_value=True)
+    def test_api_assign_flight_fail_invalid_parameters(self, mock_can_write_gantt):
+        api_url = reverse('routeplanning:api_assign_flight')
+        response = self.client.post(api_url, {
+            'flight_data': 'invalid_json_string',
+            'revision': 0,
+        })
+        data = json.loads(response.content)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['error'], 'Invalid parameters')
+
+    @patch('common.decorators.can_write_gantt', return_value=True)
+    def test_api_assign_flight_fail_no_revision(self, mock_can_write_gantt):
+        api_url = reverse('routeplanning:api_assign_flight')
+        response = self.client.post(api_url, {
+            'flight_data': json.dumps([{
+                'flight': 13069,
+                'tail': 'N455BC',
+            }]),
+            'revision': 1,
+        })
+        data = json.loads(response.content)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['error'], 'Revision not found')
+
+    @patch('common.decorators.can_write_gantt', return_value=True)
+    def test_api_assign_flight_successes_and_failures(self, mock_can_write_gantt):
+        api_url = reverse('routeplanning:api_assign_flight')
+
+        Assignment.objects.all().delete()
+
+        response = self.client.post(api_url, {
+            'flight_data': json.dumps([{
+                'flight': 13069,
+                'tail': 'N455BC',
+            }]),
+            'revision': 0,
+        })
+        data = json.loads(response.content)
+        self.assertEqual(data['success'], True)
+        self.assertEqual(data['duplication'], False)
+        self.assertEqual(data['physically_invalid'], False)
+
+        response = self.client.post(api_url, {
+            'flight_data': json.dumps([{
+                'flight': 13072,
+                'tail': 'N455BC',
+            }]),
+            'revision': 0,
+        })
+        data = json.loads(response.content)
+        self.assertEqual(data['physically_invalid'], True)
+
+        response = self.client.post(api_url, {
+            'flight_data': json.dumps([{
+                'flight': 13262,
+                'tail': 'N455BC',
+            }]),
+            'revision': 0,
+        })
+        data = json.loads(response.content)
+        self.assertEqual(data['success'], True)
+        self.assertEqual(data['duplication'], False)
+        self.assertEqual(data['physically_invalid'], False)
+
+        response = self.client.post(api_url, {
+            'flight_data': json.dumps([{
+                'flight': 14001,
+                'tail': 'N455BC',
+            }]),
+            'revision': 0,
+        })
+        data = json.loads(response.content)
+        self.assertEqual(data['duplication'], True)
+
+        # Testing estimated and actual flight times
+        flight = Flight.objects.get(pk=13070)
+        flight.estimated_out_datetime = datetime(2017, 5, 24, 19, 30, tzinfo=utc)
+        flight.update_flight_estimates_and_actuals()
+        response = self.client.post(api_url, {
+            'flight_data': json.dumps([{
+                'flight': 13070,
+                'tail': 'N455BC',
+            }]),
+            'revision': 0,
+        })
+        data = json.loads(response.content)
+        self.assertEqual(data['success'], True)
+        self.assertEqual(data['duplication'], False)
+        self.assertEqual(data['physically_invalid'], False)
+
+        flight = Flight.objects.get(pk=13263)
+        flight.estimated_out_datetime = datetime(2017, 5, 24, 21, 50, tzinfo=utc)
+        flight.actual_out_datetime = datetime(2017, 5, 24, 22, 0, tzinfo=utc)
+        flight.update_flight_estimates_and_actuals()
+        response = self.client.post(api_url, {
+            'flight_data': json.dumps([{
+                'flight': 13263,
+                'tail': 'N455BC',
+            }]),
+            'revision': 0,
+        })
+        data = json.loads(response.content)
+        self.assertEqual(data['success'], True)
+        self.assertEqual(data['duplication'], False)
+        self.assertEqual(data['physically_invalid'], False)
+
+        # Testing with existing revision
+        revision = self.prepare_revision()
+        response = self.client.post(api_url, {
+            'flight_data': json.dumps([{
+                'flight': 13072,
+                'tail': 'N455BC',
+            }]),
+            'revision': revision.id,
+        })
+        data = json.loads(response.content)
+        self.assertEqual(data['success'], True)
+        self.assertEqual(data['duplication'], False)
+        self.assertEqual(data['physically_invalid'], False)
+
+    @patch('common.decorators.can_write_gantt', return_value=True)
+    def test_api_assign_status_fail_invalid_parameters(self, mock_can_write_gantt):
+        api_url = reverse('routeplanning:api_assign_status')
+        response = self.client.post(api_url, {
+            'tail': 'N455BC',
+            'start_time': '2017-05-24 17:30:00+00',
+            'end_time': '2017-05-24 18:00:00+00',
+            'status': 'n',
+            'revision': 0,
+        })
+        data = json.loads(response.content)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['error'], 'Invalid parameters')
+
+    @patch('common.decorators.can_write_gantt', return_value=True)
+    def test_api_assign_status_fail_no_revision(self, mock_can_write_gantt):
+        api_url = reverse('routeplanning:api_assign_status')
+        response = self.client.post(api_url, {
+            'tail': 'N455BC',
+            'start_time': '2017-05-24 17:30:00+00',
+            'end_time': '2017-05-24 18:00:00+00',
+            'status': 2,
+            'revision': 999,
+        })
+        data = json.loads(response.content)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['error'], 'Revision not found')
+
+    @patch('common.decorators.can_write_gantt', return_value=True)
+    def test_api_assign_status_successes_and_failures(self, mock_can_write_gantt):
+        api_url = reverse('routeplanning:api_assign_status')
+        response = self.client.post(api_url, {
+            'tail': 'N455BC',
+            'start_time': '2017-05-24 17:30:00+00',
+            'end_time': '2017-05-24 18:00:00+00',
+            'status': 2,
+            'revision': 0,
+        })
+        data = json.loads(response.content)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(data['success'], True)
+
+        Assignment.objects.exclude(pk=450).delete()
+
+        response = self.client.post(api_url, {
+            'tail': 'N584JV',
+            'start_time': '2017-05-24 18:30:00+00',
+            'end_time': '2017-05-24 19:30:00+00',
+            'status': 3,
+            'origin': 'LAX',
+            'destination': 'MCE',
+            'revision': 0,
+        })
+        data = json.loads(response.content)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(data['success'], True)
+
+        response = self.client.post(api_url, {
+            'tail': 'N584JV',
+            'start_time': '2017-05-24 17:50:00+00',
+            'end_time': '2017-05-24 18:50:00+00',
+            'status': 2,
+            'revision': 0,
+        })
+        data = json.loads(response.content)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['error'], 'Duplicated assignment')
+
+        response = self.client.post(api_url, {
+            'tail': 'N584JV',
+            'start_time': '2017-05-24 20:00:00+00',
+            'end_time': '2017-05-24 21:30:00+00',
+            'status': 3,
+            'origin': 'LAX',
+            'destination': 'OAK',
+            'revision': 0,
+        })
+        data = json.loads(response.content)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['error'], 'Physically invalid assignment')
+
+        response = self.client.post(api_url, {
+            'tail': 'N999XX',   # invalid tail number which will lead to error
+            'start_time': '2017-05-24 17:50:00+00',
+            'end_time': '2017-05-24 18:50:00+00',
+            'status': 2,
+            'revision': 0,
+        })
+        data = json.loads(response.content)
+        self.assertEqual(response.status_code, 500)
+        self.assertEqual(data['success'], False)
+
+        # Testing with existing revision
+        revision = self.prepare_revision()
+        response = self.client.post(api_url, {
+            'tail': 'N584JV',
+            'start_time': '2017-05-25 17:50:00+00',
+            'end_time': '2017-05-25 18:50:00+00',
+            'status': 2,
+            'revision': revision.id,
+        })
+        data = json.loads(response.content)
+        self.assertEqual(data['success'], True)
+
+    @patch('common.decorators.can_write_gantt', return_value=True)
+    def test_api_remove_assignment_fail_invalid_parameters(self, mock_can_write_gantt):
+        api_url = reverse('routeplanning:api_remove_assignment')
+        response = self.client.post(api_url, {
+            'assignment_data': 'invalid_json_data',
+            'revision': 0,
+        })
+        data = json.loads(response.content)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['error'], 'Invalid parameters')
+
+    @patch('common.decorators.can_write_gantt', return_value=True)
+    def test_api_remove_assignment_fail_no_revision(self, mock_can_write_gantt):
+        api_url = reverse('routeplanning:api_remove_assignment')
+        response = self.client.post(api_url, {
+            'assignment_data': '[450, 451]',
+            'revision': 999,
+        })
+        data = json.loads(response.content)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['error'], 'Revision not found')
+
+    @patch('common.decorators.can_write_gantt', return_value=True)
+    def test_api_remove_assignment_success(self, mock_can_write_gantt):
+        api_url = reverse('routeplanning:api_remove_assignment')
+        response = self.client.post(api_url, {
+            'assignment_data': '[450, 451, 999]',
+            'revision': 0,
+        })
+        data = json.loads(response.content)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(data['success'], True)
+        left_assignment_count = Assignment.objects.filter(pk__in=[450, 451, 999]).count()
+        self.assertEqual(left_assignment_count, 0)
+
+    @patch('common.decorators.can_write_gantt', return_value=True)
+    def test_api_move_assignment_fail_invalid_parameters(self, mock_can_write_gantt):
+        api_url = reverse('routeplanning:api_move_assignment')
+        response = self.client.post(api_url, {
+            'assignment_data': 'invalid_json_data',
+            'revision': 0,
+        })
+        data = json.loads(response.content)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['error'], 'Invalid parameters')
+
+    @patch('common.decorators.can_write_gantt', return_value=True)
+    def test_api_move_assignment_fail_no_revision(self, mock_can_write_gantt):
+        api_url = reverse('routeplanning:api_move_assignment')
+        response = self.client.post(api_url, {
+            'assignment_data': '[]',
+            'revision': 999,
+        })
+        data = json.loads(response.content)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['error'], 'Revision not found')
+
+    @patch('common.decorators.can_write_gantt', return_value=True)
+    def test_api_move_assignment_successes_and_failures(self, mock_can_write_gantt):
+        api_url = reverse('routeplanning:api_move_assignment')
+        Assignment.objects.exclude(pk=450).exclude(pk=451).exclude(pk=455).delete()
+        Assignment.objects.all().update(is_draft=True)
+
+        response = self.client.post(api_url, {
+            'assignment_data': json.dumps([{
+                'assignment_id': 455,
+                'tail': 'N165TG',
+            }]),
+            'revision': 0,
+        })
+        data = json.loads(response.content)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertEqual(data['duplication'], False)
+        self.assertEqual(data['physically_invalid'], False)
+
+        response = self.client.post(api_url, {
+            'assignment_data': json.dumps([{
+                'assignment_id': 455,
+                'tail': 'N166TG',
+                'start_time': 'invalid_date_string',
+            }]),
+            'revision': 0,
+        })
+        data = json.loads(response.content)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertEqual(data['duplication'], False)
+        self.assertEqual(data['physically_invalid'], False)
+
+        response = self.client.post(api_url, {
+            'assignment_data': json.dumps([{
+                'assignment_id': 451,
+                'tail': 'N584JV',
+                'start_time': '2017-05-25T11:00:00Z',
+            }]),
+            'revision': 0,
+        })
+        data = json.loads(response.content)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertEqual(data['duplication'], False)
+        self.assertEqual(data['physically_invalid'], False)
+
+        response = self.client.post(api_url, {
+            'assignment_data': json.dumps([{
+                'assignment_id': 450,
+                'tail': 'N166TG',
+            }]),
+            'revision': 0,
+        })
+        data = json.loads(response.content)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(data['physically_invalid'], True)
+
+        response = self.client.post(api_url, {
+            'assignment_data': json.dumps([{
+                'assignment_id': 451,
+                'tail': 'N166TG',
+                'start_time': '2017-05-25T13:30:00Z',
+            }]),
+            'revision': 0,
+        })
+        data = json.loads(response.content)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(data['duplication'], True)
+
+    @patch('common.decorators.can_write_gantt', return_value=True)
+    def test_api_resize_assignment_fail_invalid_parameters(self, mock_can_write_gantt):
+        api_url = reverse('routeplanning:api_resize_assignment')
+        response = self.client.post(api_url, {
+            'assignment_id': 451,
+            'position': 'start',
+            'diff_seconds': 'not-a-number',
+            'revision': 0,
+        })
+        data = json.loads(response.content)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['error'], 'Invalid parameters')
+
+    @patch('common.decorators.can_write_gantt', return_value=True)
+    def test_api_resize_assignment_fail_no_revision(self, mock_can_write_gantt):
+        api_url = reverse('routeplanning:api_resize_assignment')
+        response = self.client.post(api_url, {
+            'assignment_id': 451,
+            'position': 'start',
+            'diff_seconds': 600,
+            'revision': 999,
+        })
+        data = json.loads(response.content)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['error'], 'Revision not found')
+
+    @patch('common.decorators.can_write_gantt', return_value=True)
+    def test_api_resize_assignment_fail_start_time_bigger_than_end_time(self, mock_can_write_gantt):
+        api_url = reverse('routeplanning:api_resize_assignment')
+        response = self.client.post(api_url, {
+            'assignment_id': 451,
+            'position': 'start',
+            'diff_seconds': -12000,   # start_time would get bigger than end_time which should be detected as error
+            'revision': 0,
+        })
+        data = json.loads(response.content)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['error'], 'Start time cannot be later than end time')
+
+    @patch('common.decorators.can_write_gantt', return_value=True)
+    def test_api_resize_assignment_fail_invalid_assignment_id(self, mock_can_write_gantt):
+        api_url = reverse('routeplanning:api_resize_assignment')
+        response = self.client.post(api_url, {
+            'assignment_id': 999,
+            'position': 'start',
+            'diff_seconds': 600,
+            'revision': 0,
+        })
+        data = json.loads(response.content)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(data['error'], 'Invalid assignment ID')
+
+    @patch('common.decorators.can_write_gantt', return_value=True)
+    def test_api_resize_assignment_successes_and_failures(self, mock_can_write_gantt):
+        api_url = reverse('routeplanning:api_resize_assignment')
+        response = self.client.post(api_url, {
+            'assignment_id': 451,
+            'position': 'start',
+            'diff_seconds': 600,
+            'revision': 0,
+        })
+        data = json.loads(response.content)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(data['success'], True)
+
+        response = self.client.post(api_url, {
+            'assignment_id': 451,
+            'position': 'end',
+            'diff_seconds': 600,
+            'revision': 0,
+        })
+        data = json.loads(response.content)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(data['success'], True)
+
+        # Prepare an assignment for simulating time overlap
+        Assignment.objects.filter(pk=453).update(is_draft=True)
+        response = self.client.post(api_url, {
+            'assignment_id': 451,
+            'position': 'end',
+            'diff_seconds': 180000,
+            'revision': 0,
+        })
+        data = json.loads(response.content)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['error'], 'Duplicated assignment')
+
+    @patch('common.decorators.can_write_gantt', return_value=True)
+    def test_api_save_hobbs_fail_invalid_parameters(self, mock_can_write_gantt):
+        api_url = reverse('routeplanning:api_save_hobbs')
+        response = self.client.post(api_url, {
+            'tail_id': 14,
+            'type': Hobbs.TYPE_ACTUAL,
+            'hobbs': 10,
+            'datetime': 'invalid_date_string',
+            'flight_id': 13072,
+        })
+        data = json.loads(response.content)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['error'], 'Invalid parameters')
+
+    @patch('common.decorators.can_write_gantt', return_value=True)
+    def test_api_save_hobbs_successes_and_failures(self, mock_can_write_gantt):
+        api_url = reverse('routeplanning:api_save_hobbs')
+        response = self.client.post(api_url, {
+            'tail_id': 14,
+            'type': Hobbs.TYPE_ACTUAL,
+            'hobbs': 10,
+            'datetime': '2017-05-24T13:00:00Z',
+            'flight_id': 13072,
+        })
+        data = json.loads(response.content)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(data['success'], True)
+
+        hobbs = Hobbs.objects.first()
+
+        response = self.client.post(api_url, {
+            'tail_id': 14,
+            'id': hobbs.id,
+            'type': Hobbs.TYPE_NEXT_DUE,
+            'hobbs': 10,
+            'datetime': '2017-05-24T13:00:00Z',
+            'flight_id': 13072,
+        })
+        data = json.loads(response.content)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['error'], 'Invalid parameters')
+
+        response = self.client.post(api_url, {
+            'tail_id': 14,
+            'type': Hobbs.TYPE_ACTUAL,
+            'hobbs': hobbs.id,
+            'hobbs': 8,
+            'datetime': '2017-05-25T05:00:00Z',
+        })
+        data = json.loads(response.content)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(data['success'], True)
+
+    @patch('common.decorators.can_read_gantt', return_value=True)
+    @patch('common.decorators.can_write_gantt', return_value=True)
+    def test_api_get_hobbs(self, mock_can_write_gantt, mock_can_read_gantt):
+        r = self.client.post(reverse('routeplanning:api_save_hobbs'), {
+            'tail_id': 14,
+            'type': Hobbs.TYPE_ACTUAL,
+            'hobbs': 10,
+            'datetime': '2017-05-24T13:00:00Z',
+            'flight_id': 13072,
+        })
+
+        hobbs = Hobbs.objects.first()
+
+        api_url = reverse('routeplanning:api_get_hobbs', kwargs={
+            'hobbs_id': hobbs.id,
+        })
+        response = self.client.get(api_url)
+        data = json.loads(response.content)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(data['success'], True)
+
+    @patch('common.decorators.can_write_gantt', return_value=True)
+    def test_api_delete_actual_hobbs(self, mock_can_write_gantt):
+        r = self.client.post(reverse('routeplanning:api_save_hobbs'), {
+            'tail_id': 14,
+            'type': Hobbs.TYPE_ACTUAL,
+            'hobbs': 10,
+            'datetime': '2017-05-24T13:00:00Z',
+            'flight_id': 13072,
+        })
+        hobbs = Hobbs.objects.first()
+
+        api_url = reverse('routeplanning:api_delete_actual_hobbs', kwargs={
+            'hobbs_id': hobbs.id,
+        })
+        response = self.client.post(api_url)
+        data = json.loads(response.content)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(data['success'], True)
+
+    @patch('common.decorators.can_read_gantt', return_value=True)
+    def test_api_coming_due_list_fail_invalid_parameters(self, mock_can_read_gantt):
+        api_url = reverse('routeplanning:api_coming_due_list')
+        response = self.client.post(api_url, {
+            'tail_id': 14,
+            'start': 'invalid_date_string',
+            'days': 7,
+        })
+        data = json.loads(response.content)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['error'], 'Invalid parameters')
+
+    @patch('common.decorators.can_read_gantt', return_value=True)
+    def test_api_coming_due_list_fail_no_revision(self, mock_can_read_gantt):
+        api_url = reverse('routeplanning:api_coming_due_list')
+        response = self.client.post(api_url, {
+            'tail_id': 14,
+            'start': '2017-05-23T10:00:00Z',
+            'days': 7,
+            'revision': 999,
+        })
+        data = json.loads(response.content)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['error'], 'Revision not found')
+
+    @patch('common.decorators.can_read_gantt', return_value=True)
+    def test_api_coming_due_list_success(self, mock_can_read_gantt):
+        api_url = reverse('routeplanning:api_coming_due_list')
+        r = self.client.post(reverse('routeplanning:api_save_hobbs'), {
+            'tail_id': 14,
+            'type': Hobbs.TYPE_ACTUAL,
+            'hobbs': 10,
+            'datetime': '2017-05-24T13:00:00Z',
+            'flight_id': 13072,
+        })
+
+        response = self.client.post(api_url, {
+            'tail_id': 14,
+            'start': '2017-05-23T10:00:00Z',
+            'days': 7,
+        })
+        data = json.loads(response.content)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertNotEqual(len(data['hobbs_list']), 0)
+
+    @patch('common.decorators.can_read_gantt', return_value=True)
+    def test_api_coming_due_list_success_on_revision(self, mock_can_read_gantt):
+        api_url = reverse('routeplanning:api_coming_due_list')
+        revision = Revision(published_datetime=datetime(2017, 7, 10, 0, 0, tzinfo=utc))
+        revision.save()
+        response = self.client.post(api_url, {
+            'tail_id': 14,
+            'start': '2017-05-23T10:00:00Z',
+            'days': 7,
+            'revision': revision.id,
+        })
+        data = json.loads(response.content)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(data['success'], True)
+
+    @patch('common.decorators.can_write_gantt', return_value=True)
+    def test_api_publish_revision_fail_no_revision(self, mock_can_write_gantt):
+        api_url = reverse('routeplanning:api_publish_revision')
+        response = self.client.post(api_url, {
+            'revision': 999,
+        })
+        data = json.loads(response.content)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['error'], 'Revision not found')
+
+    @patch('common.decorators.can_write_gantt', return_value=True)
+    def test_api_publish_revision_successes(self, mock_can_write_gantt):
+        api_url = reverse('routeplanning:api_publish_revision')
+
+        Assignment.objects.update(is_draft=True)
+
+        response = self.client.post(api_url, {
+            # 'revision': '0',
+        })
+        data = json.loads(response.content)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertEqual(len(data['revisions']), 1)
+
+        revision = Revision.objects.first()
+        self.assertNotEqual(revision.assignment_set.count(), 0)
+
+        response = self.client.post(api_url, {
+            'revision': revision.id,
+        })
+        data = json.loads(response.content)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertEqual(len(data['revisions']), 2)
+
+        revision.check_draft_created()
+
+        response = self.client.post(api_url, {
+            'revision': revision.id,
+        })
+        data = json.loads(response.content)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertEqual(len(data['revisions']), 3)
+
+    @patch('common.decorators.can_write_gantt', return_value=True)
+    def test_api_clear_revision_fail_no_revision(self, mock_can_write_gantt):
+        api_url = reverse('routeplanning:api_clear_revision')
+        response = self.client.post(api_url, {
+            'revision': '999',
+        })
+        data = json.loads(response.content)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(data['error'], 'Revision not found')
+
+    @patch('common.decorators.can_write_gantt', return_value=True)
+    def test_api_clear_revision_successes(self, mock_can_write_gantt):
+        api_url = reverse('routeplanning:api_clear_revision')
+
+        Assignment.objects.update(is_draft=True)
+
+        response = self.client.post(reverse('routeplanning:api_publish_revision'), {
+            # 'revision': '0',
+        })
+        data = json.loads(response.content)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertEqual(len(data['revisions']), 1)
+
+        revision = Revision.objects.first()
+
+        response = self.client.post(api_url, {
+            'revision': revision.id,
+        })
+        data = json.loads(response.content)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertEqual(revision.assignment_set.filter(is_draft=True).count(), 0)
+
+    @patch('common.decorators.can_write_gantt', return_value=True)
+    def test_api_delete_revision_fail_no_revision(self, mock_can_write_gantt):
+        api_url = reverse('routeplanning:api_delete_revision')
+        response = self.client.post(api_url, {
+            'revision': '999',
+        })
+        data = json.loads(response.content)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(data['error'], 'Revision not found')
+
+    @patch('common.decorators.can_write_gantt', return_value=True)
+    def test_api_delete_revision_successes(self, mock_can_write_gantt):
+        api_url = reverse('routeplanning:api_delete_revision')
+
+        Assignment.objects.update(is_draft=True)
+        revision_to_remove = Revision(published_datetime=datetime(2017, 7, 10, 0, 0, tzinfo=utc))
+        revision_to_remove.save()
+
+        response = self.client.post(reverse('routeplanning:api_publish_revision'), {
+            # 'revision': '0',
+        })
+        data = json.loads(response.content)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertEqual(len(data['revisions']), 2)
+
+        response = self.client.post(api_url, {
+            'revision': revision_to_remove.id,
+        })
+        data = json.loads(response.content)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertEqual(len(data['revisions']), 1)
