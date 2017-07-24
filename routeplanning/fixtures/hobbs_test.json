@@ -1,0 +1,57 @@
+[
+    {
+        "model": "routeplanning.hobbs",
+        "pk": 1,
+        "fields": 
+        {
+            "hobbs_time": "2017-05-24T00:00:00Z",
+            "type": 2,
+            "hobbs": 95,
+            "tail": 14
+        }
+    },
+    {
+        "model": "routeplanning.hobbs",
+        "pk": 2,
+        "fields": 
+        {
+            "hobbs_time": "2017-05-25T00:00:00Z",
+            "type": 2,
+            "hobbs": 100,
+            "tail": 14
+        }
+    },
+    {
+        "model": "routeplanning.hobbs",
+        "pk": 3,
+        "fields": 
+        {
+            "hobbs_time": "2017-05-24T14:00:00Z",
+            "type": 1,
+            "hobbs": 90,
+            "tail": 14
+        }
+    },
+    {
+        "model": "routeplanning.hobbs",
+        "pk": 4,
+        "fields": 
+        {
+            "hobbs_time": "2017-05-24T19:00:00Z",
+            "type": 1,
+            "hobbs": 95,
+            "tail": 14
+        }
+    },
+    {
+        "model": "routeplanning.hobbs",
+        "pk": 5,
+        "fields": 
+        {
+            "hobbs_time": "2017-05-25T10:00:00Z",
+            "type": 1,
+            "hobbs": 105,
+            "tail": 14
+        }
+    }
+]

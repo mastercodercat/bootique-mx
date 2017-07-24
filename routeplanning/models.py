@@ -10,7 +10,7 @@ from common.helpers import *
 class Tail(models.Model):
     number = models.CharField(max_length=20, blank=True, unique=True)
 
-    def __unicode__(self):
+    def __unicode__(self):      # pragma: no cover
         return self.number
 
     def get_last_assignment(self, revision, date):
@@ -27,7 +27,7 @@ class Tail(models.Model):
 class Line(models.Model):
     name = models.CharField(max_length=100, blank=True, unique=True)
 
-    def __unicode__(self):
+    def __unicode__(self):      # pragma: no cover
         return self.name
 
     @property
@@ -42,7 +42,7 @@ class LinePart(models.Model):
 
     line = models.ForeignKey(Line, null=True, blank=False)
 
-    def __unicode__(self):
+    def __unicode__(self):      # pragma: no cover
         return self.number
 
 
@@ -72,7 +72,7 @@ class Flight(models.Model):
     actual_off_datetime = models.DateTimeField(null=True, blank=True)
     actual_on_datetime = models.DateTimeField(null=True, blank=True)
 
-    def __unicode__(self):
+    def __unicode__(self):      # pragma: no cover
         if self.type == Flight.TYPE_SCHEDULED:
             return str(self.number) + '. ' + self.origin + '-' + self.destination
         else:
@@ -127,7 +127,7 @@ class Revision(models.Model):
     published_datetime = models.DateTimeField(null=False, blank=False)
     has_draft = models.BooleanField(default=False)
 
-    def __unicode__(self):
+    def __unicode__(self):      # pragma: no cover
         model_str = 'Revision at ' + str(self.published_datetime)
         if self.has_draft:
             model_str += ' (edited)'
@@ -184,7 +184,7 @@ class Assignment(models.Model):
     tail = models.ForeignKey(Tail, null=True, blank=False, on_delete=models.PROTECT)
     revision = models.ForeignKey(Revision, null=True, blank=False, on_delete=models.PROTECT)
 
-    def __unicode__(self):
+    def __unicode__(self):      # pragma: no cover
         if self.status == Assignment.STATUS_FLIGHT:
             return 'Flight ' + str(self.flight_number) + ' Assignment'
         elif self.status == Assignment.STATUS_MAINTENANCE:
@@ -303,7 +303,7 @@ class Hobbs(models.Model):
 
     tail = models.ForeignKey(Tail, null=True, blank=False, on_delete=models.PROTECT)
 
-    def __unicode__(self):
+    def __unicode__(self):      # pragma: no cover
         return 'Hobbs of ' + self.tail.number + ' on date ' + self.hobbs_time.strftime("%F")
 
     @classmethod
