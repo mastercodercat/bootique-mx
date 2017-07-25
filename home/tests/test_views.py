@@ -1,9 +1,10 @@
+import json
+from mock import patch
 from django.test import TestCase
 from django.contrib.auth.backends import ModelBackend
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from rest_framework.test import APIClient
-import json
 
 from home.models import *
 
@@ -13,32 +14,11 @@ class ViewsTestCase(TestCase):
 
     def setUp(self):
         self.user = User.objects.create_user(username='tester', email='tester@tester.com', password='tester_password')
-        user_role = UserRole.objects.get(name='Admin')
-        self.user_profile = UserProfile(is_admin=False, personal_data=None, user=self.user, role=user_role)
-        self.user_profile.save()
+        self.client.login(username=self.user.username, password='tester_password')
         self.aircraft = Aircraft.objects.get(pk=1)
         self.api_client = APIClient()
 
-    def force_login(self):
-        user_role = UserRole.objects.get(name='Admin')
-        self.user_profile.role = user_role
-        self.user_profile.save()
-        self.client.login(username=self.user.username, password='tester_password')
-
-    def logout(self):
-        self.client.logout()
-
-    def guest_attempt(self, url):
-        login_url = reverse('account_login')
-
-        self.logout()
-        response = self.client.get(url)
-        self.assertRedirects(response, login_url + '?next=' + url)
-
     def no_role_user_attempt(self, url):
-        self.user_profile.role = None
-        self.user_profile.save()
-        self.client.login(username=self.user.username, password='tester_password')
         response = self.client.get(url)
         self.assertEqual(response.status_code, 403)
 
@@ -51,36 +31,52 @@ class ViewsTestCase(TestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, 404)
 
-    def test_view_overview(self):
+    @patch('common.decorators.can_read_inspection', return_value=False)
+    def test_view_overview_no_permission_fail(self, mock_decr_can_read_inspection):
         view_url = reverse('home:overview')
-
-        self.guest_attempt(view_url)
         self.no_role_user_attempt(view_url)
-        self.force_login()
+
+    @patch('common.decorators.can_read_inspection', return_value=True)
+    def test_view_overview_authorized_success(self, mock_decr_can_read_inspection):
+        view_url = reverse('home:overview')
         self.authorized_attempt(view_url, 'overview.html')
 
-    def test_view_aircraft_details(self):
+    @patch('common.decorators.can_read_inspection', return_value=False)
+    def test_view_aircraft_details_no_permission_fail(self, mock_decr_can_read_inspection):
         view_url = reverse('home:aircraft_details', kwargs={
             'reg': self.aircraft.reg
         })
-
-        self.guest_attempt(view_url)
         self.no_role_user_attempt(view_url)
-        self.force_login()
+
+    @patch('common.decorators.can_read_inspection', return_value=True)
+    def test_view_aircraft_details_authorized_success(self, mock_decr_can_read_inspection):
+        view_url = reverse('home:aircraft_details', kwargs={
+            'reg': self.aircraft.reg
+        })
         self.authorized_attempt(view_url, 'details.html')
+
+    @patch('common.decorators.can_read_inspection', return_value=True)
+    def test_view_aircraft_details_url_not_found_fail(self, mock_decr_can_read_inspection):
         self.url_not_found_attempt(reverse('home:aircraft_details', kwargs={
             'reg': 'someinvalidvalue'
         }))
 
-    def test_view_aircraft_task_list(self):
+    @patch('common.decorators.can_read_inspection', return_value=False)
+    def test_view_aircraft_task_list_no_permission_fail(self, mock_decr_can_read_inspection):
         view_url = reverse('home:aircraft_task_list', kwargs={
             'reg': self.aircraft.reg
         })
-
-        self.guest_attempt(view_url)
         self.no_role_user_attempt(view_url)
-        self.force_login()
+
+    @patch('common.decorators.can_read_inspection', return_value=True)
+    def test_view_aircraft_task_list_authorized_success(self, mock_decr_can_read_inspection):
+        view_url = reverse('home:aircraft_task_list', kwargs={
+            'reg': self.aircraft.reg
+        })
         self.authorized_attempt(view_url, 'task_list.html')
+
+    @patch('common.decorators.can_read_inspection', return_value=True)
+    def test_view_aircraft_task_list_url_not_found_fail(self, mock_decr_can_read_inspection):
         self.url_not_found_attempt(reverse('home:aircraft_task_list', kwargs={
             'reg': 'someinvalidvalue'
         }))
@@ -88,19 +84,31 @@ class ViewsTestCase(TestCase):
     ###
     # This view should be tested before aircraft_task because it assigns self.aircraft to an inspection program for testing
     ###
-    def test_view_aircraft_assign_program(self):
+    @patch('common.decorators.can_read_inspection', return_value=False)
+    def test_view_aircraft_assign_program_no_permission_fail(self, mock_decr_can_read_inspection):
         view_url = reverse('home:aircraft_assign', kwargs={
             'reg': self.aircraft.reg
         })
-
-        self.guest_attempt(view_url)
         self.no_role_user_attempt(view_url)
-        self.force_login()
+
+    @patch('common.decorators.can_read_inspection', return_value=True)
+    def test_view_aircraft_assign_program_authorized_success(self, mock_decr_can_read_inspection):
+        view_url = reverse('home:aircraft_assign', kwargs={
+            'reg': self.aircraft.reg
+        })
         self.authorized_attempt(view_url, 'assign_inspection_program.html')
+
+    @patch('common.decorators.can_read_inspection', return_value=True)
+    def test_view_aircraft_assign_program_url_not_found_fail(self, mock_decr_can_read_inspection):
         self.url_not_found_attempt(reverse('home:aircraft_assign', kwargs={
             'reg': 'someinvalidvalue'
         }))
 
+    @patch('common.decorators.can_read_inspection', return_value=True)
+    @patch('home.views.can_write_inspection', return_value=True)
+    def test_view_aircraft_assign_program_save(
+        self, mock_decr_can_read_inspection, mock_can_write_inspection
+    ):
         inspection_component = InspectionComponent(
             name='Test Component',
             inspection_task=InspectionTask.objects.get(pk=16),
@@ -109,6 +117,9 @@ class ViewsTestCase(TestCase):
         )
         inspection_component.save()
 
+        view_url = reverse('home:aircraft_assign', kwargs={
+            'reg': self.aircraft.reg
+        })
         response = self.client.post(view_url, {
             'inspection_program': 1,
         })
@@ -116,42 +127,72 @@ class ViewsTestCase(TestCase):
             'reg': self.aircraft.reg
         }))
 
-    def test_view_aircraft_task(self):
+    @patch('common.decorators.can_read_inspection', return_value=False)
+    def test_view_aircraft_task_no_permission_fail(self, mock_decr_can_read_inspection):
         view_url = reverse('home:aircraft_task', kwargs={
             'reg': self.aircraft.reg,
             'task_id': 17,
         })
-
-        self.guest_attempt(view_url)
         self.no_role_user_attempt(view_url)
-        self.force_login()
+
+    @patch('common.decorators.can_read_inspection', return_value=True)
+    def test_view_aircraft_task_authorized_success(self, mock_decr_can_read_inspection):
+        view_url = reverse('home:aircraft_task', kwargs={
+            'reg': self.aircraft.reg,
+            'task_id': 17,
+        })
         self.authorized_attempt(view_url, 'task.html')
+
+    @patch('common.decorators.can_read_inspection', return_value=True)
+    def test_view_aircraft_task_url_not_found_fail_invalid_aircraft_reg(
+        self, mock_decr_can_read_inspection
+    ):
+        view_url = reverse('home:aircraft_task', kwargs={
+            'reg': self.aircraft.reg,
+            'task_id': 17,
+        })
         self.url_not_found_attempt(reverse('home:aircraft_task', kwargs={
             'reg': 'someinvalidvalue',
             'task_id': 17,
         }))
+
+    @patch('common.decorators.can_read_inspection', return_value=True)
+    def test_view_aircraft_task_url_not_found_fail_invalid_task_id(
+        self, mock_decr_can_read_inspection
+    ):
+        view_url = reverse('home:aircraft_task', kwargs={
+            'reg': self.aircraft.reg,
+            'task_id': 17,
+        })
         self.url_not_found_attempt(reverse('home:aircraft_task', kwargs={
             'reg': self.aircraft.reg,
             'task_id': 999,
         }))
 
-    def test_api_aircraft_task_list(self):
+    def test_api_aircraft_task_list_get(self):
+        self.api_client.force_authenticate(self.user)
+
         api_url = reverse('home:api_aircraft_task_list', kwargs={
             'reg': self.aircraft.reg,
             'task_id': 17,
         })
 
         response = self.api_client.get(api_url, {})
-        self.assertEqual(response.status_code, 403)
-        self.api_client.force_authenticate(self.user)
-
-        response = self.api_client.get(api_url, {})
         data = json.loads(response.content)
         self.assertNotEqual(data['task']['id'], 0)
         self.assertNotEqual(len(data['components']), 0)
 
+    @patch('common.decorators.can_read_inspection', return_value=True)
+    @patch('home.views.can_write_inspection', return_value=True)
+    def test_api_aircraft_task_list_post(self, mock_can_write_inspection, mock_decr_can_read_inspection):
+        self.api_client.force_authenticate(self.user)
+
+        api_url = reverse('home:api_aircraft_task_list', kwargs={
+            'reg': self.aircraft.reg,
+            'task_id': 17,
+        })
+
         # assign program to aircraft
-        self.force_login()
         response = self.client.post(reverse('home:aircraft_assign', kwargs={
             'reg': self.aircraft.reg
         }), {
@@ -209,4 +250,3 @@ class ViewsTestCase(TestCase):
         response_data = json.loads(response.content)
         self.assertEqual(response_data['success'], False)
         self.assertEqual(response.status_code, 200)
-

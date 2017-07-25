@@ -3,6 +3,5 @@ branch = False
 include =
     ./*/decorators.py
     ./*/forms.py
-    ./*/helpers.py
     ./*/models.py
     ./*/views.py
