@@ -106,7 +106,7 @@
                     </div>
                 </div>
                 <!-- Status bar sources, remove area -->
-                <div class="status-bars clearfix" v-if="writable">
+                <div :class="{ 'status-bars clearfix': true, 'dragging-prototypes': draggingStatusPrototype }" v-if="writable">
                     <div class="bar-container">
                         <gantt-maintenance-bar-prototype
                             :status="2">

@@ -359,6 +359,9 @@ $gantt-cover-padding-top: 105px;
         &.disabled {
             pointer-events: none;
         }
+        &.dragging-prototypes {
+            z-index: 20;
+        }
         .bar-container {
             float: left;
             display: block;
@@ -420,8 +423,7 @@ $gantt-cover-padding-top: 105px;
     .table-wrapper {
         position: relative;
         margin-left: $label-cell-width;
-        transition: z-index 0.3s;
-        z-index: 0;
+        z-index: 10;
     }
     .now-indicator {
         display: block;
@@ -541,9 +543,6 @@ $gantt-cover-padding-top: 105px;
                 padding-top: $closed-edit-toolbar-height;
             }
         }
-        .table-wrapper {
-            z-index: 100;   /* Should be big enough so as soon as animation is started table-wrapper comes on top of control bar */
-        }
     }
     /* Readonly mode */
     &.read-only {
@@ -557,9 +556,6 @@ $gantt-cover-padding-top: 105px;
             .cover-inner {
                 padding-top: 0;
             }
-        }
-        .table-wrapper {
-            z-index: 100;   /* Should be big enough so as soon as animation is started table-wrapper comes on top of control bar */
         }
     }
 }
