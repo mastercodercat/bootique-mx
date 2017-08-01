@@ -328,15 +328,19 @@ class Hobbs(models.Model):
         projected_hobbs_value = latest_actual_hobbs.hobbs if latest_actual_hobbs else 0
 
         if latest_actual_hobbs:
+            should_check_draft = revision.has_draft if revision else True
             assignments_after = Assignment.objects.filter(start_time__gt=latest_actual_hobbs.hobbs_time) \
                 .filter(start_time__lte=datetime) \
                 .filter(tail=tail) \
                 .filter(revision=revision) \
+                .filter(is_draft=should_check_draft) \
                 .select_related('flight')
         else:
+            should_check_draft = revision.has_draft if revision else True
             assignments_after = Assignment.objects.filter(start_time__lte=datetime) \
                 .filter(tail=tail) \
                 .filter(revision=revision) \
+                .filter(is_draft=should_check_draft) \
                 .select_related('flight')
 
         for assignment in assignments_after:

@@ -381,14 +381,60 @@ class HobbsTestCase(TestCase):
         last_actual_hobbs = Hobbs.get_last_actual_hobbs(tail, '2017-05-23T00:00:00Z')
         self.assertIsNone(last_actual_hobbs)
 
-    def test_get_projected_value_before_assignments(self):
+    def test_get_projected_value_before_assignments_for_draft_revision(self):
         tail = Tail.objects.get(pk=14)
+        Assignment.objects.update(is_draft=True)
+
         projected_hobbs = Hobbs.get_projected_value(tail, '2017-05-23T00:00:00Z', None)
         self.assertEqual(projected_hobbs, 0)
 
-    def test_get_projected_value_at_middle_of_assignments(self):
+    def test_get_projected_value_at_middle_of_assignments_for_draft_revision(self):
         tail = Tail.objects.get(pk=14)
+        Assignment.objects.update(is_draft=True)
+
         projected_hobbs = Hobbs.get_projected_value(tail, '2017-05-24T18:00:00Z', None)
+        self.assertEqual(round(projected_hobbs, 2), round(90 + 1.25 + 0.67, 2))
+
+    def test_get_projected_value_before_assignments_for_revision_with_draft(self):
+        tail = Tail.objects.get(pk=14)
+
+        revision = Revision(published_datetime=datetime(2017, 7, 10, 0, 0, tzinfo=utc))
+        revision.save()
+        Assignment.objects.update(revision=revision)
+        revision.check_draft_created()
+
+        projected_hobbs = Hobbs.get_projected_value(tail, '2017-05-23T00:00:00Z', revision)
+        self.assertEqual(projected_hobbs, 0)
+
+    def test_get_projected_value_at_middle_of_assignments_for_revision_with_draft(self):
+        tail = Tail.objects.get(pk=14)
+
+        revision = Revision(published_datetime=datetime(2017, 7, 10, 0, 0, tzinfo=utc))
+        revision.save()
+        Assignment.objects.update(revision=revision)
+        revision.check_draft_created()
+
+        projected_hobbs = Hobbs.get_projected_value(tail, '2017-05-24T18:00:00Z', revision)
+        self.assertEqual(round(projected_hobbs, 2), round(90 + 1.25 + 0.67, 2))
+
+    def test_get_projected_value_before_assignments_for_revision_without_draft(self):
+        tail = Tail.objects.get(pk=14)
+
+        revision = Revision(published_datetime=datetime(2017, 7, 10, 0, 0, tzinfo=utc))
+        revision.save()
+        Assignment.objects.update(revision=revision)
+
+        projected_hobbs = Hobbs.get_projected_value(tail, '2017-05-23T00:00:00Z', revision)
+        self.assertEqual(projected_hobbs, 0)
+
+    def test_get_projected_value_at_middle_of_assignments_for_revision_without_draft(self):
+        tail = Tail.objects.get(pk=14)
+
+        revision = Revision(published_datetime=datetime(2017, 7, 10, 0, 0, tzinfo=utc))
+        revision.save()
+        Assignment.objects.update(revision=revision)
+
+        projected_hobbs = Hobbs.get_projected_value(tail, '2017-05-24T18:00:00Z', revision)
         self.assertEqual(round(projected_hobbs, 2), round(90 + 1.25 + 0.67, 2))
 
     def test_get_next_due(self):
