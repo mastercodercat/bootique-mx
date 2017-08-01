@@ -1,5 +1,5 @@
 <template>
-    <div :class="{ 'gantt-bar': true, 'dragging': dragging }">
+    <div :class="{ 'gantt-bar': true, 'dragging': dragging }" ref="ganttBar">
         <template v-if="data.status == 2">
             <gantt-maintenance-bar
                 :assignment="data"
@@ -66,11 +66,37 @@ export default {
         };
     },
     mounted() {
-        this.$on('drag-offset-update', (offset) => {
-            this.internalDragOffset = offset;
-        });
+        this.initVueEventHandlers();
+        this.initMouseEventHandlers();
+    },
+    beforeDestory() {
+        this.unbindMouseEventHandlers();
     },
     methods: {
+        initVueEventHandlers() {
+            this.$on('drag-offset-update', (offset) => {
+                this.internalDragOffset = offset;
+            });
+        },
+        initMouseEventHandlers() {
+            const barElement = this.$children[0].$el;
+            $(this.$refs.ganttBar).on('mouseenter', this.handleMouseEnter.bind(this, barElement));
+            $(this.$refs.ganttBar).on('mouseleave', this.handleMouseLeave.bind(this, barElement));
+        },
+        unbindMouseEventHandlers() {
+            $(this.$refs.ganttBar).off('mouseenter');
+            $(this.$refs.ganttBar).off('mouseleave');
+        },
+        handleMouseEnter(barElement) {
+            if (!this.dragging) {
+                this.$root.$emit('popover-show', barElement, this.data);
+            }
+        },
+        handleMouseLeave() {
+            if (!this.dragging) {
+                this.$root.$emit('popover-hide');
+            }
+        },
         handleResizeBar(assignment_id, position, diff_seconds, vm) {
             this.$emit('resized', assignment_id, position, diff_seconds, vm);
         },

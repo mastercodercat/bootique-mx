@@ -260,6 +260,11 @@
             ref="assignmentErrorModal"
             :conflict-data="conflictData">
         </GanttAssignmentErrorModal>
+        <!-- Popover -->
+        <GanttPopover
+            :timezone="timezone"
+            :writable="writable"
+        ></GanttPopover>
     </div>
 </template>
 
@@ -276,6 +281,7 @@ import GanttUnscheduledFlightBarPrototype from '@frontend_components/GanttUnsche
 import GanttRemoveDropzone from '@frontend_components/GanttRemoveDropzone.vue';
 import GanttUnscheduledFlightModal from '@frontend_components/GanttUnscheduledFlightModal.vue';
 import GanttAssignmentErrorModal from '@frontend_components/GanttAssignmentErrorModal.vue';
+import GanttPopover from '@frontend_components/GanttPopover.vue';
 
 export default {
     name: 'Gantt',
@@ -297,6 +303,7 @@ export default {
         'gantt-remove-dropzone': GanttRemoveDropzone,
         'gantt-unscheduled-flight-modal': GanttUnscheduledFlightModal,
         GanttAssignmentErrorModal,
+        GanttPopover,
     },
     data() {
         const timezoneOffset = Cookies.get('gantt-timezone-offset');

@@ -25,6 +25,7 @@ $gantt-cover-padding-top: 105px;
 .gantt {
     min-width: 600px;
     overflow: visible;
+    position: relative;
 
     .datetime-controls {
         position: relative;
@@ -233,79 +234,6 @@ $gantt-cover-padding-top: 105px;
                 width: 100%;
             }
         }
-        .bar-popover {
-            position: absolute;
-            display: none;
-            padding: 6px 18px;
-            left: 30%;
-            margin-left: -15px;
-            bottom: 100%;
-            margin-bottom: 10px;
-            border-radius: 3px;
-            background-color: $popover-bg-color;
-            color: $popover-text-color;
-            text-align: left;
-            font-size: 0.9em;
-            font-weight: 600;
-            &:before {
-                content: '';
-                position: absolute;
-                left: 10px;
-                top: 100%;
-                border-width: 7px 6px 0;
-                border-style: solid;
-                border-color: $popover-bg-color transparent;
-            }
-            &:after {
-                content: '';
-                position: absolute;
-                left: 0;
-                top: 100%;
-                width: 100%;
-                height: 10px;
-                display: block;
-            }
-            .field {
-                white-space: nowrap;
-            }
-            .field-hobbs-left {
-                padding: 5px 8px;
-                border-radius: 3px;
-                margin: 4px -8px;
-                font-weight: 700;
-                background-color: #C2D0DE;
-                span {
-                    font-size: 1.4em;
-                    margin-left: 5px;
-                    vertical-align: -5%;
-                }
-                &.hobbs-green {
-                    @include striped-background(#B6D325, #C4DC48, 13px);
-                }
-                &.hobbs-yellow {
-                    @include striped-background(#F9C666, #FAD186, 13px);
-                }
-                &.hobbs-red {
-                    @include striped-background(#F4949C, #F37983, 13px);
-                }
-            }
-            hr {
-                margin: 7px 0;
-                border-top-color: #bbb;
-            }
-            .assignment-only {
-                display: none;
-            }
-            .edit-flight-link {
-                position: absolute;
-                right: 3px;
-                top: 2px;
-                padding: 5px;
-            }
-        }
-        &:not(.dragging):not(.status-prototype):hover .bar-popover {
-            display: block;
-        }
         &.status-bar {
             padding-top: 0;
             text-align: center;
@@ -315,12 +243,6 @@ $gantt-cover-padding-top: 105px;
                 color: #fff;
                 overflow: hidden;
                 white-space: nowrap;
-            }
-            &:not(.status-prototype):hover,
-            &.resizing {
-                .bar-popover {
-                    display: block;
-                }
             }
         }
         &.maintenance {
@@ -564,12 +486,6 @@ $gantt-cover-padding-top: 105px;
     z-index: 2050 !important;
 }
 
-#flight-assignment-table {
-    .assignment-only {
-        display: block;
-    }
-}
-
 .gantt-modal-bg {
     position: absolute;
     left: 0;
@@ -595,5 +511,78 @@ $gantt-cover-padding-top: 105px;
         position: absolute;
         left: 10px;
         top: 10px;
+    }
+}
+
+.gantt-bar-popover {
+    position: fixed;
+    z-index: 200;
+
+    .bar-popover {
+        position: absolute;
+        /*display: none;*/
+        padding: 6px 18px;
+        left: 30%;
+        /*margin-left: -15px;*/
+        bottom: 100%;
+        margin-bottom: 10px;
+        border-radius: 3px;
+        background-color: $popover-bg-color;
+        color: $popover-text-color;
+        text-align: left;
+        font-size: 0.9em;
+        font-weight: 600;
+        &:before {
+            content: '';
+            position: absolute;
+            left: 10px;
+            top: 100%;
+            border-width: 7px 6px 0;
+            border-style: solid;
+            border-color: $popover-bg-color transparent;
+        }
+        &:after {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 100%;
+            width: 100%;
+            height: 10px;
+            display: block;
+        }
+        .field {
+            white-space: nowrap;
+        }
+        .field-hobbs-left {
+            padding: 5px 8px;
+            border-radius: 3px;
+            margin: 4px -8px;
+            font-weight: 700;
+            background-color: #C2D0DE;
+            span {
+                font-size: 1.4em;
+                margin-left: 5px;
+                vertical-align: -5%;
+            }
+            &.hobbs-green {
+                @include striped-background(#B6D325, #C4DC48, 13px);
+            }
+            &.hobbs-yellow {
+                @include striped-background(#F9C666, #FAD186, 13px);
+            }
+            &.hobbs-red {
+                @include striped-background(#F4949C, #F37983, 13px);
+            }
+        }
+        hr {
+            margin: 7px 0;
+            border-top-color: #bbb;
+        }
+        .edit-flight-link {
+            position: absolute;
+            right: 3px;
+            top: 2px;
+            padding: 5px;
+        }
     }
 }

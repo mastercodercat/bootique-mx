@@ -3,19 +3,6 @@
         <div class="text">
             <span>Unscheduled Flight</span>
         </div>
-        <div class="bar-popover">
-            <div class="field">Unscheduled Flight</div>
-            <div class="field">Origin: <span class="org"></span></div>
-            <div class="field">Destination: <span class="dest"></span></div>
-            <div class="field">Sched. Depature Time: <span class="departure"></span></div>
-            <div class="field">Sched. Arrival Time: <span class="arrival"></span></div>
-            <div class="assignment-only">
-                <hr />
-                <div class="field">Projected Hobbs: <span class="projected-hobbs"></span></div>
-                <div class="field">Next Due Hobbs: <span class="next-due-hobbs"></span></div>
-                <div class="field field-hobbs-left">Hobbs Left: <span class="hobbs-left"></span></div>
-            </div>
-        </div>
     </div>
 </template>
 
