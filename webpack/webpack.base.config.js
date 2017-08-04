@@ -4,35 +4,6 @@ var BundleTracker = require('webpack-bundle-tracker')
 var ExtractTextPlugin = require('extract-text-webpack-plugin')
 var entrypoints = require('./entrypoints.js');
 
-var isProd = (process.env.NODE_ENV === 'production');
-
-plugins = [
-    new BundleTracker({filename: './webpack/webpack-stats.json'}),
-
-    new ExtractTextPlugin('[name]-[hash].css'),
-
-    new webpack.ProvidePlugin({
-        $: "jquery",
-        jQuery: "jquery",
-        "window.jQuery": "jquery",
-        Utils: path.resolve(__dirname, '../frontend/js/utils.js'),
-    }),
-];
-
-if (isProd) {
-    plugins = plugins.concat([
-        new webpack.optimize.UglifyJsPlugin({
-            sourceMap: false,
-        }),
-
-        new webpack.DefinePlugin({
-            'process.env': {
-                NODE_ENV: '"production"'
-            }
-        }),
-    ]);
-}
-
 module.exports = {
 
     //the base directory (absolute path) for resolving the entry option
@@ -54,7 +25,18 @@ module.exports = {
             'http://localhost:8080/static/bundles/',
     },
 
-    plugins: plugins,
+    plugins: [
+        new BundleTracker({filename: './webpack/webpack-stats.json'}),
+
+        new ExtractTextPlugin('[name]-[hash].css'),
+
+        new webpack.ProvidePlugin({
+            $: "jquery",
+            jQuery: "jquery",
+            "window.jQuery": "jquery",
+            Utils: path.resolve(__dirname, '../frontend/js/utils.js'),
+        }),
+    ],
 
     module: {
         rules: [

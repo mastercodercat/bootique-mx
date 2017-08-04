@@ -19,3 +19,5 @@ deploy/ssh/*
 fabric_settings.py
 
 npm-debug.log
+
+frontend/test/unit/coverage
