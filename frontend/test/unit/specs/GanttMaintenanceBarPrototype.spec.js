@@ -1,16 +1,15 @@
-import Vue from 'vue';
-import GanttMaintenanceBarPrototype from '@frontend_components/GanttMaintenanceBarPrototype.vue';
+import Vue from 'vue'
+import GanttMaintenanceBarPrototype from '@frontend_components/GanttMaintenanceBarPrototype.vue'
 
 describe('GanttMaintenanceBarPrototype.vue', () => {
     it('should render correct contents', () => {
-        const Constructor = Vue.extend(GanttMaintenanceBarPrototype);
+        const Constructor = Vue.extend(GanttMaintenanceBarPrototype)
         const vm = new Constructor().$mount()
-        expect(vm.$el.querySelector('.text').textContent)
-            .to.equal('Maintenance')
+        expect(vm.$el.querySelector('.text').textContent).to.equal('Maintenance')
     })
 
     it('should render correct dragging status', () => {
-        const Constructor = Vue.extend(GanttMaintenanceBarPrototype);
+        const Constructor = Vue.extend(GanttMaintenanceBarPrototype)
         const vm = new Constructor({
             propsData: {
                 dragged: true,
