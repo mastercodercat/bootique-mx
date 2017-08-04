@@ -1,6 +1,5 @@
 var path = require('path')
 var webpack = require('webpack')
-var BundleTracker = require('webpack-bundle-tracker')
 var ExtractTextPlugin = require('extract-text-webpack-plugin')
 var entrypoints = require('./entrypoints.js');
 
@@ -26,8 +25,6 @@ module.exports = {
     },
 
     plugins: [
-        new BundleTracker({filename: './webpack/webpack-stats.json'}),
-
         new ExtractTextPlugin('[name]-[hash].css'),
 
         new webpack.ProvidePlugin({
