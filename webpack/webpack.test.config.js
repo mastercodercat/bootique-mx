@@ -4,6 +4,10 @@ var baseConfig = require('./webpack.base.config.js');
 
 var webpackConfig = merge(baseConfig, {
     plugins: [
+        new webpack.ProvidePlugin({
+            Promise: 'es6-promise',
+        }),
+
         new webpack.DefinePlugin({
             'process.env': {
                 NODE_ENV: '"testing"'
