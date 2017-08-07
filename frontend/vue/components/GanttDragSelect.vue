@@ -26,8 +26,7 @@ export default {
             }
 
             event.preventDefault();
-
-            if (event.target.className.indexOf('row-line') >= 0) {
+            if (event.target.classList.contains('drag-select') || event.target.classList.contains('row-line')) {
                 var $dragSelectContainer = $(this.$refs.dragSelectContainer);
                 var twOffset = $dragSelectContainer.offset();
                 var $selectionMarker = $(this.$refs.selectionAreaIndicator);
