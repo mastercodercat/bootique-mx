@@ -1,4 +1,5 @@
 import Vue from 'vue'
+import sinon from 'sinon'
 import GanttUnscheduledFlightModal from '@frontend_components/GanttUnscheduledFlightModal.vue'
 import testData from '../fixtures/conflict-data.js'
 
