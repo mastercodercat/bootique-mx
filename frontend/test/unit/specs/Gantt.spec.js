@@ -3,6 +3,7 @@ import sinon from 'sinon'
 import Gantt from '@frontend_components/Gantt.vue'
 import testData from '../fixtures/Gantt.js'
 import apiData from '../fixtures/full-data.js'
+import axios from 'axios'
 
 function createContainerElement() {
     const container = document.createElement('div')
@@ -14,13 +15,26 @@ function createContainerElement() {
 }
 
 describe('Gantt.vue', () => {
+    let axiosGetStub
+
+    before(function () {
+        axiosGetStub = sinon.stub(axios, 'get')
+        Vue.prototype.$http = axios
+    })
+
+    after(function () {
+        axios.get.restore()
+    })
+
     it('should render initial state', () => {
-        const container = createContainerElement()
-        Gantt.methods.loadData = e => e
+        const loadDataStub = sinon.stub(Gantt.methods, 'loadData')
         const Constructor = Vue.extend(Gantt)
+        const container = createContainerElement()
         const vm = new Constructor({
             propsData: testData.props,
         }).$mount(container)
+
+        Gantt.methods.loadData.restore()
 
         expect(vm.$el.tagName).to.equal('DIV')
         expect(vm.$el.querySelectorAll('.toggle-switch').length).not.to.equal(0)
@@ -34,5 +48,23 @@ describe('Gantt.vue', () => {
         expect(vm.$el.querySelectorAll('.cover').length).not.to.equal(0)
         expect(vm.$el.querySelector('.cover').classList.contains('loading')).to.equal(true)
         expect(vm.$el.querySelectorAll('.edit-tools-toggle').length).not.to.equal(0)
+    })
+
+    it('should render gantt bars when api returns data', (done) => {
+        axiosGetStub.resolves({
+            data: apiData,
+        })
+
+        const Constructor = Vue.extend(Gantt)
+        const container = createContainerElement()
+        const vm = new Constructor({
+            propsData: testData.props,
+        }).$mount(container)
+
+        setImmediate(() => {
+            expect(vm.$el.querySelectorAll('#flight-assignment-table .gantt-bar').length).to.equal(apiData.assignments.length)
+            expect(vm.$el.querySelectorAll('#flight-template-table .gantt-bar').length).to.equal(apiData.templates.length)
+            done()
+        })
     })
 })

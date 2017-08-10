@@ -22,14 +22,13 @@ describe('GanttAssignmentErrorModal.vue', () => {
             }
         }).$mount()
         vm.showModal()
-        Vue.nextTick().then(() => {
+        setTimeout(() => {
             expect(vm.$el.classList.contains('in')).to.equal(true)
             vm.hideModal()
-            return Vue.nextTick()
-        })
-        .then(() => {
-            expect(vm.$el.classList.contains('in')).to.equal(false)
-            done()
-        })
+            Vue.nextTick().then(() => {
+                expect(vm.$el.classList.contains('in')).to.equal(false)
+                done()
+            })
+        }, 300)
     })
 })
