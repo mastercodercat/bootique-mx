@@ -58,7 +58,7 @@ import ComingDueList from '@frontend_components/ComingDueList.vue';
 import HobbsForm from '@frontend_components/HobbsForm.vue';
 
 export default {
-    name: 'ComingDueListPages',
+    name: 'ComingDueListPage',
     props: ['tail-id', 'tail-number', 'revision', 'coming-due-list-api', 'save-hobbs-api',
         'load-hobbs-api-base', 'url-to-redirect-after-save', 'writable'],
     components: {

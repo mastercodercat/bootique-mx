@@ -161,6 +161,7 @@ export default {
                 if (success) {
                     this.$emit('refresh-coming-due-list')
                 }
+                return response;
             });
         }
     }

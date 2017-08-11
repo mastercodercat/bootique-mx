@@ -1,9 +1,9 @@
 import Vue from 'vue'
 import sinon from 'sinon'
+import axios from 'axios'
 import Gantt from '@frontend_components/Gantt.vue'
 import testData from '../fixtures/Gantt.js'
 import apiData from '../fixtures/full-data.js'
-import axios from 'axios'
 
 function createContainerElement() {
     const container = document.createElement('div')
@@ -61,10 +61,10 @@ describe('Gantt.vue', () => {
             propsData: testData.props,
         }).$mount(container)
 
-        setImmediate(() => {
+        setTimeout(() => {
             expect(vm.$el.querySelectorAll('#flight-assignment-table .gantt-bar').length).to.equal(apiData.assignments.length)
             expect(vm.$el.querySelectorAll('#flight-template-table .gantt-bar').length).to.equal(apiData.templates.length)
             done()
-        })
+        }, 0)
     })
 })

@@ -43,7 +43,7 @@
 import Vue from 'vue';
 
 export default {
-    name: 'HobbsForm',
+    name: 'ComingDueList',
     props: ['tail-id', 'revision', 'writable', 'coming-due-list-api'],
     data() {
         return {
@@ -111,13 +111,13 @@ export default {
 </script>
 
 <style>
-    .anchor-date {
-        float: left;
-        width: calc(100% - 130px);
-        max-width: 300px;
-        margin-right: 10px;
-    }
-    .btn-change-anchor-date {
-        float: left;
-    }
+.anchor-date {
+    float: left;
+    width: calc(100% - 130px);
+    max-width: 300px;
+    margin-right: 10px;
+}
+.btn-change-anchor-date {
+    float: left;
+}
 </style>
