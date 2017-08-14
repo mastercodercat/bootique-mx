@@ -17,12 +17,14 @@ Project has deployment setup to deploy using fabric and docker on staging/produc
   = open shell inside docker: `fab staging shell`
   = run the command `python manage.py createsuperuser`
 - To test production environment on local, run these command:
-    `docker-compose -f docker-compose.yml -f docker-compose-dev.yml build`
-    `docker-compose -f docker-compose.yml -f docker-compose-dev.yml up -d`
-- Test back end with coverage report:
-    `npm run test:coverage`
+    `docker-compose -f docker-compose.yml -f docker-compose-local.yml build`
+    `docker-compose -f docker-compose.yml -f docker-compose-local.yml up -d`
+- Run tests on back end:
+    `npm run test:backend`
+- Run tests on back end with coverage report:
+    `npm run test:backend:coverage`
 - Test front end Vue.js components:
-    `npm run test:vue`
+    `npm run test:frontend`
 
 ## Local development
 
