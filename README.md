@@ -19,12 +19,6 @@ Project has deployment setup to deploy using fabric and docker on staging/produc
 - To test production environment on local, run these command:
     `docker-compose -f docker-compose.yml -f docker-compose-local.yml build`
     `docker-compose -f docker-compose.yml -f docker-compose-local.yml up -d`
-- Run tests on back end:
-    `npm run test:backend`
-- Run tests on back end with coverage report:
-    `npm run test:backend:coverage`
-- Test front end Vue.js components:
-    `npm run test:frontend`
 
 ## Local development
 
@@ -42,12 +36,12 @@ To run the application on local for development, please follow these steps.
 - Run `pip install -r requirements/local.txt` to install local development dependencies (which includes test libraries in addition to main dependencies.)
 - Run `python manage.py makemigrations inspection home routeplanning` to create migrations
 - Run `python manage.py migrate` to migrate database
-- Load fixtures(See below.)
+- Load fixtures (See below)
 - Run `python manage.py runserver` to run project
 
 ### Build front end
 
-- install node
+- Install node
 - Run `npm install` to install dependencies
 - Run `npm run watch` to watch and compile resource changes
 
@@ -61,22 +55,27 @@ To run the application on local for development, please follow these steps.
 ### Load fixures
 
 Run all the commands in the following order:
-- `python manage.py loaddata roles.json`
-- `python manage.py loaddata inspection.json`
-- `python manage.py loaddata aircraft.json`
-- `python manage.py loaddata airframes.json`
-- `python manage.py loaddata engines.json`
-- `python manage.py loaddata propellers.json`
-- `python manage.py loaddata lines.json`
-- `python manage.py loaddata lineparts.json`
-- `python manage.py loaddata tails.json`
-- `python manage.py loadflightcsv` (Before running this, put CSV file as `flights.csv` in routeplanning/fixtures/)
-- `python manage.py loadlinecsv` (Before running this, put `lines.csv` and `lineparts.csv` in routeplanning/fixtures/)
+
+`python manage.py loaddata roles.json`
+`python manage.py loaddata inspection.json`
+`python manage.py loaddata aircraft.json`
+`python manage.py loaddata airframes.json`
+`python manage.py loaddata engines.json`
+`python manage.py loaddata propellers.json`
+`python manage.py loaddata lines.json`
+`python manage.py loaddata lineparts.json`
+`python manage.py loaddata tails.json`
+`python manage.py loadflightcsv` (Before running this, put CSV file as `flights.csv` in routeplanning/fixtures/)
 
 (Note that default CSV data is already in fixtures. Put CSV file into fixtures folder when you need to use new or updated data.)
 
 ### Run test
 
-`npm run test:coverage`
+- Run tests on back end:
+    `npm run test:backend`
+- Run tests on back end with coverage report:
+    `npm run test:backend:coverage`
+- Test front end Vue.js components:
+    `npm run test:frontend`
 
 This command executes all the tests and reports coverage at the end.
