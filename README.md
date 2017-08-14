@@ -51,23 +51,12 @@ To run the application on local for development, please follow these steps.
 - Login to `http://localhost:8000/admin` to enter django admin
 - Add Site model with site name `localhost`
 - Add Social auth application as Google with api key and secret
+- You'll be likely seeing `Not enough permissions` when trying to access front end with created account. To fix this you need to set user role in `admin/User Profiles`.
 
 ### Load fixures
 
-Run all the commands in the following order:
-
-`python manage.py loaddata roles.json`
-`python manage.py loaddata inspection.json`
-`python manage.py loaddata aircraft.json`
-`python manage.py loaddata airframes.json`
-`python manage.py loaddata engines.json`
-`python manage.py loaddata propellers.json`
-`python manage.py loaddata lines.json`
-`python manage.py loaddata lineparts.json`
-`python manage.py loaddata tails.json`
-`python manage.py loadflightcsv` (Before running this, put CSV file as `flights.csv` in routeplanning/fixtures/)
-
-(Note that default CSV data is already in fixtures. Put CSV file into fixtures folder when you need to use new or updated data.)
+- Run this command to load fixtures: `./bin/load_all_data`
+- After running this command, load flights CSV file in front end: Route Planning Gantt -> Flights page.
 
 ### Run test
 
@@ -77,5 +66,3 @@ Run all the commands in the following order:
     `npm run test:backend:coverage`
 - Test front end Vue.js components:
     `npm run test:frontend`
-
-This command executes all the tests and reports coverage at the end.
