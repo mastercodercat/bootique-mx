@@ -10,9 +10,7 @@
   "scripts": {
     "watch": "webpack-dev-server --config webpack/webpack.dev.config.js --port 8080",
     "build": "npm install && NODE_ENV=production ./node_modules/.bin/webpack --config webpack/webpack.prod.config.js",
-    "test:backend": "python manage.py test",
-    "test:backend:coverage": "coverage run --source='.' manage.py test && coverage report",
-    "test:frontend": "BABEL_ENV=test karma start frontend/test/unit/karma.conf.js --single-run"
+    "test": "BABEL_ENV=test karma start frontend/test/unit/karma.conf.js --single-run"
   },
   "dependencies": {
     "axios": "^0.16.1",

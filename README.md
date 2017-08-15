@@ -61,8 +61,8 @@ To run the application on local for development, please follow these steps.
 ### Run test
 
 - Run tests on back end:
-    `npm run test:backend`
+    `./bin/test_back_end`
 - Run tests on back end with coverage report:
-    `npm run test:backend:coverage`
+    `./bin/test_back_end_with_coverage`
 - Test front end Vue.js components:
-    `npm run test:frontend`
+    `./bin/test_front_end` or `npm run test` (`test_front_end` tool is actually alias to `npm run test`)
