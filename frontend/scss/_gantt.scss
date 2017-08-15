@@ -32,6 +32,26 @@ $gantt-cover-padding-top: 105px;
         z-index: 2;
     }
 
+    .unit-control {
+        @media screen and (max-width: 1500px) {
+            &.compact {
+                display: block;
+            }
+            &.large {
+                display: none;
+            }
+        }
+
+        @media screen and (min-width: 1501px) {
+            &.compact {
+                display: none;
+            }
+            &.large {
+                display: block;
+            }
+        }
+    }
+
     .cover-wrapper {
         position: relative;
         z-index: 1;
@@ -141,23 +161,14 @@ $gantt-cover-padding-top: 105px;
             vertical-align: top;
         }
     }
-    .unit-control {
-        float: left;
-    }
     .page-control {
-        float: right;
         margin-left: 20px;
     }
     .current-datetime-button-container {
-        float: right;
         margin-left: 15px;
     }
     .date-range-control {
-        float: right;
         margin-left: 15px;
-    }
-    .timezone-control {
-        float: right;
     }
     .bar {
         position: absolute;

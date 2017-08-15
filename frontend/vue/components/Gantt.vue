@@ -14,70 +14,94 @@
                     </span>
                 </span>
             </div>
-            <div class="datetime-controls clearfix m-b-md"><!-- Top controls -->
-                <div class="unit-control btn-group">
-                    <a :class="{ 'btn btn-white': true, 'active': mode == 1 }"
-                        :href="ganttUrl + '?mode=1&start=' + startTmstmp">3 Hours</a>
-                    <a :class="{ 'btn btn-white': true, 'active': mode == 2 }"
-                        :href="ganttUrl + '?mode=2&start=' + startTmstmp">6 Hours</a>
-                    <a :class="{ 'btn btn-white': true, 'active': mode == 3 }"
-                        :href="ganttUrl + '?mode=3&start=' + startTmstmp">12 Hours</a>
-                    <a :class="{ 'btn btn-white': true, 'active': mode == 4 }"
-                        :href="ganttUrl + '?mode=4&start=' + startTmstmp">24 Hours</a>
-                    <a :class="{ 'btn btn-white': true, 'active': mode == 5 }"
-                        :href="ganttUrl + '?mode=5&start=' + startTmstmp">3 Days</a>
-                    <a :class="{ 'btn btn-white': true, 'active': mode == 6 }"
-                        :href="ganttUrl + '?mode=6&start=' + startTmstmp">7 Days</a>
-                </div>
-                <div class="page-control">
-                    <a href="javascript:;" id="btn-prev-time-window" class="btn btn-white"
-                        @click.prevent="handleClickPrevTimeWindow">
-                        <i class="fa fa-chevron-left"></i>
-                    </a>
-                    <a href="javascript:;" id="btn-next-time-window" class="btn btn-white"
-                        @click.prevent="handleClickNextTimeWindow">
-                        <i class="fa fa-chevron-right"></i>
-                    </a>
-                </div>
-                <div class="current-datetime-button-container">
-                    <a href="javascript:;" id="btn-now" class="btn btn-primary"
-                        @click.prevent="handleClickNow">
-                        <i class="fa fa-clock-o"></i>
-                    </a>
-                </div>
-                <div class="date-range-control date-range-picker-group">
-                    <div class="component-wrapper">
-                        <div class="input-group date">
-                            <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
-                            <input type="text" id="start_date" class="form-control" ref="startDateInput">
-                        </div>
+            <div class="datetime-controls clearfix m-b-sm"><!-- Top controls -->
+                <div class="pull-left m-b-sm">
+                    <div class="unit-control large btn-group">
+                        <a :class="{ 'btn btn-white': true, 'active': mode == 1 }"
+                            :href="ganttUrl + '?mode=1&start=' + startTmstmp">3 Hours</a>
+                        <a :class="{ 'btn btn-white': true, 'active': mode == 2 }"
+                            :href="ganttUrl + '?mode=2&start=' + startTmstmp">6 Hours</a>
+                        <a :class="{ 'btn btn-white': true, 'active': mode == 3 }"
+                            :href="ganttUrl + '?mode=3&start=' + startTmstmp">12 Hours</a>
+                        <a :class="{ 'btn btn-white': true, 'active': mode == 4 }"
+                            :href="ganttUrl + '?mode=4&start=' + startTmstmp">24 Hours</a>
+                        <a :class="{ 'btn btn-white': true, 'active': mode == 5 }"
+                            :href="ganttUrl + '?mode=5&start=' + startTmstmp">3 Days</a>
+                        <a :class="{ 'btn btn-white': true, 'active': mode == 6 }"
+                            :href="ganttUrl + '?mode=6&start=' + startTmstmp">7 Days</a>
                     </div>
-                    <div class="component-wrapper">
-                        <div class="input-group date">
-                            <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
-                            <input type="text" id="end_date" class="form-control" ref="endDateInput">
-                        </div>
-                    </div>
-                    <div class="component-wrapper">
-                        <button
-                            class="btn btn-primary"
-                            @click="handleSubmitDateForm">
-                            Search
+                    <div class="unit-control compact btn-group">
+                        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                            <span>
+                                <span v-if="mode == 1">3 Hours</span>
+                                <span v-if="mode == 2">6 Hours</span>
+                                <span v-if="mode == 3">12 Hours</span>
+                                <span v-if="mode == 4">24 Hours</span>
+                                <span v-if="mode == 5">3 Days</span>
+                                <span v-if="mode == 6">7 Days</span>
+                            </span> <span class="caret"></span>
                         </button>
+                        <ul class="dropdown-menu" role="menu">
+                            <li><a :href="ganttUrl + '?mode=1&start=' + startTmstmp">3 Hours</a></li>
+                            <li><a :href="ganttUrl + '?mode=2&start=' + startTmstmp">6 Hours</a></li>
+                            <li><a :href="ganttUrl + '?mode=3&start=' + startTmstmp">12 Hours</a></li>
+                            <li><a :href="ganttUrl + '?mode=4&start=' + startTmstmp">24 Hours</a></li>
+                            <li><a :href="ganttUrl + '?mode=5&start=' + startTmstmp">3 Days</a></li>
+                            <li><a :href="ganttUrl + '?mode=6&start=' + startTmstmp">7 Days</a></li>
+                        </ul>
                     </div>
                 </div>
-                <div class="timezone-control">
-                    <select id="gantt-timezone" class="form-control" v-model="timezone">
-                        <option value="0" selected>UTC</option>
-                        <option value="-4">EDT</option>
-                        <option value="-5">EST</option>
-                        <option value="-5">CDT</option>
-                        <option value="-6">CST</option>
-                        <option value="-6">MDT</option>
-                        <option value="-7">MST</option>
-                        <option value="-7">PDT</option>
-                        <option value="-8">PST</option>
-                    </select>
+                <div class="pull-right m-b-sm">
+                    <div class="timezone-control pull-left">
+                        <select id="gantt-timezone" class="form-control" v-model="timezone">
+                            <option value="0" selected>UTC</option>
+                            <option value="-4">EDT</option>
+                            <option value="-5">EST</option>
+                            <option value="-5">CDT</option>
+                            <option value="-6">CST</option>
+                            <option value="-6">MDT</option>
+                            <option value="-7">MST</option>
+                            <option value="-7">PDT</option>
+                            <option value="-8">PST</option>
+                        </select>
+                    </div>
+                    <div class="date-range-control date-range-picker-group pull-left">
+                        <div class="component-wrapper">
+                            <div class="input-group date">
+                                <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
+                                <input type="text" id="start_date" class="form-control" ref="startDateInput">
+                            </div>
+                        </div>
+                        <div class="component-wrapper">
+                            <div class="input-group date">
+                                <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
+                                <input type="text" id="end_date" class="form-control" ref="endDateInput">
+                            </div>
+                        </div>
+                        <div class="component-wrapper">
+                            <button
+                                class="btn btn-primary"
+                                @click="handleSubmitDateForm">
+                                Search
+                            </button>
+                        </div>
+                    </div>
+                    <div class="current-datetime-button-container pull-left">
+                        <a href="javascript:;" id="btn-now" class="btn btn-primary"
+                            @click.prevent="handleClickNow">
+                            <i class="fa fa-clock-o"></i>
+                        </a>
+                    </div>
+                    <div class="page-control pull-left">
+                        <a href="javascript:;" id="btn-prev-time-window" class="btn btn-white"
+                            @click.prevent="handleClickPrevTimeWindow">
+                            <i class="fa fa-chevron-left"></i>
+                        </a>
+                        <a href="javascript:;" id="btn-next-time-window" class="btn btn-white"
+                            @click.prevent="handleClickNextTimeWindow">
+                            <i class="fa fa-chevron-right"></i>
+                        </a>
+                    </div>
                 </div>
             </div>
             <div class="cover-wrapper">
