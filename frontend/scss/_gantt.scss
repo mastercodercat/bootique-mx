@@ -62,6 +62,9 @@ $gantt-cover-padding-top: 105px;
         right: 5px;
         top: 0;
         z-index: 10;
+        a {
+            padding: 4px 10px;
+        }
     }
     .gantt-labels {
         position: absolute;
@@ -287,22 +290,44 @@ $gantt-cover-padding-top: 105px;
         left: 0;
         top: 0;
         width: 100%;
+        height: $gantt-cover-padding-top;
+        display: flex;
+        align-items: center;
         z-index: 1;
-        padding: 35px 25px 0;
+        padding: 0 25px;
+
         &.disabled {
             pointer-events: none;
         }
         &.dragging-prototypes {
             z-index: 20;
         }
+
+        .status-bars-inner-left {
+            flex: 1 1 auto;
+        }
+        .status-bars-inner-right {
+            flex: 0 1 auto;
+        }
+        @media screen and (max-width: 1130px) {
+            flex-direction: column;
+            align-items: flex-start;
+            justify-content: center;
+
+            .status-bars-inner-left,
+            .status-bars-inner-right {
+                flex: 0 1 auto;
+            }
+        }
+
         .bar-container {
-            float: left;
-            display: block;
+            display: inline-block;
             position: relative;
             min-width: 140px;
             height: 30px;
             & + .bar-container {
                 margin-left: 10px;
+                margin-right: 50px;
             }
         }
         .bar {
@@ -316,8 +341,7 @@ $gantt-cover-padding-top: 105px;
             }
         }
         .drop-to-remove-area {
-            float: left;
-            margin-left: 50px;
+            display: inline-block;
             position: relative;
             max-width: 100%;
             text-align: center;
@@ -464,7 +488,7 @@ $gantt-cover-padding-top: 105px;
         transition: padding-top 0.3s;
     }
     &.edit-tools-closed {
-        $closed-edit-toolbar-height: 35px;
+        $closed-edit-toolbar-height: 0;
         .gantt-labels {
             margin-top: $closed-edit-toolbar-height;
         }

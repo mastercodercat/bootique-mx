@@ -130,48 +130,53 @@
                     </div>
                 </div>
                 <!-- Status bar sources, remove area -->
-                <div :class="{ 'status-bars clearfix': true, 'dragging-prototypes': draggingStatusPrototype }" v-if="writable">
-                    <div class="bar-container">
-                        <gantt-maintenance-bar-prototype
-                            :status="2">
-                        </gantt-maintenance-bar-prototype>
-                        <gantt-maintenance-bar-prototype
-                            :status="2"
-                            :dragged="true"
-                            :drag-offset="dragOffset"
-                            v-if="draggingStatusPrototype && draggingStatus == 2">
-                        </gantt-maintenance-bar-prototype>
+                <div :class="{ 'status-bars': true, 'dragging-prototypes': draggingStatusPrototype }" v-if="writable">
+                    <div class="status-bars-inner-left clearfix">
+                        <div class="bar-container pull-left m-b-xs">
+                            <gantt-maintenance-bar-prototype
+                                :status="2">
+                            </gantt-maintenance-bar-prototype>
+                            <gantt-maintenance-bar-prototype
+                                :status="2"
+                                :dragged="true"
+                                :drag-offset="dragOffset"
+                                v-if="draggingStatusPrototype && draggingStatus == 2">
+                            </gantt-maintenance-bar-prototype>
+                        </div>
+                        <div class="bar-container pull-left m-b-xs">
+                            <gantt-unscheduled-flight-bar-prototype
+                                :status="3">
+                            </gantt-unscheduled-flight-bar-prototype>
+                            <gantt-unscheduled-flight-bar-prototype
+                                :status="3"
+                                :dragged="true"
+                                :drag-offset="dragOffset"
+                                v-if="draggingStatusPrototype && draggingStatus == 3">
+                            </gantt-unscheduled-flight-bar-prototype>
+                        </div>
+                        <gantt-remove-dropzone
+                            class="m-b-xs pull-left"
+                            acceptable-selector="#flight-assignment-table .bar"
+                            :editing="editing"
+                            @drop-on="handleDropOnRemoveZone">
+                        </gantt-remove-dropzone>
                     </div>
-                    <div class="bar-container">
-                        <gantt-unscheduled-flight-bar-prototype
-                            :status="3">
-                        </gantt-unscheduled-flight-bar-prototype>
-                        <gantt-unscheduled-flight-bar-prototype
-                            :status="3"
-                            :dragged="true"
-                            :drag-offset="dragOffset"
-                            v-if="draggingStatusPrototype && draggingStatus == 3">
-                        </gantt-unscheduled-flight-bar-prototype>
-                    </div>
-                    <gantt-remove-dropzone
-                        acceptable-selector="#flight-assignment-table .bar"
-                        :editing="editing"
-                        @drop-on="handleDropOnRemoveZone">
-                    </gantt-remove-dropzone>
-                    <div class="revision-controls pull-right">
-                        <select class="form-control" style="max-width: 250px;" v-model="revision">
-                            <option value="0" selected>(New Draft)</option>
-                            <option v-for="revision in revisions" :value="revision.id">
-                                {{ formatDate(revision.published) }}
-                            </option>
-                        </select>
-                        <button id="delete-revision" class="btn btn-link" @click="handleDeleteRevision">
-                            <i class="fa fa-fw fa-trash-o"></i>
-                        </button>
-                        <button id="clear-revision" class="btn btn-link" @click="handleClearRevision">
-                            <i class="fa fa-fw fa-refresh"></i>
-                        </button>
-                        <button id="publish-revision" class="btn btn-default" @click="handlePublishRevision">Publish</button>
+                    <div class="status-bars-inner-right clearfix">
+                        <div class="revision-controls pull-right m-b-xs">
+                            <select class="form-control" style="max-width: 250px;" v-model="revision">
+                                <option value="0" selected>(New Draft)</option>
+                                <option v-for="revision in revisions" :value="revision.id">
+                                    {{ formatDate(revision.published) }}
+                                </option>
+                            </select>
+                            <button id="delete-revision" class="btn btn-link" @click="handleDeleteRevision">
+                                <i class="fa fa-fw fa-trash-o"></i>
+                            </button>
+                            <button id="clear-revision" class="btn btn-link" @click="handleClearRevision">
+                                <i class="fa fa-fw fa-refresh"></i>
+                            </button>
+                            <button id="publish-revision" class="btn btn-default" @click="handlePublishRevision">Publish</button>
+                        </div>
                     </div>
                 </div>
                 <!-- Gantt table -->
