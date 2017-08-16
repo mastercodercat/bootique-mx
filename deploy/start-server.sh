@@ -26,4 +26,6 @@ python manage.py loaddata lineparts.json
 python manage.py collectstatic --noinput
 
 # now boot
-gunicorn mxtracking.wsgi:application -b 0.0.0.0:8000 -t 300
+gunicorn mxtracking.wsgi:application -b 0.0.0.0:8000 -t 300 \
+    --access-logfile /log/access.log \
+    --error-logfile /log/error.log
