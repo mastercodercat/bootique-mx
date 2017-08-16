@@ -8,10 +8,10 @@ Project has deployment setup to deploy using fabric and docker on staging/produc
 - Generate SSH key pair of remote server (for pulling from git) and link public key of the pair to any bitbucket account that can access the repo
 - Copy `fabric_settings.py` from `fabric_settings.py.example` file and fill the parameters.
 - Now you're ready to use `fab` command line tool to start deployment process.
-- Deploy
-    `fab staging bootstrap` - Only for the first time to setup environment
-    `fab staging deploy` - Deploy latest code to server when using docker
-    `fab staging deploynodocker` - Deploy latest code to server when not using docker
+- Deploy commands
+    * Run `fab staging bootstrap` - Only for the first time to setup environment
+    * Run `fab staging deploy` - Deploy latest code to server when using docker
+    * Run `fab staging deploynodocker` - Deploy latest code to server when not using docker
     * specify `staging` or `production` based on fabric settings
 - To setup super user of django admin
   = open shell inside docker: `fab staging shell`
