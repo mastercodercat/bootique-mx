@@ -30,7 +30,6 @@ python manage.py loaddata lineparts.json
 
 # static assets
 python manage.py collectstatic --noinput
-npm run build
 
 # now boot
 gunicorn mxtracking.wsgi:application -b 0.0.0.0:8000 -t 300
