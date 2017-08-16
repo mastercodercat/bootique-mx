@@ -1,0 +1,44 @@
+body {
+  padding-top: 20vh;
+  padding-bottom: 40px;
+  background-color: #6296C3; }
+  body .form-signin {
+    max-width: 400px;
+    padding: 50px 75px;
+    margin: 0 auto;
+    background: white;
+    border-radius: 10px;
+    top: 20%;
+    position: relative; }
+    body .form-signin .btn-primary {
+      background: #023463;
+      border: none; }
+    body .form-signin .form-control:focus {
+      z-index: 2; }
+    body .form-signin p {
+      margin: 20px 0;
+      color: #95989a;
+      font-size: 12px;
+      text-align: center; }
+    body .form-signin hr {
+      width: 57px;
+      height: 1px;
+      border-top: 1px solid black; }
+    body .form-signin a.help-link {
+      position: absolute;
+      bottom: -20px;
+      left: 0;
+      color: white;
+      font-size: 14px;
+      text-decoration: none; }
+    body .form-signin a.mail-to {
+      color: #00b2d4;
+      text-decoration: underline; }
+    body .form-signin .tooltip {
+      opacity: 1; }
+      body .form-signin .tooltip.top .tooltip-arrow {
+        border-top-color: #f4f4f4; }
+      body .form-signin .tooltip .tooltip-inner {
+        background: #f4f4f4;
+        color: #5e5e5f;
+        max-width: 400px; }
