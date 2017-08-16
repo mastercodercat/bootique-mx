@@ -10,5 +10,5 @@ RUN apt-get update && apt-get install -y --no-install-recommends apt-utils
 RUN curl -sL https://deb.nodesource.com/setup_6.x | bash
 RUN apt-get install nodejs
 COPY . /code/
-ADD /var/log/mxtracking /log
+ADD /var/log/mxtracking/ /log/
 ENV DEBIAN_FRONTEND teletype
