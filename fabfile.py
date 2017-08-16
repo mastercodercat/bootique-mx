@@ -79,7 +79,8 @@ def bootstrap():
         sudo('chmod +x /usr/local/bin/docker-compose')
 
         # Prepare mxtracking log file
-        run('mkdir /var/log/mxtracking')
+        with cd(PROJECT_ROOT):
+            run('mkdir log')
 
         # Create Postgres data folder on host
         with cd('~'):
