@@ -10,6 +10,7 @@ Project has deployment setup to deploy using fabric and docker on staging/produc
 - Now you're ready to use `fab` command line tool to start deployment process.
 - Deploy commands
     * Run `fab staging bootstrap` - Only for the first time to setup environment
+    * Run `npm run build` on local for generating webpack bundle builds on local
     * Run `fab staging deploy` - Deploy latest code to server when using docker
     * Run `fab staging deploynodocker` - Deploy latest code to server when not using docker
     * specify `staging` or `production` based on fabric settings
