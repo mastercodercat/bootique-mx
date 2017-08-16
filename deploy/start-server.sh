@@ -27,5 +27,5 @@ python manage.py collectstatic --noinput
 
 # now boot
 gunicorn mxtracking.wsgi:application -b 0.0.0.0:8000 -t 300 \
-    --access-logfile /log/access.log \
-    --error-logfile /log/error.log
+    --access-logfile /code/log/access.log \
+    --error-logfile /code/log/error.log
