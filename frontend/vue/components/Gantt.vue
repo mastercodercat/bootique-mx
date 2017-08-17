@@ -865,7 +865,7 @@ export default {
                         this.revision = 0;
                     }
 
-                    Vue.nextTick(() => {
+                    this.$nextTick(() => {
                         this.loadData();
                     });
                 }

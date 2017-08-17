@@ -20,7 +20,7 @@ export default {
             transform: '',
             deltaWidth: 0,
             pos: 0,
-        }
+        };
     },
     computed: {
         width() {
