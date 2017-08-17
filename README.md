@@ -20,8 +20,9 @@ Note that current configuration sets up on ubuntu 16.
   = open shell inside docker: `fab staging shell`
   = run the command `python manage.py createsuperuser`
 - To test production environment on local, run these command:
-    `docker-compose -f docker-compose.yml -f docker-compose-local.yml build`
-    `docker-compose -f docker-compose.yml -f docker-compose-local.yml up -d`
+    * Run `./bin/dc_build_local`
+    * Then run `./bin/dc_up_local`
+    * If you want to stop docker, run `./bin/dc_down_local`
 
 ## Local development
 
