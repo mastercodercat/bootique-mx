@@ -86,8 +86,8 @@
             bigUnits: {{ big_units }},
             smallUnits: {{ small_units }},
             windowAtEnd: {{ window_at_end }},
-            startParamExists: {% if start_param %}true{% else %}false{% endif %},
-            endParamExists: {% if end_param %}true{% else %}false{% endif %},
+            startParamExists: {{ start_param_exists }},
+            endParamExists: {{ end_param_exists }},
         });
     </script>
 {% endblock %}

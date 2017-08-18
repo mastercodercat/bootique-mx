@@ -23,9 +23,17 @@ from common.decorators import *
 
 
 def gantt_page_context(request, read_only):
-    mode = request.GET.get('mode') if request.GET.get('mode') else '4'
+    if request.GET.get('mode'):
+        mode = request.GET.get('mode')
+    elif request.session['gantt_mode']:
+        mode = request.session['gantt_mode']
+    else:
+        mode = '4'
+
     start_tmstmp = request.GET.get('start')
     end_tmstmp = request.GET.get('end')
+    if not(start_tmstmp or end_tmstmp):
+        start_tmstmp = request.session['start_tmstmp']
 
     tails = Tail.objects.all()
     lines = Line.objects.order_by('name').all()
@@ -63,8 +71,8 @@ def gantt_page_context(request, read_only):
         'mode': mode,
         'start_tmstmp': start_tmstmp,
         'end_tmstmp': end_tmstmp,
-        'start_param': request.GET.get('start'),
-        'end_param': request.GET.get('end'),
+        'start_param_exists': 'true' if request.GET.get('start') or request.session['start_tmstmp'] else 'false',
+        'end_param_exists': 'true' if request.GET.get('end') else 'false',
         'prev_start_tmstmp': int(start_tmstmp) - table_length_in_secs,
         'next_start_tmstmp': int(start_tmstmp) + table_length_in_secs,
         'csrf_token': csrf.get_token(request),
@@ -73,11 +81,16 @@ def gantt_page_context(request, read_only):
         'read_only': read_only,
     }
 
+def update_session(request, context_data):
+    request.session['gantt_mode'] = context_data['mode']
+    request.session['start_tmstmp'] = context_data['start_tmstmp']
+
 @login_required
 @gantt_readable_required
 def index(request):
     context = gantt_page_context(request, not can_write_gantt(request.user))
     context['page'] = 'routeplanning:index'
+    update_session(request, context)
     return render(request, 'gantt.html', context)
 
 @login_required
@@ -85,6 +98,7 @@ def index(request):
 def view_current_published_gantt(request):
     context = gantt_page_context(request, True)
     context['page'] = 'routeplanning:view_current_published_gantt'
+    update_session(request, context)
     return render(request, 'gantt.html', context)
 
 @login_required

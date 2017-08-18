@@ -53,16 +53,16 @@
                 </div>
                 <div class="pull-right m-b-sm">
                     <div class="timezone-control pull-left">
-                        <select id="gantt-timezone" class="form-control" v-model="timezone">
-                            <option value="0" selected>UTC</option>
-                            <option value="-4">EDT</option>
-                            <option value="-5">EST</option>
-                            <option value="-5">CDT</option>
-                            <option value="-6">CST</option>
-                            <option value="-6">MDT</option>
-                            <option value="-7">MST</option>
-                            <option value="-7">PDT</option>
-                            <option value="-8">PST</option>
+                        <select id="gantt-timezone" class="form-control" v-model="timezoneName">
+                            <option value="utc" selected>UTC</option>
+                            <option value="edt">EDT</option>
+                            <option value="est">EST</option>
+                            <option value="cdt">CDT</option>
+                            <option value="cst">CST</option>
+                            <option value="mdt">MDT</option>
+                            <option value="mst">MST</option>
+                            <option value="pdt">PDT</option>
+                            <option value="pst">PST</option>
                         </select>
                     </div>
                     <div class="date-range-control date-range-picker-group pull-left">
@@ -335,8 +335,6 @@ export default {
         GanttPopover,
     },
     data() {
-        const timezoneOffset = Cookies.get('gantt-timezone-offset');
-
         const ganttContainer = document.getElementById('gantt-container');
         const timeWindowCount = this.days > 1 ? 14 / this.days : 14 * (24 / this.hours);
         const timeWindowWidth = ganttContainer.clientWidth - this.labelCellWidth;
@@ -347,13 +345,36 @@ export default {
         }
 
         const revisions = [];
-        for (const index in this.initialRevisions) {
-            const revision = this.initialRevisions[index];
+        for (const _revision of this.initialRevisions) {
             revisions.push({
-                id: revision.id,
-                published: new Date(revision.published_datetime),
+                id: _revision.id,
+                published: new Date(_revision.published_datetime),
             });
         }
+
+        let revision = -1;
+
+        if (this.writable) {
+            if (Cookies.get('gantt-revision')) {
+                let revisionCookieValue = parseInt(Cookies.get('gantt-revision'));
+                if (revisionCookieValue > 0) {
+                    for (const _revision of this.initialRevisions) {
+                        if (_revision.id == revisionCookieValue) {
+                            revision = revisionCookieValue;
+                            break;
+                        }
+                    }
+                } else {
+                    revision = 0;
+                }
+            }
+        }
+
+        if (revision == -1) {
+            revision = revisions.length > 0 ? revisions[0].id : 0;
+        }
+
+        const savedTimezone = Cookies.get('gantt-timezone');
 
         return {
             ganttLengthSeconds: 14 * 24 * 3600,
@@ -377,10 +398,22 @@ export default {
             // gantt modal
             conflictData: [],
             // 2-way bound models
-            revision: revisions.length > 0 ? revisions[0].id : 0,
-            timezone: timezoneOffset ? timezoneOffset : 0,
+            revision,
+            timezoneName: savedTimezone ? savedTimezone : 'utc',
             selectedAssignmentIds: {},
             selectedTemplateIds: {},
+            // static data
+            timezoneMap: {
+                'utc': 0,
+                'edt': -4,
+                'est': -5,
+                'cdt': -5,
+                'cst': -6,
+                'mdt': -6,
+                'mst': -7,
+                'pdt': -7,
+                'pst': -8,
+            }
         }
     },
     computed: {
@@ -422,6 +455,12 @@ export default {
             }
             return startingPositions;
         },
+        timezone() {
+            return this.timezoneName in this.timezoneMap ? 
+                this.timezoneMap[this.timezoneName]
+                :
+                0;
+        },
     },
     mounted() {
         this.init();
@@ -444,14 +483,15 @@ export default {
         },
         initDateForm() {
             if (this.startParamExists) {
-                this.$refs.startDateInput.value = Utils.formatTo2Digits(this.startDate.getMonth() + 1) + '/' + 
-                    Utils.formatTo2Digits(this.startDate.getDate()) + '/' +
-                    this.startDate.getFullYear();
+                console.log(this.startDate)///
+                this.$refs.startDateInput.value = Utils.formatTo2Digits(this.startDate.getUTCMonth() + 1) + '/' + 
+                    Utils.formatTo2Digits(this.startDate.getUTCDate()) + '/' +
+                    this.startDate.getUTCFullYear();
             }
             if (this.endParamExists) {
-                this.$refs.endDateInput.value = Utils.formatTo2Digits(this.endDate.getMonth() + 1) + '/' + 
-                    Utils.formatTo2Digits(this.endDate.getDate()) + '/' + 
-                    this.endDate.getFullYear();
+                this.$refs.endDateInput.value = Utils.formatTo2Digits(this.endDate.getUTCMonth() + 1) + '/' + 
+                    Utils.formatTo2Digits(this.endDate.getUTCDate()) + '/' + 
+                    this.endDate.getUTCFullYear();
             }
         },
         formatDate(date, dateFormat = 'MM/DD/YYYY HH:mm:ss', considerTimezone = true) {
@@ -1263,7 +1303,11 @@ export default {
         },
     },
     watch: {
-        revision: function(val) {
+        timezoneName(val) {
+            Cookies.set('gantt-timezone', val);
+        },
+        revision(val) {
+            Cookies.set('gantt-revision', val);
             this.loadData();
         },
     }
