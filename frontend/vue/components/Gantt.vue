@@ -163,7 +163,7 @@
                     </div>
                     <div class="status-bars-inner-right clearfix">
                         <div class="revision-controls pull-right m-b-xs">
-                            <select class="form-control" style="max-width: 250px;" v-model="revision">
+                            <select id="gantt-revision" class="form-control" style="max-width: 250px;" v-model="revision">
                                 <option value="0" selected>(New Draft)</option>
                                 <option v-for="revision in revisions" :value="revision.id">
                                     {{ formatDate(revision.published) }}
@@ -345,7 +345,8 @@ export default {
         }
 
         const revisions = [];
-        for (const _revision of this.initialRevisions) {
+        for (const index in this.initialRevisions) {
+            const _revision = this.initialRevisions[index];
             revisions.push({
                 id: _revision.id,
                 published: new Date(_revision.published_datetime),
@@ -358,7 +359,8 @@ export default {
             if (Cookies.get('gantt-revision')) {
                 let revisionCookieValue = parseInt(Cookies.get('gantt-revision'));
                 if (revisionCookieValue > 0) {
-                    for (const _revision of this.initialRevisions) {
+                    for (const index in this.initialRevisions) {
+                        const _revision = this.initialRevisions[index];
                         if (_revision.id == revisionCookieValue) {
                             revision = revisionCookieValue;
                             break;

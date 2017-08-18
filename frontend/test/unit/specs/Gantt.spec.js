@@ -1,6 +1,7 @@
 import Vue from 'vue'
 import sinon from 'sinon'
 import axios from 'axios'
+import Cookies from 'js-cookie'
 import Gantt from '@frontend_components/Gantt.vue'
 import testData from '../fixtures/Gantt.js'
 import apiData from '../fixtures/full-data.js'
@@ -28,6 +29,7 @@ describe('Gantt.vue', () => {
 
     it('should render initial state', () => {
         const loadDataStub = sinon.stub(Gantt.methods, 'loadData')
+
         const Constructor = Vue.extend(Gantt)
         const container = createContainerElement()
         const vm = new Constructor({
@@ -64,6 +66,52 @@ describe('Gantt.vue', () => {
         setTimeout(() => {
             expect(vm.$el.querySelectorAll('#flight-assignment-table .gantt-bar').length).to.equal(apiData.assignments.length)
             expect(vm.$el.querySelectorAll('#flight-template-table .gantt-bar').length).to.equal(apiData.templates.length)
+            done()
+        }, 0)
+    })
+
+    it('should load revision and timezoneName from cookie if existing', () => {
+        Cookies.set('gantt-timezone', 'pst')
+        Cookies.set('gantt-revision', 2)
+
+        const loadDataStub = sinon.stub(Gantt.methods, 'loadData')
+
+        const Constructor = Vue.extend(Gantt)
+        const container = createContainerElement()
+        const vm = new Constructor({
+            propsData: testData.props,
+        }).$mount(container)
+
+        Gantt.methods.loadData.restore()
+
+        expect(vm.timezoneName).to.equal('pst')
+        expect(vm.revision).to.equal(2)
+    })
+
+    it('should save revision and timezoneName to cookie when changed', (done) => {
+        Cookies.set('gantt-timezone', 'utc')
+        Cookies.set('gantt-revision', 1)
+
+        const loadDataStub = sinon.stub(Gantt.methods, 'loadData')
+
+        const Constructor = Vue.extend(Gantt)
+        const container = createContainerElement()
+        const vm = new Constructor({
+            propsData: testData.props,
+        }).$mount(container)
+
+        Gantt.methods.loadData.restore()
+
+        const changeEvent = document.createEvent('Events')
+        changeEvent.initEvent('change', true, false)
+        vm.$el.querySelector('#gantt-timezone').value = 'est'
+        vm.$el.querySelector('#gantt-timezone').dispatchEvent(changeEvent)
+        vm.$el.querySelector('#gantt-revision').value = 2
+        vm.$el.querySelector('#gantt-revision').dispatchEvent(changeEvent)
+
+        setTimeout(() => {
+            expect(Cookies.get('gantt-timezone')).to.equal('est')
+            expect(Cookies.get('gantt-revision')).to.equal('2')
             done()
         }, 0)
     })
