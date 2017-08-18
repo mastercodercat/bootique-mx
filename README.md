@@ -19,10 +19,11 @@ Note that current configuration sets up on ubuntu 16.
 - To setup super user of django admin
   = open shell inside docker: `fab staging shell`
   = run the command `python manage.py createsuperuser`
-- To test production environment on local, run these command:
+- To test dockerized production environment on local, run these command:
     * Run `./bin/dc_build_local`
     * Then run `./bin/dc_up_local`
     * If you want to stop docker, run `./bin/dc_down_local`
+    * If you want to run `manage.py` on docker server, run `./bin/dc_m` with arguments
 
 ## Local development
 
@@ -31,7 +32,7 @@ To run the application on local for development, please follow these steps.
 ### Configure database connection
 
 - In `[project folder]/mxtracking` directory, copy local_settings.py.example to local_settings.py
-- Edit `DATABASES['default']` parameter to connection string of local database (postgres is used as default currently)
+- Set Database and Redis configuration
 
 ### Run the project
 
