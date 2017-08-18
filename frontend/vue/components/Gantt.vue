@@ -483,7 +483,6 @@ export default {
         },
         initDateForm() {
             if (this.startParamExists) {
-                console.log(this.startDate)///
                 this.$refs.startDateInput.value = Utils.formatTo2Digits(this.startDate.getUTCMonth() + 1) + '/' + 
                     Utils.formatTo2Digits(this.startDate.getUTCDate()) + '/' +
                     this.startDate.getUTCFullYear();
