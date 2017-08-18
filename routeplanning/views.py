@@ -25,15 +25,17 @@ from common.decorators import *
 def gantt_page_context(request, read_only):
     if request.GET.get('mode'):
         mode = request.GET.get('mode')
-    elif request.session['gantt_mode']:
-        mode = request.session['gantt_mode']
+    elif 'mode' in request.session:
+        mode = request.session['mode']
     else:
         mode = '4'
 
-    start_tmstmp = request.GET.get('start')
-    end_tmstmp = request.GET.get('end')
+    start_tmstmp = int(request.GET.get('start')) if request.GET.get('start') else 0
+    end_tmstmp = int(request.GET.get('end')) if request.GET.get('end') else 0
     if not(start_tmstmp or end_tmstmp):
-        start_tmstmp = request.session['start_tmstmp']
+        start_tmstmp = request.session['start_tmstmp'] \
+            if 'start_tmstmp' in request.session \
+            else None
 
     tails = Tail.objects.all()
     lines = Line.objects.order_by('name').all()
@@ -71,7 +73,7 @@ def gantt_page_context(request, read_only):
         'mode': mode,
         'start_tmstmp': start_tmstmp,
         'end_tmstmp': end_tmstmp,
-        'start_param_exists': 'true' if request.GET.get('start') or request.session['start_tmstmp'] else 'false',
+        'start_param_exists': 'true' if request.GET.get('start') or 'start_tmstmp' in request.session else 'false',
         'end_param_exists': 'true' if request.GET.get('end') else 'false',
         'prev_start_tmstmp': int(start_tmstmp) - table_length_in_secs,
         'next_start_tmstmp': int(start_tmstmp) + table_length_in_secs,
@@ -82,7 +84,7 @@ def gantt_page_context(request, read_only):
     }
 
 def update_session(request, context_data):
-    request.session['gantt_mode'] = context_data['mode']
+    request.session['mode'] = context_data['mode']
     request.session['start_tmstmp'] = context_data['start_tmstmp']
 
 @login_required

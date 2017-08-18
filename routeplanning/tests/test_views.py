@@ -54,6 +54,40 @@ class RoutePlanningViewsTestCase(TestCase):
         self.authorized_attempt_test(view_url + '?mode=5&end=1496008800', 'gantt.html')
         self.authorized_attempt_test(view_url + '?mode=6&end=1496008800', 'gantt.html')
 
+    @patch('common.decorators.can_read_gantt', return_value=True)
+    def test_view_index_context_when_session_saved_states(self, mock):
+        session = self.client.session
+        session['start_tmstmp'] = 1503071850
+        session['mode'] = '2'
+        session.save()
+
+        view_url = reverse('routeplanning:index')
+        response = self.client.get(view_url)
+        self.assertEqual(response.context['start_tmstmp'], 1503071850)
+        self.assertEqual(response.context['mode'], '2')
+
+    @patch('common.decorators.can_read_gantt', return_value=True)
+    def test_view_index_context_when_session_saved_states_and_url_params_exist(self, mock):
+        session = self.client.session
+        session['start_tmstmp'] = 1503071850
+        session['mode'] = '2'
+        session.save()
+
+        view_url = reverse('routeplanning:index')
+        response = self.client.get(view_url + '?mode=3&start=1503071851')
+        self.assertEqual(response.context['start_tmstmp'], 1503071851)
+        self.assertEqual(response.context['mode'], '3')
+
+    @patch('common.decorators.can_read_gantt', return_value=True)
+    def test_view_index_context_when_session_saved_states_and_end_tmstmp_exist(self, mock):
+        session = self.client.session
+        session['start_tmstmp'] = 1503071850
+        session.save()
+
+        view_url = reverse('routeplanning:index')
+        response = self.client.get(view_url + '?end=1503071900')
+        self.assertEqual(response.context['start_tmstmp'], 1503071900 - 14 * 24 * 3600)
+
     @patch('common.decorators.can_read_gantt', return_value=False)
     def test_view_current_published_gantt_no_permission_fail(self, mock):
         view_url = reverse('routeplanning:view_current_published_gantt')
@@ -69,6 +103,40 @@ class RoutePlanningViewsTestCase(TestCase):
         self.authorized_attempt_test(view_url + '?mode=4', 'gantt.html')
         self.authorized_attempt_test(view_url + '?mode=5&end=1496008800', 'gantt.html')
         self.authorized_attempt_test(view_url + '?mode=6&end=1496008800', 'gantt.html')
+
+    @patch('common.decorators.can_read_gantt', return_value=True)
+    def test_view_current_published_gantt_context_when_session_saved_states(self, mock):
+        session = self.client.session
+        session['start_tmstmp'] = 1503071850
+        session['mode'] = '2'
+        session.save()
+
+        view_url = reverse('routeplanning:view_current_published_gantt')
+        response = self.client.get(view_url)
+        self.assertEqual(response.context['start_tmstmp'], 1503071850)
+        self.assertEqual(response.context['mode'], '2')
+
+    @patch('common.decorators.can_read_gantt', return_value=True)
+    def test_view_current_published_gantt_context_when_session_saved_states_and_url_params_exist(self, mock):
+        session = self.client.session
+        session['start_tmstmp'] = 1503071850
+        session['mode'] = '2'
+        session.save()
+
+        view_url = reverse('routeplanning:view_current_published_gantt')
+        response = self.client.get(view_url + '?mode=3&start=1503071851')
+        self.assertEqual(response.context['start_tmstmp'], 1503071851)
+        self.assertEqual(response.context['mode'], '3')
+
+    @patch('common.decorators.can_read_gantt', return_value=True)
+    def test_view_current_published_gantt_context_when_session_saved_states_and_end_tmstmp_exist(self, mock):
+        session = self.client.session
+        session['start_tmstmp'] = 1503071850
+        session.save()
+
+        view_url = reverse('routeplanning:view_current_published_gantt')
+        response = self.client.get(view_url + '?end=1503071900')
+        self.assertEqual(response.context['start_tmstmp'], 1503071900 - 14 * 24 * 3600)
 
     @patch('common.decorators.can_write_gantt', return_value=False)
     def test_view_add_tail_no_permission_fail(self, mock):
