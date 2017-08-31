@@ -1,0 +1,29 @@
+{% extends "layout.html" %}
+{% load staticfiles %}
+
+{% block head_title %}Home{% endblock %}
+
+{% block page_title %}
+    Home
+{% endblock %}
+
+{% block pagecss %}
+    <style type="text/css">
+        .page-heading {
+            display: none;
+        }
+    </style>
+{% endblock %}
+
+{% block breadcrumb %}
+    <ol class="breadcrumb">
+        <li class="active">
+            <strong>Home</strong>
+        </li>
+    </ol>
+{% endblock %}
+
+{% block content %}
+    <div id="empty-container">
+    </div>
+{% endblock %}

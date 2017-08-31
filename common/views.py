@@ -11,6 +11,6 @@ def index_redirect(request):
         # elif can_read_inspection(request.user):
         #     return redirect('home:overview')
         else:
-            return render(request, 'no-permissions.html')
+            return render(request, 'home-empty.html')
     else:
         return redirect('account_login')

@@ -64,7 +64,17 @@ class SocialAccountAdapter(DefaultSocialAccountAdapter):
             # Create UserProfile and Related Data
             new_personal_data = PersonalData.objects.create(first_name=u.first_name, last_name=u.last_name, email=email)
             new_personal_data.save()
-            new_user_profile = UserProfile.objects.create(user=realuser, personal_data=new_personal_data)
+
+            try:
+                user_role_csa = UserRole.objects.get(name='Customer Service Agent')
+            except UserRole.DoesNotExist:
+                user_role_csa = None
+
+            new_user_profile = UserProfile.objects.create(
+                user=realuser,
+                personal_data=new_personal_data,
+                role=user_role_csa
+            )
             new_user_profile.save()
             # return u
 

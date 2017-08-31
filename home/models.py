@@ -15,7 +15,7 @@ GANTT_READABLE = _bit(3)
 GANTT_WRITABLE = _bit(4)
 
 class UserRole(models.Model):
-    name = models.CharField(max_length=20, blank=True)
+    name = models.CharField(max_length=50, blank=True)
     access = models.IntegerField(default=0, null=False, blank=False)
 
     class Meta:
