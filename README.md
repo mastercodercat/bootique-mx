@@ -13,7 +13,6 @@ Note that current configuration sets up on ubuntu 16.
 - Deploy commands
     * Run `fab staging bootstrap` - Only for the first time to setup environment
     * Run `fab staging deploy` - Deploy latest code to server when using docker
-    * Run `fab staging deploynodocker` - Deploy latest code to server when not using docker
     * specify `staging` or `production` based on fabric settings
 - To setup super user of django admin
   = open shell inside docker: `fab staging shell`

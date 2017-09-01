@@ -8,6 +8,7 @@ cp ./mxtracking/docker_settings.py ./mxtracking/local_settings.py
 mkdir ./static/uploads/
 
 # clear bundles directory
+mkdir ./static/bundles/
 cd ./static/bundles/
 rm -f *
 cd /code
