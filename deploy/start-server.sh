@@ -29,7 +29,7 @@ python manage.py loaddata lineparts.json
 
 # static assets
 python manage.py collectstatic --noinput
-NODE_ENV=production npm install
+NODE_ENV=production npm install --only=production
 npm run build
 
 # now boot
