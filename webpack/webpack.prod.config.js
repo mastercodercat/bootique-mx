@@ -10,9 +10,10 @@ module.exports = merge(baseWebpackConfig, {
     plugins: [
         new BundleTracker({filename: './webpack/webpack-stats.json'}),
 
-        new webpack.optimize.UglifyJsPlugin({
-            sourceMap: false,
-        }),
+        // TODO: temporarliy disabled uglifying as it kills build process, need to find out why
+        // new webpack.optimize.UglifyJsPlugin({
+        //     sourceMap: false,
+        // }),
 
         new webpack.DefinePlugin({
             'process.env': {
