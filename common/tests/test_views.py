@@ -49,7 +49,7 @@ class IndexRedirectViewTestCase(TestCase):
         """
         view_url = reverse('index_redirect')
         response = self.client.get(view_url)
-        self.assertTemplateUsed(response, 'no-permissions.html')
+        self.assertTemplateUsed(response, 'home-empty.html')
 
     def test_redirect_guest_user_to_login_page(self):
         """

@@ -9,10 +9,10 @@ runserver
 files
 media/*
 static/*
-!/static/bundles
 mxtracking/local_settings.py
 assets/tmp
 node_modules
+webpack/webpack-stats.json
 /log
 
 deploy/ssh/*
