@@ -200,7 +200,7 @@ class RoutePlanningViewsTestCase(TestCase):
         self.authorized_attempt_test(view_url, 'tail.html')
 
     @patch('common.decorators.can_read_gantt', return_value=True)
-    @patch('routeplanning.views.can_write_gantt', return_value=False)
+    @patch('routeplanning.views.page_views.can_write_gantt', return_value=False)
     def test_view_edit_tail_save_no_permission_fail(self, mock_can_write_gantt, mock_can_read_gantt):
         tail = Tail.objects.get(number='N455BC')
         view_url = reverse('routeplanning:edit_tail', kwargs={
@@ -213,7 +213,7 @@ class RoutePlanningViewsTestCase(TestCase):
         self.assertEqual(response.status_code, 403)
 
     @patch('common.decorators.can_read_gantt', return_value=True)
-    @patch('routeplanning.views.can_write_gantt', return_value=True)
+    @patch('routeplanning.views.page_views.can_write_gantt', return_value=True)
     def test_view_edit_tail_save(self, mock_can_write_gantt, mock_can_read_gantt):
         tail = Tail.objects.get(number='N455BC')
         view_url = reverse('routeplanning:edit_tail', kwargs={
@@ -227,7 +227,7 @@ class RoutePlanningViewsTestCase(TestCase):
 
     @patch('common.decorators.can_read_gantt', return_value=True)
     @patch('common.decorators.can_write_gantt', return_value=True)
-    @patch('routeplanning.views.can_write_gantt', return_value=True)
+    @patch('routeplanning.views.page_views.can_write_gantt', return_value=True)
     def test_view_edit_tail_save_and_add_another(self, mock_view_can_write_gantt, mock_can_write_gantt, mock_can_read_gantt):
         tail = Tail.objects.get(number='N455BC')
         view_url = reverse('routeplanning:edit_tail', kwargs={
@@ -241,7 +241,7 @@ class RoutePlanningViewsTestCase(TestCase):
 
     @patch('common.decorators.can_read_gantt', return_value=True)
     @patch('common.decorators.can_write_gantt', return_value=True)
-    @patch('routeplanning.views.can_write_gantt', return_value=True)
+    @patch('routeplanning.views.page_views.can_write_gantt', return_value=True)
     def test_view_edit_tail_save_and_continue(self, mock_view_can_write_gantt, mock_can_write_gantt, mock_can_read_gantt):
         tail = Tail.objects.get(number='N455BC')
         view_url = reverse('routeplanning:edit_tail', kwargs={
@@ -388,7 +388,7 @@ class RoutePlanningViewsTestCase(TestCase):
         self.authorized_attempt_test(view_url, 'line.html')
 
     @patch('common.decorators.can_read_gantt', return_value=True)
-    @patch('routeplanning.views.can_write_gantt', return_value=False)
+    @patch('routeplanning.views.page_views.can_write_gantt', return_value=False)
     def test_view_edit_line_save_no_permission_fail(self, mock_view_can_write_gantt, mock_can_read_gantt):
         line = Line.objects.get(name='LAX/MCE')
         view_url = reverse('routeplanning:edit_line', kwargs={
@@ -403,7 +403,7 @@ class RoutePlanningViewsTestCase(TestCase):
         self.assertEqual(response.status_code, 403)
 
     @patch('common.decorators.can_read_gantt', return_value=True)
-    @patch('routeplanning.views.can_write_gantt', return_value=True)
+    @patch('routeplanning.views.page_views.can_write_gantt', return_value=True)
     def test_view_edit_line_save(self, mock_view_can_write_gantt, mock_can_read_gantt):
         line = Line.objects.get(name='LAX/MCE')
         view_url = reverse('routeplanning:edit_line', kwargs={
@@ -419,7 +419,7 @@ class RoutePlanningViewsTestCase(TestCase):
 
     @patch('common.decorators.can_read_gantt', return_value=True)
     @patch('common.decorators.can_write_gantt', return_value=True)
-    @patch('routeplanning.views.can_write_gantt', return_value=True)
+    @patch('routeplanning.views.page_views.can_write_gantt', return_value=True)
     def test_view_edit_line_save_and_add_another(self, mock_view_can_write_gantt, mock_can_write_gantt, mock_can_read_gantt):
         line = Line.objects.get(name='LAX/MCE')
         view_url = reverse('routeplanning:edit_line', kwargs={
@@ -434,7 +434,7 @@ class RoutePlanningViewsTestCase(TestCase):
         self.assertRedirects(response, reverse('routeplanning:add_line'))
 
     @patch('common.decorators.can_read_gantt', return_value=True)
-    @patch('routeplanning.views.can_write_gantt', return_value=True)
+    @patch('routeplanning.views.page_views.can_write_gantt', return_value=True)
     def test_view_edit_line_save_and_continue(self, mock_view_can_write_gantt, mock_can_read_gantt):
         line = Line.objects.get(name='LAX/MCE')
         view_url = reverse('routeplanning:edit_line', kwargs={
@@ -630,7 +630,7 @@ class RoutePlanningViewsTestCase(TestCase):
         self.assertEqual(data['success'], False)
 
     @patch('common.decorators.can_read_gantt', return_value=True)
-    @patch('routeplanning.views.can_write_gantt', return_value=False)
+    @patch('routeplanning.views.api_views.can_write_gantt', return_value=False)
     def test_api_load_data_fail_on_draft(self, mock_can_write_gantt, mock_can_read_gantt):
         api_url = reverse('routeplanning:api_load_data')
         response = self.client.get(api_url, {
@@ -643,7 +643,7 @@ class RoutePlanningViewsTestCase(TestCase):
         self.assertEqual(data['error'], 'Not allowed to get draft route plan')
 
     @patch('common.decorators.can_read_gantt', return_value=True)
-    @patch('routeplanning.views.can_write_gantt', return_value=False)
+    @patch('routeplanning.views.api_views.can_write_gantt', return_value=False)
     def test_api_load_data_fail_on_non_latest_revision(self, mock_can_write_gantt, mock_can_read_gantt):
         api_url = reverse('routeplanning:api_load_data')
 
@@ -662,7 +662,7 @@ class RoutePlanningViewsTestCase(TestCase):
         self.assertEqual(data['error'], 'Not allowed to get route plans other than current published version')
 
     @patch('common.decorators.can_read_gantt', return_value=True)
-    @patch('routeplanning.views.can_write_gantt', return_value=True)
+    @patch('routeplanning.views.api_views.can_write_gantt', return_value=True)
     def test_api_load_data_fail_no_revision(self, mock_can_write_gantt, mock_can_read_gantt):
         api_url = reverse('routeplanning:api_load_data')
         response = self.client.get(api_url, {
@@ -675,7 +675,7 @@ class RoutePlanningViewsTestCase(TestCase):
         self.assertEqual(data['error'], 'Revision not found')
 
     @patch('common.decorators.can_read_gantt', return_value=True)
-    @patch('routeplanning.views.can_write_gantt', return_value=True)
+    @patch('routeplanning.views.api_views.can_write_gantt', return_value=True)
     def test_api_load_data_success_on_draft(self, mock_can_write_gantt, mock_can_read_gantt):
         api_url = reverse('routeplanning:api_load_data')
         response = self.client.get(api_url, {
@@ -689,7 +689,7 @@ class RoutePlanningViewsTestCase(TestCase):
         self.assertNotEqual(len(data['templates']), 0)
 
     @patch('common.decorators.can_read_gantt', return_value=True)
-    @patch('routeplanning.views.can_write_gantt', return_value=True)
+    @patch('routeplanning.views.api_views.can_write_gantt', return_value=True)
     def test_api_load_data_success_on_revision(self, mock_can_write_gantt, mock_can_read_gantt):
         api_url = reverse('routeplanning:api_load_data')
 
