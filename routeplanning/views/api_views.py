@@ -4,6 +4,7 @@ import dateutil.parser
 import random
 import os
 import csv
+
 from django.core import serializers
 from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import render, redirect, get_object_or_404
@@ -13,78 +14,50 @@ from django.middleware import csrf
 from django.db.models import Q, ProtectedError, Max
 from django.conf import settings
 from django.urls import reverse
+
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import api_view, permission_classes, authentication_classes
 from rest_framework.response import Response
 
-from routeplanning.models import *
-from routeplanning.forms import *
 from common.helpers import *
 from common.decorators import *
+from common.views import RetrieveDestroyAPIView
+from common.views import DataTablePaginatedListView
+from routeplanning.models import *
+from routeplanning.forms import *
+from routeplanning.permissions import GanttReadPermission
+from routeplanning.permissions import GanttWritePermission
+from routeplanning.serializers import DataTableFlightSerializer
 
 
-@login_required
-@gantt_writable_required
-@api_view(['DELETE'])
-def delete_tail(request, tail_id=None):
-    result = {
-        'success': False,
-    }
-
-    try:
-        tail = Tail.objects.get(pk=tail_id)
-        tail.delete()
-        result['success'] = True
-    except:
-        result['error'] = 'Error occurred while deleting tail'
-
-    return Response(result)
+class DeleteTailView(RetrieveDestroyAPIView):
+    queryset = Tail.objects.all()
+    lookup_url_kwarg = 'tail_id'
+    error_message = 'Error occurred while deleting tail'
+    permission_classes = (IsAuthenticated, GanttWritePermission)
 
 
-@login_required
-@gantt_writable_required
-@api_view(['DELETE'])
-def delete_line(request, line_id=None):
-    result = {
-        'success': False,
-    }
-
-    try:
-        if line_id:
-            line = Line.objects.get(pk=line_id)
-            line.delete()
-            result['success'] = True
-        else:
-            result['error'] = 'Line id should be specified'
-    except:
-        result['error'] = 'Error occurred while deleting line'
-
-    return Response(result)
+class DeleteLineView(RetrieveDestroyAPIView):
+    queryset = Line.objects.all()
+    lookup_url_kwarg = 'line_id'
+    error_message = 'Error occurred while deleting line'
+    permission_classes = (IsAuthenticated, GanttWritePermission)
 
 
-@login_required
-@gantt_readable_required
-@api_view(['POST'])
-def api_flight_get_page(request):
-    result = {
-        'success': False,
-        'draw': 1,
-        'recordsTotal': 0,
-        'recordsFiltered': 0,
-        'data': [],
-    }
+class FlightListView(DataTablePaginatedListView):
+    error_message = 'Error occurred while getting flight page data'
+    permission_classes = (IsAuthenticated, GanttReadPermission)
+    serializer_class = DataTableFlightSerializer
 
-    order_columns = (
-        'id', 'number', 'origin', 'destination',
-        'scheduled_out_datetime', 'scheduled_off_datetime', 'scheduled_on_datetime', 'scheduled_in_datetime',
-        'estimated_out_datetime', 'estimated_off_datetime', 'estimated_on_datetime', 'estimated_in_datetime',
-    )
-
-    try:
-        start = int(request.data.get('start'))
-        length = int(request.data.get('length'))
-        order_dir = request.data.get('order[0][dir]')
-        order_column_index = int(request.data.get('order[0][column]'))
-        search = request.data.get('search[value]')
+    def get_queryset(self):
+        order_columns = (
+            'id', 'number', 'origin', 'destination',
+            'scheduled_out_datetime', 'scheduled_off_datetime', 'scheduled_on_datetime', 'scheduled_in_datetime',
+            'estimated_out_datetime', 'estimated_off_datetime', 'estimated_on_datetime', 'estimated_in_datetime',
+        )
+        order_dir = self.request.data.get('order[0][dir]')
+        order_column_index = int(self.request.data.get('order[0][column]', 0))
+        search = self.request.data.get('search[value]')
 
         order_column = order_columns[order_column_index]
         if order_dir == 'desc':
@@ -100,47 +73,10 @@ def api_flight_get_page(request):
                 Q(scheduled_in_datetime__contains=search)
             )
         flights = flights.order_by(order_column)
-        flights_page = flights[start:(start + length)]
-        data = []
-        for flight in flights_page:
-            flight_edit_link = reverse('routeplanning:edit_flight', kwargs={ 'flight_id': flight.id })
-            buttons = '<span style="white-space: nowrap;">'
-            buttons += '<a href="' + flight_edit_link + '" class="btn btn-primary btn-xs"><i class="fa fa-fw fa-edit"></i></a> '
-            buttons += '<a href="javascript:void();" class="btn-delete-flight btn btn-danger btn-xs"><i class="fa fa-fw fa-trash"></i></a>'
-            buttons += '</span>'
-            data.append((
-                flight.id,
-                flight.number,
-                flight.origin,
-                flight.destination,
-                totimestamp(flight.scheduled_out_datetime) if flight.scheduled_out_datetime else '',
-                totimestamp(flight.scheduled_off_datetime) if flight.scheduled_off_datetime else '',
-                totimestamp(flight.scheduled_on_datetime) if flight.scheduled_on_datetime else '',
-                totimestamp(flight.scheduled_in_datetime) if flight.scheduled_in_datetime else '',
-                totimestamp(flight.estimated_out_datetime) if flight.estimated_out_datetime else '',
-                totimestamp(flight.estimated_off_datetime) if flight.estimated_off_datetime else '',
-                totimestamp(flight.estimated_on_datetime) if flight.estimated_on_datetime else '',
-                totimestamp(flight.estimated_in_datetime) if flight.estimated_in_datetime else '',
-                totimestamp(flight.actual_out_datetime) if flight.actual_out_datetime else '',
-                totimestamp(flight.actual_off_datetime) if flight.actual_off_datetime else '',
-                totimestamp(flight.actual_on_datetime) if flight.actual_on_datetime else '',
-                totimestamp(flight.actual_in_datetime) if flight.actual_in_datetime else '',
-                buttons,
-            ))
-        result['data'] = data
-        result['recordsFiltered'] = flights.count()
-        result['recordsTotal'] = Flight.objects.count()
+        return flights
 
-        draw = request.session.get('flights_dt_page_draw', 1)
-        draw = draw + 1
-        result['draw'] = draw
-        request.session['flights_dt_page_draw'] = draw
-    except Exception as e:
-        result['error'] = str(e)
-        return Response(result, status=500)
-
-    result['success'] = True
-    return Response(result)
+    def get_total_count(self):
+        return Flight.objects.count()
 
 
 @login_required

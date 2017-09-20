@@ -253,7 +253,7 @@ class RoutePlanningViewsTestCase(TestCase):
         })
         self.assertTemplateUsed(response, 'tail.html')
 
-    @patch('common.decorators.can_write_gantt', return_value=False)
+    @patch('routeplanning.permissions.can_write_gantt', return_value=False)
     def test_view_delete_tail_no_permission_fail(self, mock_can_write_gantt):
         tail = Tail.objects.get(number='N455BC')
         view_url = reverse('routeplanning:delete_tail', kwargs={
@@ -262,7 +262,7 @@ class RoutePlanningViewsTestCase(TestCase):
         response = self.client.delete(view_url)
         self.assertEqual(response.status_code, 403)
 
-    @patch('common.decorators.can_write_gantt', return_value=True)
+    @patch('routeplanning.permissions.can_write_gantt', return_value=True)
     def test_view_delete_tail_delete_success(self, mock_can_write_gantt):
         tail = Tail.objects.get(number='N455BC')
         view_url = reverse('routeplanning:delete_tail', kwargs={
@@ -272,7 +272,7 @@ class RoutePlanningViewsTestCase(TestCase):
         data = json.loads(response.content)
         self.assertEqual(data['success'], True)
 
-    @patch('common.decorators.can_write_gantt', return_value=True)
+    @patch('routeplanning.permissions.can_write_gantt', return_value=True)
     def test_view_delete_tail_delete_fail_invalid_id(self, mock_can_write_gantt):
         view_url = reverse('routeplanning:delete_tail', kwargs={
             'tail_id': 999,
@@ -282,7 +282,7 @@ class RoutePlanningViewsTestCase(TestCase):
         self.assertEqual(data['success'], False)
         self.assertEqual(data['error'], 'Error occurred while deleting tail')
 
-    @patch('common.decorators.can_write_gantt', return_value=True)
+    @patch('routeplanning.permissions.can_write_gantt', return_value=True)
     def test_view_delete_tail_delete_fail_id_0(self, mock_can_write_gantt):
         view_url = reverse('routeplanning:delete_tail', kwargs={
             'tail_id': 0,
@@ -292,7 +292,7 @@ class RoutePlanningViewsTestCase(TestCase):
         self.assertEqual(data['success'], False)
         self.assertEqual(data['error'], 'Error occurred while deleting tail')
 
-    @patch('common.decorators.can_write_gantt', return_value=True)
+    @patch('routeplanning.permissions.can_write_gantt', return_value=True)
     def test_view_delete_tail_delete_fail_invalid_method(self, mock_can_write_gantt):
         tail = Tail.objects.first()
         view_url = reverse('routeplanning:delete_tail', kwargs={
@@ -302,7 +302,7 @@ class RoutePlanningViewsTestCase(TestCase):
         data = json.loads(response.content)
         self.assertEqual(response.status_code, 405)
 
-    @patch('common.decorators.can_write_gantt', return_value=False)
+    @patch('routeplanning.permissions.can_write_gantt', return_value=False)
     def test_view_coming_due_no_permission_fail(self, mock_can_write_gantt):
         tail = Tail.objects.first()
         view_url = reverse('routeplanning:coming_due', kwargs={
@@ -448,7 +448,7 @@ class RoutePlanningViewsTestCase(TestCase):
         })
         self.assertTemplateUsed(response, 'line.html')
 
-    @patch('common.decorators.can_write_gantt', return_value=False)
+    @patch('routeplanning.permissions.can_write_gantt', return_value=False)
     def test_view_delete_line_no_permission_fail(self, mock_can_write_gantt):
         line = Line.objects.get(name='LAX/MCE')
         view_url = reverse('routeplanning:delete_line', kwargs={
@@ -457,7 +457,7 @@ class RoutePlanningViewsTestCase(TestCase):
         response = self.client.delete(view_url)
         self.assertEqual(response.status_code, 403)
 
-    @patch('common.decorators.can_write_gantt', return_value=True)
+    @patch('routeplanning.permissions.can_write_gantt', return_value=True)
     def test_view_delete_line_success(self, mock_can_write_gantt):
         line = Line.objects.get(name='LAX/MCE')
         view_url = reverse('routeplanning:delete_line', kwargs={
@@ -467,7 +467,7 @@ class RoutePlanningViewsTestCase(TestCase):
         data = json.loads(response.content)
         self.assertEqual(data['success'], True)
 
-    @patch('common.decorators.can_write_gantt', return_value=True)
+    @patch('routeplanning.permissions.can_write_gantt', return_value=True)
     def test_view_delete_line_fail_invalid_id(self, mock_can_write_gantt):
         view_url = reverse('routeplanning:delete_line', kwargs={
             'line_id': 999,
@@ -477,7 +477,7 @@ class RoutePlanningViewsTestCase(TestCase):
         self.assertEqual(data['success'], False)
         self.assertEqual(data['error'], 'Error occurred while deleting line')
 
-    @patch('common.decorators.can_write_gantt', return_value=True)
+    @patch('routeplanning.permissions.can_write_gantt', return_value=True)
     def test_view_delete_line_fail_invalid_id_0(self, mock_can_write_gantt):
         view_url = reverse('routeplanning:delete_line', kwargs={
             'line_id': 0,
@@ -487,7 +487,7 @@ class RoutePlanningViewsTestCase(TestCase):
         self.assertEqual(data['success'], False)
         self.assertEqual(data['error'], 'Error occurred while deleting line')
 
-    @patch('common.decorators.can_write_gantt', return_value=True)
+    @patch('routeplanning.permissions.can_write_gantt', return_value=True)
     def test_view_delete_line_fail_invalid_method(self, mock_can_write_gantt):
         line = Line.objects.get(name='LAX/MCE')
         view_url = reverse('routeplanning:delete_line', kwargs={

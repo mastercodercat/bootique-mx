@@ -105,7 +105,7 @@ window.datatables = {
                 serverSide: true,
                 ajax: {
                     url: ajaxUrl,
-                    type: "POST",
+                    type: "GET",
                     data: function(_data) {
                         if (csrfToken) {
                             _data = Object.assign(_data, {
