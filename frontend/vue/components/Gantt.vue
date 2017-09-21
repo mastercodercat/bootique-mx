@@ -545,6 +545,9 @@ export default {
             };
         },
         alertErrorIfAny(responseData, singular) {
+            if (!responseData) {
+                return;
+            }
             const timeConflicts = responseData.time_conflicts;
             const physicalConflicts = responseData.physical_conflicts;
 
@@ -1222,25 +1225,31 @@ export default {
                 diff_seconds,
                 revision: this.revision,
             })
-            .then((response) => {
-                const { data } = response;
+            .then(({ data }) => {
                 const startTime = new Date(data.start_time);
                 const endTime = new Date(data.end_time);
 
                 for (const tailNumber in this.assignments) {
-                    if (this.assignments[tailNumber][assignment_id]) {
-                        this.$set(this.assignments[tailNumber][assignment_id], 'start_time', startTime.toISOString());
-                        this.$set(this.assignments[tailNumber][assignment_id], 'end_time', endTime.toISOString());
-                        if (this.assignments[tailNumber][assignment_id].scheduled_out_datetime) {
-                            this.$set(this.assignments[tailNumber][assignment_id], 'scheduled_out_datetime', startTime.toISOString());
-                            this.$set(this.assignments[tailNumber][assignment_id], 'scheduled_in_datetime', endTime.toISOString());
+                    const count = this.assignments[tailNumber].length;
+                    let resized = false;
+                    for (let i = 0; i < count; i++) {
+                        if (this.assignments[tailNumber][i].id == assignment_id) {
+                            this.$set(this.assignments[tailNumber][i], 'start_time', startTime.toISOString());
+                            this.$set(this.assignments[tailNumber][i], 'end_time', endTime.toISOString());
+                            if (this.assignments[tailNumber][i].scheduled_out_datetime) {
+                                this.$set(this.assignments[tailNumber][i], 'scheduled_out_datetime', startTime.toISOString());
+                                this.$set(this.assignments[tailNumber][i], 'scheduled_in_datetime', endTime.toISOString());
+                            }
+                            resized = true;
+                            break;
                         }
+                    }
+                    if (resized) {
                         break;
                     }
                 }
 
-                this.alertErrorIfAny(data);
-                this.loadData(true);
+                // this.loadData(true);
                 this.alertErrorIfAny(data);
             })
             .catch((response) => {
