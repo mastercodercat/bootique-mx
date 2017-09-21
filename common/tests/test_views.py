@@ -16,8 +16,8 @@ class IndexRedirectViewTestCase(TestCase):
         self.user = User.objects.create_user(username='tester', email='tester@tester.com', password='tester_password')
         self.force_login()
 
-    # @patch('common.views.can_read_gantt', return_value=False)
-    # @patch('common.views.can_read_inspection', return_value=True)
+    # @patch('common.views.page_views.can_read_gantt', return_value=False)
+    # @patch('common.views.page_views.can_read_inspection', return_value=True)
     # @patch('common.decorators.can_read_inspection', return_value=True)
     # def test_redirect_maintenance_user_to_aircraft_dashboard(
     #     self, mock_decr_can_read_inspection, mock_can_read_inspection, mock_can_read_gantt
@@ -29,7 +29,7 @@ class IndexRedirectViewTestCase(TestCase):
     #     response = self.client.get(view_url)
     #     self.assertRedirects(response, reverse('home:overview'))
 
-    @patch('common.views.can_read_gantt', return_value=True)
+    @patch('common.views.page_views.can_read_gantt', return_value=True)
     @patch('common.decorators.can_read_gantt', return_value=True)
     def test_redirect_dispatcher_user_to_gantt_dashboard(
         self, mock_decr_can_read_gantt, mock_can_read_gantt
@@ -41,8 +41,8 @@ class IndexRedirectViewTestCase(TestCase):
         response = self.client.get(view_url)
         self.assertRedirects(response, reverse('routeplanning:view_current_published_gantt'))
 
-    @patch('common.views.can_read_gantt', return_value=False)
-    @patch('common.views.can_read_inspection', return_value=False)
+    @patch('common.views.page_views.can_read_gantt', return_value=False)
+    @patch('common.views.page_views.can_read_inspection', return_value=False)
     def test_redirect_no_role_user_to_no_permissions_page(self, mock_can_read_inspection, mock_can_read_gantt):
         """
         User without role will see no-permissions page

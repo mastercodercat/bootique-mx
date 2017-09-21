@@ -1,6 +1,3 @@
-from django.shortcuts import render, redirect
-from django.http import Http404
-
 from rest_framework import views
 from rest_framework import generics
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
@@ -13,18 +10,6 @@ from common.exceptions import APIException
 from common.paginations import DataTablePagination
 
 from routeplanning.models import Revision
-
-
-def index_redirect(request):
-    if request.user.is_authenticated():
-        if can_read_gantt(request.user):
-            return redirect('routeplanning:view_current_published_gantt')
-        # elif can_read_inspection(request.user):
-        #     return redirect('home:overview')
-        else:
-            return render(request, 'home-empty.html')
-    else:
-        return redirect('account_login')
 
 
 class APICallMixin(object):

@@ -22,10 +22,10 @@ from rest_framework.response import Response
 
 from common.helpers import *
 from common.decorators import *
-from common.views import APIView
-from common.views import GanttRevisionMixin
-from common.views import RetrieveDestroyAPIView
-from common.views import DataTablePaginatedListView
+from common.views.generic import APIView
+from common.views.generic import GanttRevisionMixin
+from common.views.generic import RetrieveDestroyAPIView
+from common.views.generic import DataTablePaginatedListView
 from routeplanning.models import *
 from routeplanning.forms import *
 from routeplanning.permissions import GanttReadPermission

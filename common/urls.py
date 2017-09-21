@@ -1,8 +1,8 @@
 from django.conf.urls import url
 
-from common import views
+from common.views import page_views
 
 
 urlpatterns = [
-    url(r'^$', views.index_redirect, name='index_redirect'),
+    url(r'^$', page_views.index_redirect, name='index_redirect'),
 ]
