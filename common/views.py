@@ -57,25 +57,25 @@ class APIView(views.APIView, APICallMixin):
         return self.call_method('_get', *args, **kwargs)
 
     def post(self, *args, **kwargs):
-        raise MethodNotAllowed('_post')
+        return self.call_method('_post', *args, **kwargs)
 
     def put(self, *args, **kwargs):
-        raise MethodNotAllowed('_put')
+        return self.call_method('_put', *args, **kwargs)
 
     def delete(self, *args, **kwargs):
-        raise MethodNotAllowed('_delete')
+        return self.call_method('_delete', *args, **kwargs)
 
     def _get(self, *args, **kwargs):
         raise MethodNotAllowed('GET')
 
     def _post(self, *args, **kwargs):
-        raise MethodNotAllowed('GET')
+        raise MethodNotAllowed('POST')
 
     def _put(self, *args, **kwargs):
-        raise MethodNotAllowed('GET')
+        raise MethodNotAllowed('PUT')
 
     def _delete(self, *args, **kwargs):
-        raise MethodNotAllowed('GET')
+        raise MethodNotAllowed('DELETE')
 
 
 class ListAPIView(generics.ListAPIView):
