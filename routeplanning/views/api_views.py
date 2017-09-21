@@ -771,290 +771,248 @@ class HobbsView(RetrieveDestroyAPIView):
             return Hobbs.objects.all()
 
 
-@login_required
-@gantt_writable_required
-@api_view(['POST'])
-def api_save_hobbs(request):
-    result = {
-        'success': False,
-    }
+class SaveHobbsView(GanttRevisionMixin, APIView):
+    permission_classes = (IsAuthenticated, GanttWritePermission)
 
-    try:
-        tail_id = request.data.get('tail_id')
-        hobbs_id = request.data.get('id')
-        hobbs_type = int(request.data.get('type'))
-        hobbs_value = request.data.get('hobbs')
-        hobbs_datetime = dateutil.parser.parse(request.data.get('datetime'))
+    def _post(self, *args, **kwargs):
+        request = self.request
 
-        if hobbs_id:
-            hobbs = Hobbs.objects.get(pk=hobbs_id)
-        elif hobbs_type == Hobbs.TYPE_ACTUAL:
-            hobbs = Hobbs.objects.filter(hobbs_time=hobbs_datetime).filter(type=Hobbs.TYPE_ACTUAL).first()
-        else:
-            hobbs = None
-
-        if hobbs and hobbs.hobbs_time != hobbs_datetime:
-            hobbs = None    # Create new hobbs item regardless of actual/next due hobbs if date/time is changed
-
-        if hobbs and hobbs.type != hobbs_type:
-            raise Exception('Invalid parameters')
-    except Exception as e:
-        # print(str(e))
-        result['error'] = 'Invalid parameters'
-        return Response(result, status=400)
-
-    try:
-        tail = Tail.objects.get(pk=tail_id)
-        if not hobbs:
-            hobbs = Hobbs()
-            hobbs.type = hobbs_type
-        hobbs.hobbs_time = hobbs_datetime
-        hobbs.hobbs = hobbs_value
-        hobbs.tail = tail
-        hobbs.save()
-    except Exception as e:      # pragma: no cover
-        result['error'] = str(e)
-        return Response(result, status=500)
-
-    result['success'] = True
-    result['hobbs_id'] = hobbs.id
-    return Response(result)
-
-
-@login_required
-@gantt_readable_required
-@api_view(['POST'])
-def api_coming_due_list(request):
-    result = {
-        'success': False,
-    }
-
-    try:
-        tail_id = request.data.get('tail_id')
-        start_time = dateutil.parser.parse(request.data.get('start'))
-        days = int(request.data.get('days'))
-        revision_id = request.data.get('revision')
-    except:
-        result['error'] = 'Invalid parameters'
-        return Response(result, status=400)
-
-    if revision_id and int(revision_id) > 0:
         try:
-            revision = Revision.objects.get(pk=revision_id)
-        except Revision.DoesNotExist:
-            result['error'] = 'Revision not found'
-            return Response(result, status=400)
-    else:
-        revision = None
+            tail_id = request.data.get('tail_id')
+            hobbs_id = request.data.get('id')
+            hobbs_type = int(request.data.get('type'))
+            hobbs_value = request.data.get('hobbs')
+            hobbs_datetime = dateutil.parser.parse(request.data.get('datetime'))
 
-    try:
-        tail = Tail.objects.get(pk=tail_id)
+            if hobbs_id:
+                hobbs = Hobbs.objects.get(pk=hobbs_id)
+            elif hobbs_type == Hobbs.TYPE_ACTUAL:
+                hobbs = Hobbs.objects.filter(hobbs_time=hobbs_datetime).filter(type=Hobbs.TYPE_ACTUAL).first()
+            else:
+                hobbs = None
 
-        hobbs_list = []
+            if hobbs and hobbs.hobbs_time != hobbs_datetime:
+                hobbs = None    # Create new hobbs item regardless of actual/next due hobbs if date/time is changed
 
-        projected_hobbs_value = Hobbs.get_projected_value(tail, start_time, revision)
-        last_actual_hobbs = Hobbs.get_last_actual_hobbs(tail, start_time)
-        projected_next_due_hobbs = Hobbs.get_next_due(tail, start_time)
-        projected_next_due_hobbs_value = 0
-        projected_next_due_hobbs_id = 0
-        if projected_next_due_hobbs:
-            projected_next_due_hobbs_value = projected_next_due_hobbs.hobbs
-            projected_next_due_hobbs_id = projected_next_due_hobbs.id
+            if hobbs and hobbs.type != hobbs_type:
+                raise Exception('Invalid parameters')
+        except Exception as e:
+            # print(str(e))
+            raise APIException('Invalid parameters', status=400)
 
-        end_time = start_time + timedelta(days=days)
+        try:
+            tail = Tail.objects.get(pk=tail_id)
+            if not hobbs:
+                hobbs = Hobbs()
+                hobbs.type = hobbs_type
+            hobbs.hobbs_time = hobbs_datetime
+            hobbs.hobbs = hobbs_value
+            hobbs.tail = tail
+            hobbs.save()
+        except Exception as e:      # pragma: no cover
+            # print(str(e))
+            raise APIException(str(e))
 
-        stream = []
+        return {
+            'hobbs_id': hobbs.id
+        }
 
-        hobbs_set = Hobbs.get_hobbs(tail, start_time, end_time)
-        for hobbs in hobbs_set:
-            stream.append({
-                'datetime': hobbs.hobbs_time,
-                'type': 'hobbs',
-                'object': hobbs,
-            })
 
-        assignments = Assignment.objects.filter(start_time__gte=start_time) \
-            .filter(start_time__lt=end_time) \
-            .filter(revision=revision) \
-            .filter(tail=tail) \
-            .select_related('flight') \
-            .order_by('start_time')
-        for assignment in assignments:
-            stream.append({
-                'datetime': assignment.start_time,
-                'type': 'assignment',
-                'object': assignment,
-            })
+class ComingDueListView(GanttRevisionMixin, APIView):
+    permission_classes = (IsAuthenticated, GanttReadPermission)
 
-        stream = sorted(stream, key=lambda object: object['datetime'])
-        for object in stream:
-            if object['type'] == 'hobbs':
-                hobbs = object['object']
-                if hobbs.type == Hobbs.TYPE_ACTUAL:
-                    projected_hobbs_value = hobbs.hobbs
-                    last_actual_hobbs = hobbs
-                elif hobbs.type == Hobbs.TYPE_NEXT_DUE:
-                    projected_next_due_hobbs_value = hobbs.hobbs
-                    projected_next_due_hobbs_id = hobbs.id
-            elif object['type'] == 'assignment':
-                assignment = object['object']
-                if not last_actual_hobbs or last_actual_hobbs.hobbs_time < assignment.start_time:
-                    projected_hobbs_value += assignment.length / 3600
+    def _post(self, *args, **kwargs):
+        request = self.request
+
+        try:
+            tail_id = request.data.get('tail_id')
+            start_time = dateutil.parser.parse(request.data.get('start'))
+            days = int(request.data.get('days'))
+        except:
+            raise APIException('Invalid parameters', status=400)
+
+        revision_id = request.data.get('revision')
+        revision = self.get_revision(revision_id)
+
+        try:
+            tail = Tail.objects.get(pk=tail_id)
+
+            hobbs_list = []
+
+            projected_hobbs_value = Hobbs.get_projected_value(tail, start_time, revision)
+            last_actual_hobbs = Hobbs.get_last_actual_hobbs(tail, start_time)
+            projected_next_due_hobbs = Hobbs.get_next_due(tail, start_time)
+            projected_next_due_hobbs_value = 0
+            projected_next_due_hobbs_id = 0
+            if projected_next_due_hobbs:
+                projected_next_due_hobbs_value = projected_next_due_hobbs.hobbs
+                projected_next_due_hobbs_id = projected_next_due_hobbs.id
+
+            end_time = start_time + timedelta(days=days)
+
+            stream = []
+
+            hobbs_set = Hobbs.get_hobbs(tail, start_time, end_time)
+            for hobbs in hobbs_set:
+                stream.append({
+                    'datetime': hobbs.hobbs_time,
+                    'type': 'hobbs',
+                    'object': hobbs,
+                })
+
+            assignments = Assignment.objects.filter(start_time__gte=start_time) \
+                .filter(start_time__lt=end_time) \
+                .filter(revision=revision) \
+                .filter(tail=tail) \
+                .select_related('flight') \
+                .order_by('start_time')
+            for assignment in assignments:
+                stream.append({
+                    'datetime': assignment.start_time,
+                    'type': 'assignment',
+                    'object': assignment,
+                })
+
+            stream = sorted(stream, key=lambda object: object['datetime'])
+            for object in stream:
+                if object['type'] == 'hobbs':
+                    hobbs = object['object']
+                    if hobbs.type == Hobbs.TYPE_ACTUAL:
+                        projected_hobbs_value = hobbs.hobbs
+                        last_actual_hobbs = hobbs
+                    elif hobbs.type == Hobbs.TYPE_NEXT_DUE:
+                        projected_next_due_hobbs_value = hobbs.hobbs
+                        projected_next_due_hobbs_id = hobbs.id
+                elif object['type'] == 'assignment':
+                    assignment = object['object']
+                    if not last_actual_hobbs or last_actual_hobbs.hobbs_time < assignment.start_time:
+                        projected_hobbs_value += assignment.length / 3600
+                    hobbs_list.append({
+                        'day': assignment.start_time,
+                        'projected': projected_hobbs_value,
+                        'next_due': projected_next_due_hobbs_value,
+                        'next_due_hobbs_id': projected_next_due_hobbs_id,
+                        'flight': str(assignment.flight),
+                        'start_time_tmstmp': totimestamp(assignment.start_time),
+                    })
+
+            if len(hobbs_list) == 0:
                 hobbs_list.append({
-                    'day': assignment.start_time,
+                    'day': '',
                     'projected': projected_hobbs_value,
                     'next_due': projected_next_due_hobbs_value,
                     'next_due_hobbs_id': projected_next_due_hobbs_id,
-                    'flight': str(assignment.flight),
-                    'start_time_tmstmp': totimestamp(assignment.start_time),
+                    'flight': '',
                 })
 
-        if len(hobbs_list) == 0:
-            hobbs_list.append({
-                'day': '',
-                'projected': projected_hobbs_value,
-                'next_due': projected_next_due_hobbs_value,
-                'next_due_hobbs_id': projected_next_due_hobbs_id,
-                'flight': '',
+        except Exception as e:      # pragma: no cover
+            # print(str(e))
+            raise APIException('Server error occurred', status=500)
+
+        return {
+            'hobbs_list': hobbs_list
+        }
+
+
+class PublishRevisionView(GanttRevisionMixin, APIView):
+    permission_classes = (IsAuthenticated, GanttWritePermission)
+
+    def _post(self, *args, **kwargs):
+        request = self.request
+
+        revision_id = request.data.get('revision')
+        revision = self.get_revision(revision_id)
+
+        try:
+            new_revision = Revision(published_datetime=datetime_now_utc(), has_draft=False)
+            new_revision.save()
+
+            if not revision or revision.has_draft:
+                Assignment.get_revision_assignments(revision).filter(is_draft=True).update(revision=new_revision, is_draft=False)
+            else:
+                revision_assignments = Assignment.get_revision_assignments(revision).filter(is_draft=False)
+                for assignment in revision_assignments:
+                    assignment.pk = None
+                    assignment.is_draft = False
+                    assignment.revision = new_revision
+                    assignment.save()
+
+            if revision and revision.has_draft:
+                revision.has_draft = False
+                revision.save()
+            elif not revision:
+                # Copy past and current assignments from last revision
+                Revision.create_draft()
+        except Exception as e:      # pragma: no cover
+            raise APIException(str(e))
+
+        result = {
+            'revision': new_revision.id,
+            'revisions': [],
+        }
+        for revision in Revision.objects.order_by('-published_datetime'):
+            result['revisions'].append({
+                'id': revision.id,
+                'published': totimestamp(revision.published_datetime),
             })
 
-    except Exception as e:      # pragma: no cover
-        result['error'] = str(e)
-        return Response(result, status=500)
-
-    result['success'] = True
-    result['hobbs_list'] = hobbs_list
-    return Response(result)
+        return result
 
 
-@login_required
-@gantt_writable_required
-@api_view(['POST'])
-def api_publish_revision(request):
-    result = {
-        'success': False,
-    }
+class ClearRevisionView(GanttRevisionMixin, APIView):
+    permission_classes = (IsAuthenticated, GanttWritePermission)
 
-    revision_id = request.data.get('revision')
+    def _post(self, *args, **kwargs):
+        request = self.request
 
-    if revision_id and int(revision_id) > 0:
+        revision_id = request.data.get('revision')
+        revision = self.get_revision(revision_id)
+
         try:
-            revision = Revision.objects.get(pk=revision_id)
-        except Revision.DoesNotExist:
-            result['error'] = 'Revision not found'
-            return Response(result, status=400)
-    else:
-        revision = None
+            Assignment.get_revision_assignments(revision).filter(is_draft=True).delete()
 
-    try:
-        new_revision = Revision(published_datetime=datetime_now_utc(), has_draft=False)
-        new_revision.save()
+            if revision:
+                revision.has_draft = False
+                revision.save()
+            else:
+                # Copy past and current assignments from last revision
+                Revision.create_draft()
+        except Exception as e:      # pragma: no cover
+            raise APIException(str(e))
 
-        if not revision or revision.has_draft:
-            Assignment.get_revision_assignments(revision).filter(is_draft=True).update(revision=new_revision, is_draft=False)
-        else:
-            revision_assignments = Assignment.get_revision_assignments(revision).filter(is_draft=False)
-            for assignment in revision_assignments:
-                assignment.pk = None
-                assignment.is_draft = False
-                assignment.revision = new_revision
-                assignment.save()
-
-        if revision and revision.has_draft:
-            revision.has_draft = False
-            revision.save()
-        elif not revision:
-            # Copy past and current assignments from last revision
-            Revision.create_draft()
-    except Exception as e:      # pragma: no cover
-        result['error'] = str(e)
-        return Response(result, status=500)
-
-    result['success'] = True
-    result['revision'] = new_revision.id
-    result['revisions'] = []
-    for revision in Revision.objects.order_by('-published_datetime'):
-        result['revisions'].append({
-            'id': revision.id,
-            'published': totimestamp(revision.published_datetime),
-        })
-
-    return Response(result)
+        return {
+            'revision_id': revision_id
+        }
 
 
-@login_required
-@gantt_writable_required
-@api_view(['POST'])
-def api_clear_revision(request):
-    result = {
-        'success': False,
-    }
+class DeleteRevisionView(GanttRevisionMixin, APIView):
+    permission_classes = (IsAuthenticated, GanttWritePermission)
 
-    revision_id = request.data.get('revision')
+    def _post(self, *args, **kwargs):
+        request = self.request
 
-    if revision_id and int(revision_id) > 0:
+        revision_id = request.data.get('revision')
+        revision = self.get_revision(revision_id)
+
         try:
-            revision = Revision.objects.get(pk=revision_id)
-        except Revision.DoesNotExist:
-            result['error'] = 'Revision not found'
-            return Response(result, status=400)
-    else:
-        revision = None
+            revision_assignments = Assignment.get_revision_assignments_all(revision)
+            revision_assignments.delete()
 
-    try:
-        Assignment.get_revision_assignments(revision).filter(is_draft=True).delete()
+            if revision:
+                revision.delete()
+            else:
+                # Copy past and current assignments from last revision
+                Revision.create_draft()
+        except Exception as e:      # pragma: no cover
+            raise APIException(str(e))
 
-        if revision:
-            revision.has_draft = False
-            revision.save()
-        else:
-            # Copy past and current assignments from last revision
-            Revision.create_draft()
-    except Exception as e:      # pragma: no cover
-        result['error'] = str(e)
-        return Response(result, status=500)
+        result = {
+            'revisions': []
+        }
+        for revision in Revision.objects.order_by('-published_datetime'):
+            result['revisions'].append({
+                'id': revision.id,
+                'published': totimestamp(revision.published_datetime),
+            })
 
-    result['success'] = True
-    return Response(result)
-
-
-@login_required
-@gantt_writable_required
-@api_view(['POST'])
-def api_delete_revision(request):
-    result = {
-        'success': False,
-    }
-
-    revision_id = request.data.get('revision')
-
-    if revision_id and int(revision_id) > 0:
-        try:
-            revision = Revision.objects.get(pk=revision_id)
-        except Revision.DoesNotExist:
-            result['error'] = 'Revision not found'
-            return Response(result, status=400)
-    else:
-        revision = None
-
-    try:
-        revision_assignments = Assignment.get_revision_assignments_all(revision)
-        revision_assignments.delete()
-
-        if revision:
-            revision.delete()
-        else:
-            # Copy past and current assignments from last revision
-            Revision.create_draft()
-    except Exception as e:      # pragma: no cover
-        result['error'] = str(e)
-        return Response(result, status=500)
-
-    result['success'] = True
-    result['revisions'] = []
-    for revision in Revision.objects.order_by('-published_datetime'):
-        result['revisions'].append({
-            'id': revision.id,
-            'published': totimestamp(revision.published_datetime),
-        })
-    return Response(result)
+        return result
