@@ -15,12 +15,15 @@ from django.db.models import Q, ProtectedError, Max
 from django.conf import settings
 from django.urls import reverse
 
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import api_view, permission_classes, authentication_classes
+from common.exceptions import APIException
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from common.helpers import *
 from common.decorators import *
+from common.views import APIView
+from common.views import GanttRevisionMixin
 from common.views import RetrieveDestroyAPIView
 from common.views import DataTablePaginatedListView
 from routeplanning.models import *
@@ -55,9 +58,9 @@ class FlightListView(DataTablePaginatedListView):
             'scheduled_out_datetime', 'scheduled_off_datetime', 'scheduled_on_datetime', 'scheduled_in_datetime',
             'estimated_out_datetime', 'estimated_off_datetime', 'estimated_on_datetime', 'estimated_in_datetime',
         )
-        order_dir = self.request.data.get('order[0][dir]')
-        order_column_index = int(self.request.data.get('order[0][column]', 0))
-        search = self.request.data.get('search[value]')
+        order_dir = self.request.query_params.get('order[0][dir]')
+        order_column_index = int(self.request.query_params.get('order[0][column]', 0))
+        search = self.request.query_params.get('search[value]')
 
         order_column = order_columns[order_column_index]
         if order_dir == 'desc':
@@ -79,150 +82,134 @@ class FlightListView(DataTablePaginatedListView):
         return Flight.objects.count()
 
 
-@login_required
-@gantt_readable_required
-@api_view(['GET'])
-def api_load_data(request):
-    start_time = datetime.fromtimestamp(int(request.query_params.get('startdate')), tz=utc)
-    end_time = datetime.fromtimestamp(int(request.query_params.get('enddate')), tz=utc)
-    assignments_only = request.query_params.get('assignments_only')
-    revision_id = request.query_params.get('revision')
+class LoadDataView(APIView, GanttRevisionMixin):
+    permission_classes = (IsAuthenticated, GanttReadPermission)
+    
+    def _get(self, *args, **kwargs):
+        request = args[0]
 
-    if revision_id and int(revision_id) > 0:
-        try:
-            revision = Revision.objects.get(pk=revision_id)
-        except Revision.DoesNotExist:
-            result = {
-                'success': False,
-                'error': 'Revision not found',
-            }
-            return Response(result, status=400)
-    else:
-        revision = None
+        start_time = datetime.fromtimestamp(int(request.query_params.get('startdate')), tz=utc)
+        end_time = datetime.fromtimestamp(int(request.query_params.get('enddate')), tz=utc)
+        assignments_only = request.query_params.get('assignments_only')
+        revision_id = request.query_params.get('revision')
 
-    if not can_write_gantt(request.user):
-        if not revision:    # Current draft gantt
-            result = {
-                'success': False,
-                'error': 'Not allowed to get draft route plan',
+        revision = self.get_revision(revision_id)
+
+        if not can_write_gantt(request.user):
+            if not revision:    # Current draft gantt
+                raise APIException('Not allowed to get draft route plan', status=403)
+            else:
+                latest_published_datetime_row = Revision.objects.all().aggregate(Max('published_datetime'))
+                latest_published_datetime = latest_published_datetime_row['published_datetime__max']
+                if revision.published_datetime != latest_published_datetime:
+                    raise APIException('Not allowed to get route plans other than current published version', status=403)
+
+        # Date for tails and its last assignment on current revision
+
+        tails_data = []
+        tails = Tail.objects.all()
+        for tail in tails:
+            tail_data = {}
+            tail_data['tail'] = {
+                'id': tail.id,
+                'number': tail.number,
             }
-            return Response(result, status=403)
-        else:
-            latest_published_datetime_row = Revision.objects.all().aggregate(Max('published_datetime'))
-            latest_published_datetime = latest_published_datetime_row['published_datetime__max']
-            if revision.published_datetime != latest_published_datetime:
-                result = {
-                    'error': 'Not allowed to get route plans other than current published version',
+            assignment = tail.get_last_assignment(revision, start_time)
+            if assignment:
+                tail_data['last_assignment'] = {
+                    'id': assignment.id,
+                    'number': assignment.flight_number,
+                    'start_time': assignment.start_time,
+                    'end_time': assignment.end_time,
+                    'status': assignment.status,
+                    'origin': assignment.flight.origin,
+                    'destination': assignment.flight.destination,
                 }
-                return Response(result, status=403)
+            else:
+                tail_data['last_assignment'] = None
+            tails_data.append(tail_data)
 
-    # Date for tails and its last assignment on current revision
+        # Data for template flights on Lines
 
-    tails_data = []
-    tails = Tail.objects.all()
-    for tail in tails:
-        tail_data = {}
-        tail_data['tail'] = {
-            'id': tail.id,
-            'number': tail.number,
-        }
-        assignment = tail.get_last_assignment(revision, start_time)
-        if assignment:
-            tail_data['last_assignment'] = {
+        template_data = []
+        if assignments_only != 'true':
+            lines = Line.objects.all()
+            for line in lines:
+                flights = line.flights.filter(
+                    (Q(scheduled_out_datetime__gte=start_time) & Q(scheduled_out_datetime__lte=end_time)) |
+                    (Q(scheduled_in_datetime__gte=start_time) & Q(scheduled_in_datetime__lte=end_time)) |
+                    (Q(scheduled_out_datetime__lte=start_time) & Q(scheduled_in_datetime__gte=end_time))
+                )
+                for flight in flights:
+                    flight_data = {
+                        'id': flight.id,
+                        'number': flight.number,
+                        'origin': flight.origin,
+                        'destination': flight.destination,
+                        'scheduled_out_datetime': flight.scheduled_out_datetime,
+                        'scheduled_in_datetime': flight.scheduled_in_datetime,
+                        'scheduled_out_datetime': flight.scheduled_out_datetime,
+                        'scheduled_in_datetime': flight.scheduled_in_datetime,
+                        'scheduled_off_datetime': flight.scheduled_off_datetime,
+                        'scheduled_on_datetime': flight.scheduled_on_datetime,
+                        'estimated_out_datetime': flight.estimated_out_datetime,
+                        'estimated_in_datetime': flight.estimated_in_datetime,
+                        'estimated_off_datetime': flight.estimated_off_datetime,
+                        'estimated_on_datetime': flight.estimated_on_datetime,
+                        'actual_out_datetime': flight.actual_out_datetime,
+                        'actual_in_datetime': flight.actual_in_datetime,
+                        'actual_off_datetime': flight.actual_off_datetime,
+                        'actual_on_datetime': flight.actual_on_datetime,
+                        'line_id': line.id,
+                    }
+                    template_data.append(flight_data)
+
+        # Data for assignments on Tails
+
+        assignments_data = []
+        assignments = Assignment.get_revision_assignments(revision).select_related('flight', 'tail').filter(
+            (Q(start_time__gte=start_time) & Q(start_time__lte=end_time)) |
+            (Q(end_time__gte=start_time) & Q(end_time__lte=end_time)) |
+            (Q(start_time__lte=start_time) & Q(end_time__gte=end_time))
+        ).order_by('start_time')
+
+        for assignment in assignments:
+            assignment_data = {
                 'id': assignment.id,
                 'number': assignment.flight_number,
                 'start_time': assignment.start_time,
                 'end_time': assignment.end_time,
                 'status': assignment.status,
-                'origin': assignment.flight.origin,
-                'destination': assignment.flight.destination,
+                'tail': assignment.tail.number,
+                'actual_hobbs': Hobbs.get_projected_value(assignment.tail, assignment.end_time, revision),
+                'next_due_hobbs': Hobbs.get_next_due_value(assignment.tail, assignment.end_time),
             }
-        else:
-            tail_data['last_assignment'] = None
-        tails_data.append(tail_data)
 
-    # Data for template flights on Lines
+            if assignment.flight:
+                assignment_data['origin'] = assignment.flight.origin
+                assignment_data['destination'] = assignment.flight.destination
+                assignment_data['flight_id'] = assignment.flight.id
+                assignment_data['scheduled_out_datetime'] = assignment.flight.scheduled_out_datetime
+                assignment_data['scheduled_in_datetime'] = assignment.flight.scheduled_in_datetime
+                assignment_data['scheduled_out_datetime'] = assignment.flight.scheduled_out_datetime
+                assignment_data['scheduled_in_datetime'] = assignment.flight.scheduled_in_datetime
+                assignment_data['scheduled_off_datetime'] = assignment.flight.scheduled_off_datetime
+                assignment_data['scheduled_on_datetime'] = assignment.flight.scheduled_on_datetime
+                assignment_data['estimated_out_datetime'] = assignment.flight.estimated_out_datetime
+                assignment_data['estimated_in_datetime'] = assignment.flight.estimated_in_datetime
+                assignment_data['estimated_off_datetime'] = assignment.flight.estimated_off_datetime
+                assignment_data['estimated_on_datetime'] = assignment.flight.estimated_on_datetime
+                assignment_data['actual_out_datetime'] = assignment.flight.actual_out_datetime
+                assignment_data['actual_in_datetime'] = assignment.flight.actual_in_datetime
+                assignment_data['actual_off_datetime'] = assignment.flight.actual_off_datetime
+                assignment_data['actual_on_datetime'] = assignment.flight.actual_on_datetime
+            assignments_data.append(assignment_data)
 
-    template_data = []
-    if assignments_only != 'true':
-        lines = Line.objects.all()
-        for line in lines:
-            flights = line.flights.filter(
-                (Q(scheduled_out_datetime__gte=start_time) & Q(scheduled_out_datetime__lte=end_time)) |
-                (Q(scheduled_in_datetime__gte=start_time) & Q(scheduled_in_datetime__lte=end_time)) |
-                (Q(scheduled_out_datetime__lte=start_time) & Q(scheduled_in_datetime__gte=end_time))
-            )
-            for flight in flights:
-                flight_data = {
-                    'id': flight.id,
-                    'number': flight.number,
-                    'origin': flight.origin,
-                    'destination': flight.destination,
-                    'scheduled_out_datetime': flight.scheduled_out_datetime,
-                    'scheduled_in_datetime': flight.scheduled_in_datetime,
-                    'scheduled_out_datetime': flight.scheduled_out_datetime,
-                    'scheduled_in_datetime': flight.scheduled_in_datetime,
-                    'scheduled_off_datetime': flight.scheduled_off_datetime,
-                    'scheduled_on_datetime': flight.scheduled_on_datetime,
-                    'estimated_out_datetime': flight.estimated_out_datetime,
-                    'estimated_in_datetime': flight.estimated_in_datetime,
-                    'estimated_off_datetime': flight.estimated_off_datetime,
-                    'estimated_on_datetime': flight.estimated_on_datetime,
-                    'actual_out_datetime': flight.actual_out_datetime,
-                    'actual_in_datetime': flight.actual_in_datetime,
-                    'actual_off_datetime': flight.actual_off_datetime,
-                    'actual_on_datetime': flight.actual_on_datetime,
-                    'line_id': line.id,
-                }
-                template_data.append(flight_data)
-
-    # Data for assignments on Tails
-
-    assignments_data = []
-    assignments = Assignment.get_revision_assignments(revision).select_related('flight', 'tail').filter(
-        (Q(start_time__gte=start_time) & Q(start_time__lte=end_time)) |
-        (Q(end_time__gte=start_time) & Q(end_time__lte=end_time)) |
-        (Q(start_time__lte=start_time) & Q(end_time__gte=end_time))
-    ).order_by('start_time')
-
-    for assignment in assignments:
-        assignment_data = {
-            'id': assignment.id,
-            'number': assignment.flight_number,
-            'start_time': assignment.start_time,
-            'end_time': assignment.end_time,
-            'status': assignment.status,
-            'tail': assignment.tail.number,
-            'actual_hobbs': Hobbs.get_projected_value(assignment.tail, assignment.end_time, revision),
-            'next_due_hobbs': Hobbs.get_next_due_value(assignment.tail, assignment.end_time),
+        return {
+            'assignments': assignments_data,
+            'templates': template_data,
+            'tails': tails_data,
         }
-
-        if assignment.flight:
-            assignment_data['origin'] = assignment.flight.origin
-            assignment_data['destination'] = assignment.flight.destination
-            assignment_data['flight_id'] = assignment.flight.id
-            assignment_data['scheduled_out_datetime'] = assignment.flight.scheduled_out_datetime
-            assignment_data['scheduled_in_datetime'] = assignment.flight.scheduled_in_datetime
-            assignment_data['scheduled_out_datetime'] = assignment.flight.scheduled_out_datetime
-            assignment_data['scheduled_in_datetime'] = assignment.flight.scheduled_in_datetime
-            assignment_data['scheduled_off_datetime'] = assignment.flight.scheduled_off_datetime
-            assignment_data['scheduled_on_datetime'] = assignment.flight.scheduled_on_datetime
-            assignment_data['estimated_out_datetime'] = assignment.flight.estimated_out_datetime
-            assignment_data['estimated_in_datetime'] = assignment.flight.estimated_in_datetime
-            assignment_data['estimated_off_datetime'] = assignment.flight.estimated_off_datetime
-            assignment_data['estimated_on_datetime'] = assignment.flight.estimated_on_datetime
-            assignment_data['actual_out_datetime'] = assignment.flight.actual_out_datetime
-            assignment_data['actual_in_datetime'] = assignment.flight.actual_in_datetime
-            assignment_data['actual_off_datetime'] = assignment.flight.actual_off_datetime
-            assignment_data['actual_on_datetime'] = assignment.flight.actual_on_datetime
-        assignments_data.append(assignment_data)
-
-    data = {
-        'assignments': assignments_data,
-        'templates': template_data,
-        'tails': tails_data,
-    }
-    return Response(data)
 
 
 @login_required

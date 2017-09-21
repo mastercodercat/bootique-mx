@@ -1,14 +1,18 @@
 from django.shortcuts import render, redirect
 from django.http import Http404
 
+from rest_framework import views
 from rest_framework import generics
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
+from rest_framework.exceptions import MethodNotAllowed
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from common.exceptions import APIException
 from common.helpers import *
+from common.exceptions import APIException
 from common.paginations import DataTablePagination
+
+from routeplanning.models import Revision
 
 
 def index_redirect(request):
@@ -21,6 +25,57 @@ def index_redirect(request):
             return render(request, 'home-empty.html')
     else:
         return redirect('account_login')
+
+
+class APICallMixin(object):
+    def call_method(self, method, *args, **kwargs):
+        try:
+            method_to_call = getattr(self, method)
+            response = method_to_call(*args, **kwargs)
+            response['success'] = True
+            return Response(response)
+        except APIException as error:
+            return Response({
+                'success': False,
+                'error': str(error)
+            }, status=error.status)
+
+
+class GanttRevisionMixin(object):
+    def get_revision(self, revision_id):
+        if revision_id and int(revision_id) > 0:
+            try:
+                return Revision.objects.get(pk=revision_id)
+            except Revision.DoesNotExist:
+                raise APIException('Revision not found', status=400)
+        else:
+            return None
+
+
+class APIView(views.APIView, APICallMixin):
+    def get(self, *args, **kwargs):
+        return self.call_method('_get', *args, **kwargs)
+
+    def post(self, *args, **kwargs):
+        raise MethodNotAllowed('_post')
+
+    def put(self, *args, **kwargs):
+        raise MethodNotAllowed('_put')
+
+    def delete(self, *args, **kwargs):
+        raise MethodNotAllowed('_delete')
+
+    def _get(self, *args, **kwargs):
+        raise MethodNotAllowed('GET')
+
+    def _post(self, *args, **kwargs):
+        raise MethodNotAllowed('GET')
+
+    def _put(self, *args, **kwargs):
+        raise MethodNotAllowed('GET')
+
+    def _delete(self, *args, **kwargs):
+        raise MethodNotAllowed('GET')
 
 
 class ListAPIView(generics.ListAPIView):

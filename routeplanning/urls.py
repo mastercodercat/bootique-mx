@@ -20,7 +20,7 @@ urlpatterns = [
     url(r'^$', page_views.index, name='index'),
     url(r'^view-gantt/*$', page_views.view_current_published_gantt, name='view_current_published_gantt'),
 
-    url(r'^api/loaddata/*$', api_views.api_load_data, name='api_load_data'),
+    url(r'^api/loaddata/*$', api_views.LoadDataView.as_view(), name='api_load_data'),
     url(r'^api/line/(?P<line_id>[0-9]+)/delete/*$', api_views.DeleteLineView.as_view(), name='delete_line'),
     url(r'^api/tail/(?P<tail_id>[0-9]+)/delete/*$', api_views.DeleteTailView.as_view(), name='delete_tail'),
     url(r'^api/tail/assignflight/*$', api_views.api_assign_flight, name='api_assign_flight'),
