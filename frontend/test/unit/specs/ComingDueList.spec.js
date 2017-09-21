@@ -37,7 +37,6 @@ describe('ComingDueList.vue', () => {
     it('should render contents based on api response data', (done) => {
         axiosPostStub.resolves({
             data: {
-                success: true,
                 hobbs_list: testData.hobbsData,
             },
         })
@@ -56,7 +55,6 @@ describe('ComingDueList.vue', () => {
     it('should respond to \'refresh-coming-due-list\' Vue event', (done) => {
         axiosPostStub.resolves({
             data: {
-                success: true,
                 hobbs_list: [],
             },
         })
@@ -70,7 +68,6 @@ describe('ComingDueList.vue', () => {
             expect(vm.$el.querySelectorAll('#coming-due-list tr').length).to.equal(0)
             axiosPostStub.resolves({
                 data: {
-                    success: true,
                     hobbs_list: testData.hobbsData,
                 },
             })
@@ -86,7 +83,6 @@ describe('ComingDueList.vue', () => {
     it('should load new data when anchor date changed and \'Show Hobbs\' button clicked', (done) => {
         axiosPostStub.resolves({
             data: {
-                success: true,
                 hobbs_list: [],
             },
         })
@@ -100,7 +96,6 @@ describe('ComingDueList.vue', () => {
             expect(vm.$el.querySelectorAll('#coming-due-list tr').length).to.equal(0)
             axiosPostStub.resolves({
                 data: {
-                    success: true,
                     hobbs_list: testData.hobbsData,
                 },
             })

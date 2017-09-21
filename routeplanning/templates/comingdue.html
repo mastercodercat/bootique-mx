@@ -34,7 +34,7 @@
             tailNumber: "{{ tail.number }}",
             revision: {{ revision_id }},
             comingDueListAPI: '{% url 'routeplanning:api_coming_due_list' %}',
-            loadHobbsAPIBase: '{% url 'routeplanning:api_get_hobbs' hobbs_id=0 %}',
+            loadHobbsAPIBase: '{% url 'routeplanning:api_hobbs' hobbs_id=0 %}',
             saveHobbsAPI: '{% url 'routeplanning:api_save_hobbs' %}',
             urlToRedirectAfterSave: '{% url 'routeplanning:index' %}',
             {% if request.user|can_write_gantt %}

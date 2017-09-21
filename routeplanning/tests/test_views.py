@@ -269,8 +269,7 @@ class RoutePlanningViewsTestCase(TestCase):
             'tail_id': tail.id,
         })
         response = self.client.delete(view_url)
-        data = json.loads(response.content)
-        self.assertEqual(data['success'], True)
+        self.assertEqual(response.status_code, 204)
 
     @patch('routeplanning.permissions.can_write_gantt', return_value=True)
     def test_view_delete_tail_delete_fail_invalid_id(self, mock_can_write_gantt):
@@ -279,7 +278,6 @@ class RoutePlanningViewsTestCase(TestCase):
         })
         response = self.client.delete(view_url)
         data = json.loads(response.content)
-        self.assertEqual(data['success'], False)
         self.assertEqual(data['error'], 'Error occurred while deleting tail')
 
     @patch('routeplanning.permissions.can_write_gantt', return_value=True)
@@ -289,7 +287,6 @@ class RoutePlanningViewsTestCase(TestCase):
         })
         response = self.client.delete(view_url)
         data = json.loads(response.content)
-        self.assertEqual(data['success'], False)
         self.assertEqual(data['error'], 'Error occurred while deleting tail')
 
     @patch('routeplanning.permissions.can_write_gantt', return_value=True)
@@ -464,8 +461,7 @@ class RoutePlanningViewsTestCase(TestCase):
             'line_id': line.id,
         })
         response = self.client.delete(view_url)
-        data = json.loads(response.content)
-        self.assertEqual(data['success'], True)
+        self.assertEqual(response.status_code, 204)
 
     @patch('routeplanning.permissions.can_write_gantt', return_value=True)
     def test_view_delete_line_fail_invalid_id(self, mock_can_write_gantt):
@@ -473,8 +469,8 @@ class RoutePlanningViewsTestCase(TestCase):
             'line_id': 999,
         })
         response = self.client.delete(view_url)
+        self.assertEqual(response.status_code, 500)
         data = json.loads(response.content)
-        self.assertEqual(data['success'], False)
         self.assertEqual(data['error'], 'Error occurred while deleting line')
 
     @patch('routeplanning.permissions.can_write_gantt', return_value=True)
@@ -483,8 +479,8 @@ class RoutePlanningViewsTestCase(TestCase):
             'line_id': 0,
         })
         response = self.client.delete(view_url)
+        self.assertEqual(response.status_code, 500)
         data = json.loads(response.content)
-        self.assertEqual(data['success'], False)
         self.assertEqual(data['error'], 'Error occurred while deleting line')
 
     @patch('routeplanning.permissions.can_write_gantt', return_value=True)
@@ -597,7 +593,6 @@ class RoutePlanningViewsTestCase(TestCase):
         })
         data = json.loads(response.content)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(data['success'], True)
         self.assertNotEqual(len(data['data']), 0)
 
     @patch('routeplanning.permissions.can_read_gantt', return_value=True)
@@ -612,7 +607,6 @@ class RoutePlanningViewsTestCase(TestCase):
         })
         data = json.loads(response.content)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(data['success'], True)
         self.assertNotEqual(len(data['data']), 0)
 
     @patch('routeplanning.permissions.can_read_gantt', return_value=True)
@@ -692,7 +686,7 @@ class RoutePlanningViewsTestCase(TestCase):
         data = json.loads(response.content)
         self.assertEqual(response.status_code, 200)
 
-    @patch('common.decorators.can_write_gantt', return_value=True)
+    @patch('routeplanning.permissions.can_write_gantt', return_value=True)
     def test_api_assign_flight_fail_invalid_parameters(self, mock_can_write_gantt):
         api_url = reverse('routeplanning:api_assign_flight')
         response = self.client.post(api_url, {
@@ -701,10 +695,9 @@ class RoutePlanningViewsTestCase(TestCase):
         })
         data = json.loads(response.content)
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(data['success'], False)
         self.assertEqual(data['error'], 'Invalid parameters')
 
-    @patch('common.decorators.can_write_gantt', return_value=True)
+    @patch('routeplanning.permissions.can_write_gantt', return_value=True)
     def test_api_assign_flight_fail_no_revision(self, mock_can_write_gantt):
         api_url = reverse('routeplanning:api_assign_flight')
         response = self.client.post(api_url, {
@@ -715,11 +708,11 @@ class RoutePlanningViewsTestCase(TestCase):
             'revision': 1,
         })
         data = json.loads(response.content)
-        self.assertEqual(data['success'], False)
         self.assertEqual(data['error'], 'Revision not found')
 
-    @patch('common.decorators.can_write_gantt', return_value=True)
-    def test_api_assign_flight_successes_and_failures(self, mock_can_write_gantt):
+    @patch('routeplanning.permissions.can_write_gantt', return_value=True)
+    @patch('common.decorators.can_write_gantt', return_value=True)  ###
+    def test_api_assign_flight_successes_and_failures(self, mock_tmp, mock_can_write_gantt):
         api_url = reverse('routeplanning:api_assign_flight')
 
         Assignment.objects.all().delete()
@@ -732,7 +725,6 @@ class RoutePlanningViewsTestCase(TestCase):
             'revision': 0,
         })
         data = json.loads(response.content)
-        self.assertEqual(data['success'], True)
         self.assertEqual(data['duplication'], False)
         self.assertEqual(data['physically_invalid'], False)
 
@@ -754,7 +746,6 @@ class RoutePlanningViewsTestCase(TestCase):
             'revision': 0,
         })
         data = json.loads(response.content)
-        self.assertEqual(data['success'], True)
         self.assertEqual(data['duplication'], False)
         self.assertEqual(data['physically_invalid'], False)
 
@@ -780,7 +771,6 @@ class RoutePlanningViewsTestCase(TestCase):
             'revision': 0,
         })
         data = json.loads(response.content)
-        self.assertEqual(data['success'], True)
         self.assertEqual(data['duplication'], False)
         self.assertEqual(data['physically_invalid'], False)
 
@@ -796,7 +786,6 @@ class RoutePlanningViewsTestCase(TestCase):
             'revision': 0,
         })
         data = json.loads(response.content)
-        self.assertEqual(data['success'], True)
         self.assertEqual(data['duplication'], False)
         self.assertEqual(data['physically_invalid'], False)
 
@@ -810,11 +799,10 @@ class RoutePlanningViewsTestCase(TestCase):
             'revision': revision.id,
         })
         data = json.loads(response.content)
-        self.assertEqual(data['success'], True)
         self.assertEqual(data['duplication'], False)
         self.assertEqual(data['physically_invalid'], False)
 
-    @patch('common.decorators.can_write_gantt', return_value=True)
+    @patch('routeplanning.permissions.can_write_gantt', return_value=True)
     def test_api_assign_status_fail_invalid_parameters(self, mock_can_write_gantt):
         api_url = reverse('routeplanning:api_assign_status')
         response = self.client.post(api_url, {
@@ -826,10 +814,9 @@ class RoutePlanningViewsTestCase(TestCase):
         })
         data = json.loads(response.content)
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(data['success'], False)
         self.assertEqual(data['error'], 'Invalid parameters')
 
-    @patch('common.decorators.can_write_gantt', return_value=True)
+    @patch('routeplanning.permissions.can_write_gantt', return_value=True)
     def test_api_assign_status_fail_no_revision(self, mock_can_write_gantt):
         api_url = reverse('routeplanning:api_assign_status')
         response = self.client.post(api_url, {
@@ -841,11 +828,11 @@ class RoutePlanningViewsTestCase(TestCase):
         })
         data = json.loads(response.content)
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(data['success'], False)
         self.assertEqual(data['error'], 'Revision not found')
 
-    @patch('common.decorators.can_write_gantt', return_value=True)
-    def test_api_assign_status_successes_and_failures(self, mock_can_write_gantt):
+    @patch('routeplanning.permissions.can_write_gantt', return_value=True)
+    @patch('common.decorators.can_write_gantt', return_value=True)    ###
+    def test_api_assign_status_successes_and_failures(self, mock_tmp, mock_can_write_gantt):
         api_url = reverse('routeplanning:api_assign_status')
         response = self.client.post(api_url, {
             'tail': 'N455BC',
@@ -856,7 +843,6 @@ class RoutePlanningViewsTestCase(TestCase):
         })
         data = json.loads(response.content)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(data['success'], True)
 
         Assignment.objects.exclude(pk=450).delete()
 
@@ -871,7 +857,6 @@ class RoutePlanningViewsTestCase(TestCase):
         })
         data = json.loads(response.content)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(data['success'], True)
 
         response = self.client.post(api_url, {
             'tail': 'N584JV',
@@ -881,8 +866,7 @@ class RoutePlanningViewsTestCase(TestCase):
             'revision': 0,
         })
         data = json.loads(response.content)
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(data['success'], False)
+        self.assertEqual(response.status_code, 400)
         self.assertEqual(data['error'], 'Duplicated assignment')
 
         response = self.client.post(api_url, {
@@ -895,8 +879,7 @@ class RoutePlanningViewsTestCase(TestCase):
             'revision': 0,
         })
         data = json.loads(response.content)
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(data['success'], False)
+        self.assertEqual(response.status_code, 400)
         self.assertEqual(data['error'], 'Physically invalid assignment')
 
         response = self.client.post(api_url, {
@@ -907,8 +890,7 @@ class RoutePlanningViewsTestCase(TestCase):
             'revision': 0,
         })
         data = json.loads(response.content)
-        self.assertEqual(response.status_code, 500)
-        self.assertEqual(data['success'], False)
+        self.assertEqual(response.status_code, 400)
 
         # Testing with existing revision
         revision = self.prepare_revision()
@@ -919,10 +901,9 @@ class RoutePlanningViewsTestCase(TestCase):
             'status': 2,
             'revision': revision.id,
         })
-        data = json.loads(response.content)
-        self.assertEqual(data['success'], True)
+        self.assertEqual(response.status_code, 200)
 
-    @patch('common.decorators.can_write_gantt', return_value=True)
+    @patch('routeplanning.permissions.can_write_gantt', return_value=True)
     def test_api_remove_assignment_fail_invalid_parameters(self, mock_can_write_gantt):
         api_url = reverse('routeplanning:api_remove_assignment')
         response = self.client.post(api_url, {
@@ -931,10 +912,9 @@ class RoutePlanningViewsTestCase(TestCase):
         })
         data = json.loads(response.content)
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(data['success'], False)
         self.assertEqual(data['error'], 'Invalid parameters')
 
-    @patch('common.decorators.can_write_gantt', return_value=True)
+    @patch('routeplanning.permissions.can_write_gantt', return_value=True)
     def test_api_remove_assignment_fail_no_revision(self, mock_can_write_gantt):
         api_url = reverse('routeplanning:api_remove_assignment')
         response = self.client.post(api_url, {
@@ -943,10 +923,9 @@ class RoutePlanningViewsTestCase(TestCase):
         })
         data = json.loads(response.content)
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(data['success'], False)
         self.assertEqual(data['error'], 'Revision not found')
 
-    @patch('common.decorators.can_write_gantt', return_value=True)
+    @patch('routeplanning.permissions.can_write_gantt', return_value=True)
     def test_api_remove_assignment_success(self, mock_can_write_gantt):
         api_url = reverse('routeplanning:api_remove_assignment')
         response = self.client.post(api_url, {
@@ -955,11 +934,10 @@ class RoutePlanningViewsTestCase(TestCase):
         })
         data = json.loads(response.content)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(data['success'], True)
         left_assignment_count = Assignment.objects.filter(pk__in=[450, 451, 999]).count()
         self.assertEqual(left_assignment_count, 0)
 
-    @patch('common.decorators.can_write_gantt', return_value=True)
+    @patch('routeplanning.permissions.can_write_gantt', return_value=True)
     def test_api_move_assignment_fail_invalid_parameters(self, mock_can_write_gantt):
         api_url = reverse('routeplanning:api_move_assignment')
         response = self.client.post(api_url, {
@@ -968,10 +946,9 @@ class RoutePlanningViewsTestCase(TestCase):
         })
         data = json.loads(response.content)
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(data['success'], False)
         self.assertEqual(data['error'], 'Invalid parameters')
 
-    @patch('common.decorators.can_write_gantt', return_value=True)
+    @patch('routeplanning.permissions.can_write_gantt', return_value=True)
     def test_api_move_assignment_fail_no_revision(self, mock_can_write_gantt):
         api_url = reverse('routeplanning:api_move_assignment')
         response = self.client.post(api_url, {
@@ -980,10 +957,9 @@ class RoutePlanningViewsTestCase(TestCase):
         })
         data = json.loads(response.content)
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(data['success'], False)
         self.assertEqual(data['error'], 'Revision not found')
 
-    @patch('common.decorators.can_write_gantt', return_value=True)
+    @patch('routeplanning.permissions.can_write_gantt', return_value=True)
     def test_api_move_assignment_successes_and_failures(self, mock_can_write_gantt):
         api_url = reverse('routeplanning:api_move_assignment')
         Assignment.objects.exclude(pk=450).exclude(pk=451).exclude(pk=455).delete()
@@ -998,7 +974,6 @@ class RoutePlanningViewsTestCase(TestCase):
         })
         data = json.loads(response.content)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(data['success'], True)
         self.assertEqual(data['duplication'], False)
         self.assertEqual(data['physically_invalid'], False)
 
@@ -1012,7 +987,6 @@ class RoutePlanningViewsTestCase(TestCase):
         })
         data = json.loads(response.content)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(data['success'], True)
         self.assertEqual(data['duplication'], False)
         self.assertEqual(data['physically_invalid'], False)
 
@@ -1026,7 +1000,6 @@ class RoutePlanningViewsTestCase(TestCase):
         })
         data = json.loads(response.content)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(data['success'], True)
         self.assertEqual(data['duplication'], False)
         self.assertEqual(data['physically_invalid'], False)
 
@@ -1053,7 +1026,7 @@ class RoutePlanningViewsTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(data['duplication'], True)
 
-    @patch('common.decorators.can_write_gantt', return_value=True)
+    @patch('routeplanning.permissions.can_write_gantt', return_value=True)
     def test_api_resize_assignment_fail_invalid_parameters(self, mock_can_write_gantt):
         api_url = reverse('routeplanning:api_resize_assignment')
         response = self.client.post(api_url, {
@@ -1064,10 +1037,9 @@ class RoutePlanningViewsTestCase(TestCase):
         })
         data = json.loads(response.content)
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(data['success'], False)
         self.assertEqual(data['error'], 'Invalid parameters')
 
-    @patch('common.decorators.can_write_gantt', return_value=True)
+    @patch('routeplanning.permissions.can_write_gantt', return_value=True)
     def test_api_resize_assignment_fail_no_revision(self, mock_can_write_gantt):
         api_url = reverse('routeplanning:api_resize_assignment')
         response = self.client.post(api_url, {
@@ -1078,10 +1050,9 @@ class RoutePlanningViewsTestCase(TestCase):
         })
         data = json.loads(response.content)
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(data['success'], False)
         self.assertEqual(data['error'], 'Revision not found')
 
-    @patch('common.decorators.can_write_gantt', return_value=True)
+    @patch('routeplanning.permissions.can_write_gantt', return_value=True)
     def test_api_resize_assignment_fail_start_time_bigger_than_end_time(self, mock_can_write_gantt):
         api_url = reverse('routeplanning:api_resize_assignment')
         response = self.client.post(api_url, {
@@ -1092,10 +1063,9 @@ class RoutePlanningViewsTestCase(TestCase):
         })
         data = json.loads(response.content)
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(data['success'], False)
         self.assertEqual(data['error'], 'Start time cannot be later than end time')
 
-    @patch('common.decorators.can_write_gantt', return_value=True)
+    @patch('routeplanning.permissions.can_write_gantt', return_value=True)
     def test_api_resize_assignment_fail_invalid_assignment_id(self, mock_can_write_gantt):
         api_url = reverse('routeplanning:api_resize_assignment')
         response = self.client.post(api_url, {
@@ -1108,7 +1078,7 @@ class RoutePlanningViewsTestCase(TestCase):
         self.assertEqual(response.status_code, 400)
         self.assertEqual(data['error'], 'Invalid assignment ID')
 
-    @patch('common.decorators.can_write_gantt', return_value=True)
+    @patch('routeplanning.permissions.can_write_gantt', return_value=True)
     def test_api_resize_assignment_successes_and_failures(self, mock_can_write_gantt):
         api_url = reverse('routeplanning:api_resize_assignment')
         response = self.client.post(api_url, {
@@ -1119,7 +1089,6 @@ class RoutePlanningViewsTestCase(TestCase):
         })
         data = json.loads(response.content)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(data['success'], True)
 
         response = self.client.post(api_url, {
             'assignment_id': 451,
@@ -1129,7 +1098,6 @@ class RoutePlanningViewsTestCase(TestCase):
         })
         data = json.loads(response.content)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(data['success'], True)
 
         # Prepare an assignment for simulating time overlap
         Assignment.objects.filter(pk=453).update(is_draft=True)
@@ -1140,8 +1108,7 @@ class RoutePlanningViewsTestCase(TestCase):
             'revision': 0,
         })
         data = json.loads(response.content)
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(data['success'], False)
+        self.assertEqual(response.status_code, 400)
         self.assertEqual(data['error'], 'Duplicated assignment')
 
     @patch('common.decorators.can_write_gantt', return_value=True)
@@ -1199,9 +1166,10 @@ class RoutePlanningViewsTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(data['success'], True)
 
-    @patch('common.decorators.can_read_gantt', return_value=True)
-    @patch('common.decorators.can_write_gantt', return_value=True)
-    def test_api_get_hobbs(self, mock_can_write_gantt, mock_can_read_gantt):
+    @patch('routeplanning.permissions.can_read_gantt', return_value=True)
+    @patch('routeplanning.permissions.can_write_gantt', return_value=True)
+    @patch('common.decorators.can_write_gantt', return_value=True) ###
+    def test_api_get_hobbs(self, mock_tmp, mock_can_write_gantt, mock_can_read_gantt):
         r = self.client.post(reverse('routeplanning:api_save_hobbs'), {
             'tail_id': 14,
             'type': Hobbs.TYPE_ACTUAL,
@@ -1212,16 +1180,16 @@ class RoutePlanningViewsTestCase(TestCase):
 
         hobbs = Hobbs.objects.first()
 
-        api_url = reverse('routeplanning:api_get_hobbs', kwargs={
+        api_url = reverse('routeplanning:api_hobbs', kwargs={
             'hobbs_id': hobbs.id,
         })
         response = self.client.get(api_url)
         data = json.loads(response.content)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(data['success'], True)
 
-    @patch('common.decorators.can_write_gantt', return_value=True)
-    def test_api_delete_actual_hobbs(self, mock_can_write_gantt):
+    @patch('routeplanning.permissions.can_write_gantt', return_value=True)
+    @patch('common.decorators.can_write_gantt', return_value=True)  ###
+    def test_api_delete_actual_hobbs(self, mock_tmp, mock_can_write_gantt):
         r = self.client.post(reverse('routeplanning:api_save_hobbs'), {
             'tail_id': 14,
             'type': Hobbs.TYPE_ACTUAL,
@@ -1231,13 +1199,11 @@ class RoutePlanningViewsTestCase(TestCase):
         })
         hobbs = Hobbs.objects.first()
 
-        api_url = reverse('routeplanning:api_delete_actual_hobbs', kwargs={
+        api_url = reverse('routeplanning:api_hobbs', kwargs={
             'hobbs_id': hobbs.id,
         })
-        response = self.client.post(api_url)
-        data = json.loads(response.content)
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(data['success'], True)
+        response = self.client.delete(api_url)
+        self.assertEqual(response.status_code, 204)
 
     @patch('common.decorators.can_read_gantt', return_value=True)
     def test_api_coming_due_list_fail_invalid_parameters(self, mock_can_read_gantt):

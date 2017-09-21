@@ -889,27 +889,25 @@ export default {
             })
             .then((response) => {
                 const { data } = response;
-                if (data.success) {
-                    const revisions = [];
-                    for (const index in data.revisions) {
-                        const revision = data.revisions[index];
-                        revisions.push({
-                            id: revision.id,
-                            published: new Date(revision.published * 1000),
-                        });
-                    }
-                    this.revisions = revisions;
-
-                    if (data.revisions.length > 0) {
-                        this.revision = data.revisions[0].id;
-                    } else {
-                        this.revision = 0;
-                    }
-
-                    this.$nextTick(() => {
-                        this.loadData();
+                const revisions = [];
+                for (const index in data.revisions) {
+                    const revision = data.revisions[index];
+                    revisions.push({
+                        id: revision.id,
+                        published: new Date(revision.published * 1000),
                     });
                 }
+                this.revisions = revisions;
+
+                if (data.revisions.length > 0) {
+                    this.revision = data.revisions[0].id;
+                } else {
+                    this.revision = 0;
+                }
+
+                this.$nextTick(() => {
+                    this.loadData();
+                });
             });
         },
         handleClearRevision() {
@@ -921,10 +919,7 @@ export default {
                 revision: this.revision,
             })
             .then((response) => {
-                const { data } = response;
-                if (data.success) {
-                    this.loadData();
-                }
+                this.loadData();
             });
         },
         handlePublishRevision() {
@@ -937,18 +932,16 @@ export default {
             })
             .then((response) => {
                 const { data } = response;
-                if (data.success) {
-                    const revisions = [];
-                    for (const index in data.revisions) {
-                        const revision = data.revisions[index];
-                        revisions.push({
-                            id: revision.id,
-                            published: new Date(revision.published * 1000),
-                        });
-                    }
-                    this.revisions = revisions;
-                    this.revision = data.revision;
+                const revisions = [];
+                for (const index in data.revisions) {
+                    const revision = data.revisions[index];
+                    revisions.push({
+                        id: revision.id,
+                        published: new Date(revision.published * 1000),
+                    });
                 }
+                this.revisions = revisions;
+                this.revision = data.revision;
             });
         },
         handleDropOnRemoveZone(event) {
@@ -965,9 +958,7 @@ export default {
             })
             .then((response) => {
                 const { data } = response;
-                if (data.success) {
-                    this.loadData(true);
-                }
+                this.loadData(true);
             });
         },
         getTailIndex(tailNumber) {
@@ -1135,9 +1126,11 @@ export default {
                     })
                     .then((response) => {
                         const { data } = response;
-                        if (data.success) {
-                            this.loadData(true);
-                        }
+                        this.loadData(true);
+                        this.alertErrorIfAny(data);
+                    })
+                    .catch((response) => {
+                        const { data } = response;
                         this.alertErrorIfAny(data);
                     });
                 } else {                /* Template flight assign */
@@ -1176,10 +1169,11 @@ export default {
                         revision: this.revision,
                     })
                     .then((response) => {
+                        this.loadData(true);
+                        this.alertErrorIfAny(data);
+                    })
+                    .catch((response) => {
                         const { data } = response;
-                        if (data.success) {
-                            this.loadData(true);
-                        }
                         this.alertErrorIfAny(data);
                     });
                 }
@@ -1212,10 +1206,10 @@ export default {
                         revision: this.revision,
                     })
                     .then((response) => {
+                        this.loadData(true);
+                    })
+                    .catch((response) => {
                         const { data } = response;
-                        if (data.success) {
-                            this.loadData(true);
-                        }
                         this.alertErrorIfAny(data);
                     });
                 }
@@ -1230,27 +1224,28 @@ export default {
             })
             .then((response) => {
                 const { data } = response;
-                if (data.success) {
-                    const startTime = new Date(data.start_time);
-                    const endTime = new Date(data.end_time);
+                const startTime = new Date(data.start_time);
+                const endTime = new Date(data.end_time);
 
-                    for (const tailNumber in this.assignments) {
-                        if (this.assignments[tailNumber][assignment_id]) {
-                            this.$set(this.assignments[tailNumber][assignment_id], 'start_time', startTime.toISOString());
-                            this.$set(this.assignments[tailNumber][assignment_id], 'end_time', endTime.toISOString());
-                            if (this.assignments[tailNumber][assignment_id].scheduled_out_datetime) {
-                                this.$set(this.assignments[tailNumber][assignment_id], 'scheduled_out_datetime', startTime.toISOString());
-                                this.$set(this.assignments[tailNumber][assignment_id], 'scheduled_in_datetime', endTime.toISOString());
-                            }
-                            break;
+                for (const tailNumber in this.assignments) {
+                    if (this.assignments[tailNumber][assignment_id]) {
+                        this.$set(this.assignments[tailNumber][assignment_id], 'start_time', startTime.toISOString());
+                        this.$set(this.assignments[tailNumber][assignment_id], 'end_time', endTime.toISOString());
+                        if (this.assignments[tailNumber][assignment_id].scheduled_out_datetime) {
+                            this.$set(this.assignments[tailNumber][assignment_id], 'scheduled_out_datetime', startTime.toISOString());
+                            this.$set(this.assignments[tailNumber][assignment_id], 'scheduled_in_datetime', endTime.toISOString());
                         }
+                        break;
                     }
-
-                    this.alertErrorIfAny(data);
-                    this.loadData(true);
-                } else {
-                    vm.$emit('cancel-resize')
                 }
+
+                this.alertErrorIfAny(data);
+                this.loadData(true);
+                this.alertErrorIfAny(data);
+            })
+            .catch((response) => {
+                const { data } = response;
+                vm.$emit('cancel-resize')
                 this.alertErrorIfAny(data);
             });
         },
@@ -1277,13 +1272,11 @@ export default {
                 this.$refs.unscheduledFlightModal.hideModal();
 
                 const { data } = response;
-                if (data.success) {
-                    this.loadData(true);
-                }
                 this.alertErrorIfAny(data);
             })
-            .catch(() => {
+            .catch(({ data }) => {
                 this.$refs.unscheduledFlightModal.enableSubmit();
+                this.alertErrorIfAny(data);
             });
         },
         cancelUnscheduledFlightCreate() {

@@ -81,58 +81,42 @@ export default {
             this.$refs.hobbsValue.value = this.roundTo2(data.projected);
         },
         loadHobbs(hobbsId) {
-            var apiUrl = this.loadHobbsApiBase.replace('0', hobbsId);
+            const apiUrl = this.loadHobbsApiBase.replace('0', hobbsId);
 
             this.$http.get(apiUrl)
             .then((response) => {
-                const { success } = response.data;
-                if (!success) {
-                    return;
-                }
-                var hobbsArray = JSON.parse(response.data.hobbs);
-                if (!hobbsArray.length) {
-                    return;
-                }
-                var hobbs = hobbsArray[0];
-                var hobbsDate = new Date(hobbs.fields.hobbs_time);
+                const hobbs = response.data;
+                const hobbsDate = new Date(hobbs.hobbs_time);
                 this.$refs.hobbsId.value = hobbs.pk;
                 this.$refs.hobbsDate.value = this.to2Digits(hobbsDate.getMonth() + 1) + '/' +
                     this.to2Digits(hobbsDate.getDate()) + '/' + 
                     hobbsDate.getFullYear();
                 this.$refs.hobbsTime.value = this.to2Digits(hobbsDate.getHours()) + ':' +
                     this.to2Digits(hobbsDate.getMinutes());
-                this.$refs.hobbsValue.value = hobbs.fields.hobbs;
+                this.$refs.hobbsValue.value = hobbs.hobbs;
             });
         },
         saveAndAddAnother() {
             this.submitForm()
             .then((response) => {
-                const { success } = response.data;
-                if (success) {
-                    this.$refs.hobbsId.value = '';
-                    this.$refs.hobbsDate.value = '';
-                    this.$refs.hobbsTime.value = '';
-                    this.$refs.hobbsValue.value = '';
-                }
+                this.$refs.hobbsId.value = '';
+                this.$refs.hobbsDate.value = '';
+                this.$refs.hobbsTime.value = '';
+                this.$refs.hobbsValue.value = '';
             })
         },
         saveAndContinue() {
             this.submitForm()
             .then((response) => {
-                const { success, hobbs_id } = response.data;
-                if (success) {
-                    this.$refs.hobbsId.value = hobbs_id;
-                }
+                const { hobbs_id } = response.data;
+                this.$refs.hobbsId.value = hobbs_id;
             })
         },
         save() {
             this.submitForm()
             .then((response) => {
-                const { success } = response.data;
-                if (success) {
-                    window.location.href = this.urlToRedirectAfterSave;
-                }
-            })
+                window.location.href = this.urlToRedirectAfterSave;
+            });
         },
         submitForm() {
             var value = this.$refs.hobbsValue.value;
@@ -157,10 +141,7 @@ export default {
 
             return this.$http.post(this.saveHobbsApi, data)
             .then((response) => {
-                const { success } = response.data;
-                if (success) {
-                    this.$emit('refresh-coming-due-list')
-                }
+                this.$emit('refresh-coming-due-list')
                 return response;
             });
         }

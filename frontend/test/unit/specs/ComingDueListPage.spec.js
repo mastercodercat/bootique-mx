@@ -30,7 +30,6 @@ describe('ComingDueListPage.vue', () => {
     it('should render correct contents based on hobbs data from api', () => {
         axiosPostStub.resolves({
             data: {
-                success: true,
                 hobbs_list: testData.hobbsData,
             }
         })
@@ -51,7 +50,6 @@ describe('ComingDueListPage.vue', () => {
     it('should respond to \'refresh-coming-due-list\' event from hobbs forms', () => {
         axiosPostStub.resolves({
             data: {
-                success: true,
                 hobbs_list: testData.hobbsData,
             }
         })

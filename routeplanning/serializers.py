@@ -4,6 +4,7 @@ from rest_framework import serializers
 
 from common.helpers import totimestamp
 from routeplanning.models import Flight
+from routeplanning.models import Hobbs
 
 
 class DataTableFlightSerializer(serializers.ModelSerializer):
@@ -41,3 +42,9 @@ class DataTableFlightSerializer(serializers.ModelSerializer):
             'estimated_out_datetime', 'estimated_in_datetime', 'estimated_off_datetime', 'estimated_on_datetime',
             'actual_out_datetime', 'actual_in_datetime', 'actual_off_datetime', 'actual_on_datetime'
         )
+
+
+class HobbsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Hobbs
+        fields = ('pk', 'hobbs_time', 'type', 'hobbs', 'tail')

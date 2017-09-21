@@ -87,10 +87,8 @@ export default {
                 revision: this.revision,
             })
             .then((response) => {
-                const { success, hobbs_list } = response.data;
-                if (success) {
-                    this.hobbsList = hobbs_list;
-                }
+                const { hobbs_list } = response.data;
+                this.hobbsList = hobbs_list;
             });
         },
         handleChangeAnchorDate() {

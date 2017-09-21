@@ -6,5 +6,11 @@ class APIException(exceptions.APIException):
         if 'status' in kwargs:
             self.status = kwargs.pop('status')
         else:
-            self.status = 200
+            self.status = 500
+
+        if 'response' in kwargs:
+            self.response = kwargs.pop('response')
+        else:
+            self.response = None
+
         super(APIException, self).__init__(*args, **kwargs)

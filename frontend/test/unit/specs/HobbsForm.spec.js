@@ -73,16 +73,11 @@ describe('HobbsForm.vue', () => {
     it('should react to \'load-hobbs\' event by loading values from api', (done) => {
         axiosGetStub.resolves({
             data: {
-                success: true,
-                hobbs: JSON.stringify([{
-                    pk: 1,
-                    fields: {
-                        type: 1,
-                        tail: testData.tail.id,
-                        hobbs: 1.5,
-                        hobbs_time: hobbsTimeString,
-                    },
-                }]),
+                pk: 1,
+                type: 1,
+                tail: testData.tail.id,
+                hobbs: 1.5,
+                hobbs_time: hobbsTimeString,
             }
         })
 
@@ -109,11 +104,7 @@ describe('HobbsForm.vue', () => {
     it('\'submitForm\' should call save api with correct data', () => {
         const hobbsTime = new Date(hobbsTimeString)
 
-        axiosPostStub.resolves({
-            data: {
-                success: true,
-            }
-        })
+        axiosPostStub.resolves({})
 
         const Constructor = Vue.extend(HobbsForm)
         const vm = new Constructor({
@@ -140,11 +131,7 @@ describe('HobbsForm.vue', () => {
     it('\'saveAndAddAnother\' should reset the form after save', () => {
         const hobbsTime = new Date(hobbsTimeString)
 
-        axiosPostStub.resolves({
-            data: {
-                success: true,
-            }
-        })
+        axiosPostStub.resolves({})
 
         const Constructor = Vue.extend(HobbsForm)
         const vm = new Constructor({
@@ -171,7 +158,6 @@ describe('HobbsForm.vue', () => {
 
         axiosPostStub.resolves({
             data: {
-                success: true,
                 hobbs_id: 11,
             }
         })

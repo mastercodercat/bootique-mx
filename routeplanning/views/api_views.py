@@ -31,19 +31,20 @@ from routeplanning.forms import *
 from routeplanning.permissions import GanttReadPermission
 from routeplanning.permissions import GanttWritePermission
 from routeplanning.serializers import DataTableFlightSerializer
+from routeplanning.serializers import HobbsSerializer
 
 
 class DeleteTailView(RetrieveDestroyAPIView):
     queryset = Tail.objects.all()
     lookup_url_kwarg = 'tail_id'
-    error_message = 'Error occurred while deleting tail'
+    delete_error_message = 'Error occurred while deleting tail'
     permission_classes = (IsAuthenticated, GanttWritePermission)
 
 
 class DeleteLineView(RetrieveDestroyAPIView):
     queryset = Line.objects.all()
     lookup_url_kwarg = 'line_id'
-    error_message = 'Error occurred while deleting line'
+    delete_error_message = 'Error occurred while deleting line'
     permission_classes = (IsAuthenticated, GanttWritePermission)
 
 
@@ -82,12 +83,11 @@ class FlightListView(DataTablePaginatedListView):
         return Flight.objects.count()
 
 
-class LoadDataView(APIView, GanttRevisionMixin):
+class LoadDataView(GanttRevisionMixin, APIView):
     permission_classes = (IsAuthenticated, GanttReadPermission)
     
     def _get(self, *args, **kwargs):
-        request = args[0]
-
+        request = self.request
         start_time = datetime.fromtimestamp(int(request.query_params.get('startdate')), tz=utc)
         end_time = datetime.fromtimestamp(int(request.query_params.get('enddate')), tz=utc)
         assignments_only = request.query_params.get('assignments_only')
@@ -212,42 +212,31 @@ class LoadDataView(APIView, GanttRevisionMixin):
         }
 
 
-@login_required
-@gantt_writable_required
-@api_view(['POST'])
-def api_assign_flight(request):
-    result = {
-        'success': False,
-        'assigned_flights': {},
-        'duplication': False,
-        'time_conflicts': [],
-        'physically_invalid': False,
-        'physical_conflicts': [],
-    }
+class AssignFlightView(GanttRevisionMixin, APIView):
+    permission_classes = (IsAuthenticated, GanttWritePermission)
 
-    try:
-        flight_data = json.loads(request.data.get('flight_data'))
-        revision_id = request.data.get('revision')
-    except:
-        result['error'] = 'Invalid parameters'
-        return Response(result, status=400)
+    def _post(self, *args, **kwargs):
+        request = self.request
 
-    if revision_id and int(revision_id) > 0:
         try:
-            revision = Revision.objects.get(pk=revision_id)
-            if revision:
-                revision.check_draft_created()
-        except Revision.DoesNotExist:
-            result['error'] = 'Revision not found'
-            return Response(result, status=400)
-    else:
-        revision = None
+            flight_data = json.loads(request.data.get('flight_data'))
+        except:
+            raise APIException('Invalid parameters', status=400)
 
-    physical_conflicts = []
-    time_conflicts = []
+        revision = self.get_revision(request.data.get('revision'), create_draft=True)
 
-    for data in flight_data:
-        try:
+        result = {
+            'assigned_flights': {},
+            'duplication': False,
+            'time_conflicts': [],
+            'physically_invalid': False,
+            'physical_conflicts': [],
+        }
+
+        physical_conflicts = []
+        time_conflicts = []
+
+        for data in flight_data:
             flight_id = data['flight']
             tail_number = data['tail']
             tail = Tail.objects.get(number=tail_number)
@@ -330,54 +319,42 @@ def api_assign_flight(request):
                 'actual_hobbs': Hobbs.get_projected_value(tail, assignment.end_time, revision),
                 'next_due_hobbs': Hobbs.get_next_due_value(tail, assignment.end_time),
             }
-        except Exception as e:
-            # print(str(e))
-            pass
 
-    result['physical_conflicts'] = physical_conflicts
-    result['time_conflicts'] = time_conflicts
-    result['success'] = True
-    return Response(result)
+        result['physical_conflicts'] = physical_conflicts
+        result['time_conflicts'] = time_conflicts
+        return result
 
 
-@login_required
-@gantt_writable_required
-@api_view(['POST'])
-def api_assign_status(request):
-    result = {
-        'success': False,
-        'physical_conflicts': [],
-        'time_conflicts': [],
-    }
+class AssignStatusView(GanttRevisionMixin, APIView):
+    permission_classes = (IsAuthenticated, GanttWritePermission)
 
-    try:
-        tail_number = request.data.get('tail')
-        start_time = dateutil.parser.parse(request.data.get('start_time'))
-        end_time = dateutil.parser.parse(request.data.get('end_time'))
-        status = int(request.data.get('status'))
-        origin = request.data.get('origin') or ''     # used for unscheduled flight assignments
-        destination = request.data.get('destination') or ''   # used for unscheduled flight assignments
-        revision_id = request.data.get('revision')
-    except:
-        result['error'] = 'Invalid parameters'
-        return Response(result, status=400)
+    def _post(self, *args, **kwargs):
+        request = self.request
 
-    if revision_id and int(revision_id) > 0:
         try:
-            revision = Revision.objects.get(pk=revision_id)
-            if revision:
-                revision.check_draft_created()
-        except Revision.DoesNotExist:
-            result['error'] = 'Revision not found'
-            return Response(result, status=400)
-    else:
-        revision = None
+            tail_number = request.data.get('tail')
+            start_time = dateutil.parser.parse(request.data.get('start_time'))
+            end_time = dateutil.parser.parse(request.data.get('end_time'))
+            status = int(request.data.get('status'))
+            origin = request.data.get('origin') or ''     # used for unscheduled flight assignments
+            destination = request.data.get('destination') or ''   # used for unscheduled flight assignments
+        except:
+            raise APIException('Invalid parameters', status=400)
 
-    physical_conflicts = []
-    time_conflicts = []
+        revision = self.get_revision(request.data.get('revision'), create_draft=True)
 
-    try:
-        tail = Tail.objects.get(number=tail_number)
+        result = {
+            'physical_conflicts': [],
+            'time_conflicts': [],
+        }
+
+        physical_conflicts = []
+        time_conflicts = []
+
+        try:
+            tail = Tail.objects.get(number=tail_number)
+        except Tail.DoesNotExist:
+            raise APIException('Tail not found', status=400)
 
         duplicated_assignment = Assignment.duplication_check(revision, tail, start_time, end_time)
         if duplicated_assignment:
@@ -403,9 +380,8 @@ def api_assign_status(request):
                     } if origin and destination else None
                 }
             })
-            result['error'] = 'Duplicated assignment'
             result['time_conflicts'] = time_conflicts
-            return Response(result)
+            raise APIException('Duplicated assignment', response=result, status=400)
 
         if status == Assignment.STATUS_UNSCHEDULED_FLIGHT:
             conflict = Assignment.physical_conflict_check(revision, tail, origin, destination, start_time, end_time)
@@ -424,8 +400,7 @@ def api_assign_status(request):
                     'conflict': conflict['direction'],
                 })
                 result['physical_conflicts'] = physical_conflicts
-                result['error'] = 'Physically invalid assignment'
-                return Response(result)
+                raise APIException('Physically invalid assignment', response=result, status=400)
 
         assignment = Assignment(
             flight_number=0,
@@ -450,230 +425,192 @@ def api_assign_status(request):
         assignment.apply_revision(revision)
         assignment.save()
 
-    except Exception as e:
-        result['error'] = str(e)
-        return Response(result, status=500)
-
-    result['success'] = True
-    result['id'] = assignment.id
-    return Response(result)
+        result['id'] = assignment.id
+        return result
 
 
-@login_required
-@gantt_writable_required
-@api_view(['POST'])
-def api_remove_assignment(request):
-    result = {
-        'success': False,
-        'removed_assignments': [],
-    }
+class RemoveAssignmentView(GanttRevisionMixin, APIView):
+    permission_classes = (IsAuthenticated, GanttWritePermission)
 
-    try:
-        assignment_ids = json.loads(request.data.get('assignment_data'))
+    def _post(self, *args, **kwargs):
+        request = self.request
+
+        try:
+            assignment_ids = json.loads(request.data.get('assignment_data'))
+        except:
+            raise APIException('Invalid parameters', status=400)
+
         revision_id = request.data.get('revision')
-    except:
-        result['error'] = 'Invalid parameters'
-        return Response(result, status=400)
+        revision = self.get_revision(revision_id, create_draft=True)
 
-    if revision_id and int(revision_id) > 0:
-        try:
-            revision = Revision.objects.get(pk=revision_id)
-            if revision:
-                revision.check_draft_created()
-        except Revision.DoesNotExist:
-            result['error'] = 'Revision not found'
-            return Response(result, status=400)
-    else:
-        revision = None
+        result = {
+            'removed_assignments': [],
+        }
 
-    for assignment_id in assignment_ids:
-        try:
-            assignment = Assignment.objects.get(pk=assignment_id)
-            assignment.delete()
-            if assignment.status == Assignment.STATUS_UNSCHEDULED_FLIGHT:
-                assignment.flight.delete()
-
-            result['removed_assignments'].append(assignment_id)
-        except Exception as e:
-            # print(str(e))
-            pass
-
-    result['success'] = True
-    return Response(result)
-
-
-@login_required
-@gantt_writable_required
-@api_view(['POST'])
-def api_move_assignment(request):
-    result = {
-        'success': False,
-        'assignments': {},
-        'duplication': False,
-        'time_conflicts': [],
-        'physically_invalid': False,
-        'physical_conflicts': [],
-    }
-
-    try:
-        assignment_data = json.loads(request.data.get('assignment_data'))
-        revision_id = request.data.get('revision')
-    except:
-        result['error'] = 'Invalid parameters'
-        return Response(result, status=400)
-
-    if revision_id and int(revision_id) > 0:
-        try:
-            revision = Revision.objects.get(pk=revision_id)
-            if revision:
-                revision.check_draft_created()
-        except Revision.DoesNotExist:
-            result['error'] = 'Revision not found'
-            return Response(result, status=400)
-    else:
-        revision = None
-
-    physical_conflicts = []
-    time_conflicts = []
-
-    for data in assignment_data:
-        try:
-            assignment_id = data['assignment_id']
-            tail_number = data['tail']
+        for assignment_id in assignment_ids:
             try:
-                start_time_str = data['start_time']
-                if start_time_str:
-                    start_time = dateutil.parser.parse(start_time_str)
-                else:
+                assignment = Assignment.objects.get(pk=assignment_id)
+                assignment.delete()
+                if assignment.status == Assignment.STATUS_UNSCHEDULED_FLIGHT:
+                    assignment.flight.delete()
+                result['removed_assignments'].append(assignment_id)
+            except Assignment.DoesNotExist:
+                pass
+
+        return result
+
+
+class MoveAssignmentView(GanttRevisionMixin, APIView):
+    permission_classes = (IsAuthenticated, GanttWritePermission)
+
+    def _post(self, *args, **kwargs):
+        request = self.request
+
+        try:
+            assignment_data = json.loads(request.data.get('assignment_data'))
+        except:
+            raise APIException('Invalid parameters', status=400)
+
+        revision_id = request.data.get('revision')
+        revision = self.get_revision(revision_id, create_draft=True)
+
+        result = {
+            'assignments': {},
+            'duplication': False,
+            'time_conflicts': [],
+            'physically_invalid': False,
+            'physical_conflicts': [],
+        }
+
+        physical_conflicts = []
+        time_conflicts = []
+
+        for data in assignment_data:
+            try:
+                assignment_id = data['assignment_id']
+                tail_number = data['tail']
+                try:
+                    start_time_str = data['start_time']
+                    if start_time_str:
+                        start_time = dateutil.parser.parse(start_time_str)
+                    else:
+                        start_time = None
+                except:
+                    start_time_str = None
                     start_time = None
-            except:
-                start_time_str = None
-                start_time = None
 
-            assignment = Assignment.objects.select_related('flight').get(pk=assignment_id)
-            tail = Tail.objects.get(number=tail_number)
+                assignment = Assignment.objects.select_related('flight').get(pk=assignment_id)
+                tail = Tail.objects.get(number=tail_number)
 
-            if not start_time:
-                start_time = assignment.start_time
-                end_time = assignment.end_time
-            else:
-                end_time = start_time + (assignment.end_time - assignment.start_time)
+                if not start_time:
+                    start_time = assignment.start_time
+                    end_time = assignment.end_time
+                else:
+                    end_time = start_time + (assignment.end_time - assignment.start_time)
 
-            duplicated_assignment = Assignment.duplication_check(revision, tail, start_time, end_time, assignment)
-            if duplicated_assignment:
-                time_conflicts.append({
-                    'assignment': {
-                        'id': duplicated_assignment.id,
-                        'start_time': duplicated_assignment.start_time,
-                        'end_time': duplicated_assignment.end_time,
-                        'status': duplicated_assignment.status,
-                        'flight': {
-                            'id': duplicated_assignment.flight.id,
-                            'number': duplicated_assignment.flight.number,
-                            'origin': duplicated_assignment.flight.origin,
-                            'destination': duplicated_assignment.flight.destination,
-                        } if duplicated_assignment.flight else None,
-                    },
-                    'editing_assignment': {
-                        'status': assignment.status,
-                        'flight': {
-                            'number': assignment.flight.number,
-                            'origin': assignment.flight.origin,
-                            'destination': assignment.flight.destination,
-                        } if assignment.flight else None
-                    }
-                })
-                result['duplication'] = True
-                continue
-
-            try:
-                if assignment.flight:
-                    conflict = Assignment.physical_conflict_check(revision, tail, assignment.flight.origin, assignment.flight.destination, start_time, end_time, assignment)
-                    if conflict:
-                        physical_conflicts.append({
+                duplicated_assignment = Assignment.duplication_check(revision, tail, start_time, end_time, assignment)
+                if duplicated_assignment:
+                    time_conflicts.append({
+                        'assignment': {
+                            'id': duplicated_assignment.id,
+                            'start_time': duplicated_assignment.start_time,
+                            'end_time': duplicated_assignment.end_time,
+                            'status': duplicated_assignment.status,
                             'flight': {
-                                'number': conflict['conflict'].flight.number,
-                                'origin': conflict['conflict'].flight.origin,
-                                'destination': conflict['conflict'].flight.destination,
-                            },
-                            'assigning_flight': {
+                                'id': duplicated_assignment.flight.id,
+                                'number': duplicated_assignment.flight.number,
+                                'origin': duplicated_assignment.flight.origin,
+                                'destination': duplicated_assignment.flight.destination,
+                            } if duplicated_assignment.flight else None,
+                        },
+                        'editing_assignment': {
+                            'status': assignment.status,
+                            'flight': {
                                 'number': assignment.flight.number,
                                 'origin': assignment.flight.origin,
                                 'destination': assignment.flight.destination,
-                            },
-                            'conflict': conflict['direction'],
-                        })
-                        result['physically_invalid'] = True
-                        continue
-            except ObjectDoesNotExist:
+                            } if assignment.flight else None
+                        }
+                    })
+                    result['duplication'] = True
+                    continue
+
+                try:
+                    if assignment.flight:
+                        conflict = Assignment.physical_conflict_check(revision, tail, assignment.flight.origin, assignment.flight.destination, start_time, end_time, assignment)
+                        if conflict:
+                            physical_conflicts.append({
+                                'flight': {
+                                    'number': conflict['conflict'].flight.number,
+                                    'origin': conflict['conflict'].flight.origin,
+                                    'destination': conflict['conflict'].flight.destination,
+                                },
+                                'assigning_flight': {
+                                    'number': assignment.flight.number,
+                                    'origin': assignment.flight.origin,
+                                    'destination': assignment.flight.destination,
+                                },
+                                'conflict': conflict['direction'],
+                            })
+                            result['physically_invalid'] = True
+                            continue
+                except ObjectDoesNotExist:
+                    pass
+
+                assignment.tail = tail
+                try:
+                    if start_time_str:
+                        if assignment.status == Assignment.STATUS_UNSCHEDULED_FLIGHT:
+                            assignment.flight.scheduled_out_datetime = start_time
+                            assignment.flight.scheduled_in_datetime = end_time
+                            assignment.flight.save()
+
+                        assignment.start_time = start_time
+                        assignment.end_time = end_time
+                    assignment.apply_revision(revision)
+                    assignment.save()
+                except ObjectDoesNotExist:
+                    pass
+
+                result['assignments'][assignment.id] = {
+                    'start_time': assignment.start_time.isoformat(),
+                    'end_time': assignment.end_time.isoformat(),
+                }
+            except Exception as e:
+                # print(str(e))
                 pass
 
-            assignment.tail = tail
-            try:
-                if start_time_str:
-                    if assignment.status == Assignment.STATUS_UNSCHEDULED_FLIGHT:
-                        assignment.flight.scheduled_out_datetime = start_time
-                        assignment.flight.scheduled_in_datetime = end_time
-                        assignment.flight.save()
-
-                    assignment.start_time = start_time
-                    assignment.end_time = end_time
-                assignment.apply_revision(revision)
-                assignment.save()
-            except ObjectDoesNotExist:
-                pass
-
-            result['assignments'][assignment.id] = {
-                'start_time': assignment.start_time.isoformat(),
-                'end_time': assignment.end_time.isoformat(),
-            }
-        except Exception as e:
-            # print(str(e))
-            pass
-
-    result['physical_conflicts'] = physical_conflicts
-    result['time_conflicts'] = time_conflicts
-    result['success'] = True
-    return Response(result)
+        result['physical_conflicts'] = physical_conflicts
+        result['time_conflicts'] = time_conflicts
+        return result
 
 
-@login_required
-@gantt_writable_required
-@api_view(['POST'])
-def api_resize_assignment(request):
-    result = {
-        'success': False,
-        'time_conflicts': [],
-    }
+class ResizeAssignmentView(GanttRevisionMixin, APIView):
+    permission_classes = (IsAuthenticated, GanttWritePermission)
 
-    try:
-        assignment_id = request.data.get('assignment_id')
-        revision_id = request.data.get('revision')
-        pos = request.data.get('position')  # start or end
-        diff_seconds = round(float(request.data.get('diff_seconds')) / 300.0) * 300.0     # changed time in seconds
-    except:
-        result['error'] = 'Invalid parameters'
-        return Response(result, status=400)
+    def _post(self, *args, **kwargs):
+        request = self.request
 
-    if revision_id and int(revision_id) > 0:
         try:
-            revision = Revision.objects.get(pk=revision_id)
-            if revision:
-                revision.check_draft_created()
-        except Revision.DoesNotExist:
-            result['error'] = 'Revision not found'
-            return Response(result, status=400)
-    else:
-        revision = None
+            assignment_id = request.data.get('assignment_id')
+            pos = request.data.get('position')  # start or end
+            diff_seconds = round(float(request.data.get('diff_seconds')) / 300.0) * 300.0     # changed time in seconds
+        except:
+            raise APIException('Invalid parameters', status=400)
 
-    time_conflicts = []
+        revision_id = request.data.get('revision')
+        revision = self.get_revision(revision_id, create_draft=True)
 
-    try:
+        result = {
+            'time_conflicts': [],
+        }
+
+        time_conflicts = []
+
         try:
             assignment = Assignment.objects.get(pk=assignment_id)
         except:
-            result['error'] = 'Invalid assignment ID'
-            return Response(result, status=400)
+            raise APIException('Invalid assignment ID', status=400)
 
         start_time = assignment.start_time
         end_time = assignment.end_time
@@ -683,8 +620,7 @@ def api_resize_assignment(request):
             start_time = start_time - timedelta(seconds=diff_seconds)
 
         if start_time >= end_time:
-            result['error'] = 'Start time cannot be later than end time'
-            return Response(result, status=400)
+            raise APIException('Start time cannot be later than end time', status=400)
 
         duplicated_assignment = Assignment.duplication_check(revision, assignment.tail, start_time, end_time, assignment)
         if duplicated_assignment:
@@ -711,8 +647,7 @@ def api_resize_assignment(request):
                 }
             })
             result['time_conflicts'] = time_conflicts
-            result['error'] = 'Duplicated assignment'
-            return Response(result)
+            raise APIException('Duplicated assignment', response=result, status=400)
 
         assignment.start_time = start_time
         assignment.end_time = end_time
@@ -724,147 +659,116 @@ def api_resize_assignment(request):
             assignment.flight.scheduled_in_datetime = end_time
             assignment.flight.save()
 
-    except Exception as e:
-        # print(str(e))
-        result['error'] = 'Error occurred during operations'
-        return Response(result, status=500)
-
-    result['success'] = True
-    result['start_time'] = assignment.start_time.isoformat()
-    result['end_time'] = assignment.end_time.isoformat()
-    return Response(result)
+        result['start_time'] = assignment.start_time.isoformat()
+        result['end_time'] = assignment.end_time.isoformat()
+        return result
 
 
-@login_required
-@gantt_writable_required
-@api_view(['POST'])
-def api_upload_csv(request): # pragma: no cover
-    result = {
-        'success': False,
-    }
+class UploadCSVView(GanttRevisionMixin, APIView):
+    permission_classes = (IsAuthenticated, GanttWritePermission)
 
-    filepath = settings.STATIC_ROOT + '/uploads/' + str(totimestamp(datetime_now_utc())) + '_' + str(random.randint(100000, 999999)) + '.csv'
-    try:
-        file = request.FILES['csvfile']
-        destination = open(filepath, 'wb+')
-        for chunk in file.chunks():
-            destination.write(chunk)
-            destination.close()
-    except Exception as e:
-        result['error'] = str(e)
-        return Response(result)
+    def _post(self, *args, **kwargs):
+        request = self.request
 
-    with open(filepath) as csvfile:
-        csvreader = csv.reader(csvfile, delimiter=',', quotechar='"')
-        now = datetime_now_utc()
+        filepath = settings.STATIC_ROOT + '/uploads/' + str(totimestamp(datetime_now_utc())) + '_' + str(random.randint(100000, 999999)) + '.csv'
+        try:
+            file = request.FILES['csvfile']
+            destination = open(filepath, 'wb+')
+            for chunk in file.chunks():
+                destination.write(chunk)
+                destination.close()
+        except Exception as e:
+            raise APIException(str(e), status=500)
 
-        for row in csvreader:
-            try:
-                flight_number = int(row[1][3:])
-                origin = row[2]
-                destination = row[3]
-                scheduled_out_datetime = str_to_datetime(row[4])
-                scheduled_in_datetime = str_to_datetime(row[6])
+        with open(filepath) as csvfile:
+            csvreader = csv.reader(csvfile, delimiter=',', quotechar='"')
+            now = datetime_now_utc()
 
-                # if scheduled_out_datetime < now:
-                #     continue
+            for row in csvreader:
+                try:
+                    flight_number = int(row[1][3:])
+                    origin = row[2]
+                    destination = row[3]
+                    scheduled_out_datetime = str_to_datetime(row[4])
+                    scheduled_in_datetime = str_to_datetime(row[6])
 
-                flight_to_update = None
+                    # if scheduled_out_datetime < now:
+                    #     continue
 
-                closest_past_date = Flight.objects \
-                    .filter(number=flight_number, scheduled_out_datetime__lte=scheduled_out_datetime) \
-                    .aggregate(closest_past_date=Max('scheduled_out_datetime'))['closest_past_date']
-                if closest_past_date and closest_past_date.year == scheduled_out_datetime.year \
-                    and closest_past_date.month == scheduled_out_datetime.month \
-                    and closest_past_date.day == scheduled_out_datetime.day:
-                    flight_to_update = Flight.objects.select_related('assignment').get(
-                        number=flight_number,
-                        scheduled_out_datetime=closest_past_date
-                    )
+                    flight_to_update = None
 
-                if not flight_to_update:
-                    closest_next_date = Flight.objects \
-                        .filter(number=flight_number, scheduled_out_datetime__gt=scheduled_out_datetime) \
-                        .aggregate(closest_next_date=Max('scheduled_out_datetime'))['closest_next_date']
-                    if closest_next_date and closest_next_date.year == scheduled_out_datetime.year \
-                        and closest_next_date.month == scheduled_out_datetime.month \
-                        and closest_next_date.day == scheduled_out_datetime.day:
+                    closest_past_date = Flight.objects \
+                        .filter(number=flight_number, scheduled_out_datetime__lte=scheduled_out_datetime) \
+                        .aggregate(closest_past_date=Max('scheduled_out_datetime'))['closest_past_date']
+                    if closest_past_date and closest_past_date.year == scheduled_out_datetime.year \
+                        and closest_past_date.month == scheduled_out_datetime.month \
+                        and closest_past_date.day == scheduled_out_datetime.day:
                         flight_to_update = Flight.objects.select_related('assignment').get(
                             number=flight_number,
-                            scheduled_out_datetime=closest_next_date
+                            scheduled_out_datetime=closest_past_date
                         )
 
-                if flight_to_update:
-                    flight_to_update.scheduled_out_datetime = scheduled_out_datetime
-                    flight_to_update.scheduled_in_datetime = scheduled_in_datetime
-                    flight_to_update.save()
+                    if not flight_to_update:
+                        closest_next_date = Flight.objects \
+                            .filter(number=flight_number, scheduled_out_datetime__gt=scheduled_out_datetime) \
+                            .aggregate(closest_next_date=Max('scheduled_out_datetime'))['closest_next_date']
+                        if closest_next_date and closest_next_date.year == scheduled_out_datetime.year \
+                            and closest_next_date.month == scheduled_out_datetime.month \
+                            and closest_next_date.day == scheduled_out_datetime.day:
+                            flight_to_update = Flight.objects.select_related('assignment').get(
+                                number=flight_number,
+                                scheduled_out_datetime=closest_next_date
+                            )
 
-                    assignment = flight_to_update.get_assignment()
-                    if assignment:
-                        dup_assignments = Assignment.get_duplicated_assignments(assignment.tail, scheduled_out_datetime, scheduled_in_datetime, assignment)
-                        if dup_assignments.count() > 0:
-                            assignment.delete()
-                            dup_assignments.delete()
-                        else:
-                            assignment.start_time = scheduled_out_datetime
-                            assignment.end_time = scheduled_in_datetime
-                            assignment.save()
-                else:
-                    flight=Flight(
-                        number=flight_number,
-                        origin=origin,
-                        destination=destination,
-                        scheduled_out_datetime=scheduled_out_datetime,
-                        scheduled_in_datetime=scheduled_in_datetime
-                    )
-                    flight.save()
+                    if flight_to_update:
+                        flight_to_update.scheduled_out_datetime = scheduled_out_datetime
+                        flight_to_update.scheduled_in_datetime = scheduled_in_datetime
+                        flight_to_update.save()
 
-            except Exception as e:
-                # print(str(e))
-                pass
+                        assignment = flight_to_update.get_assignment()
+                        if assignment:
+                            dup_assignments = Assignment.get_duplicated_assignments(assignment.tail, scheduled_out_datetime, scheduled_in_datetime, assignment)
+                            if dup_assignments.count() > 0:
+                                assignment.delete()
+                                dup_assignments.delete()
+                            else:
+                                assignment.start_time = scheduled_out_datetime
+                                assignment.end_time = scheduled_in_datetime
+                                assignment.save()
+                    else:
+                        flight=Flight(
+                            number=flight_number,
+                            origin=origin,
+                            destination=destination,
+                            scheduled_out_datetime=scheduled_out_datetime,
+                            scheduled_in_datetime=scheduled_in_datetime
+                        )
+                        flight.save()
 
-    try:
-        os.remove(filepath)
-    except:
-        pass
+                except Exception as e:
+                    # print(str(e))
+                    pass
 
-    result['success'] = True
-    return Response(result)
+        try:
+            os.remove(filepath)
+        except:
+            pass
 
-
-@login_required
-@gantt_readable_required
-@api_view(['GET'])
-def api_get_hobbs(request, hobbs_id=None):
-    result = {
-        'success': False,
-    }
-
-    try:
-        hobbs = Hobbs.objects.filter(pk=hobbs_id)
-    except:     # pragma: no cover
-        return Response(result, status=400)
-
-    result['success'] = True
-    result['hobbs'] = serializers.serialize("json", hobbs)
-    return Response(result)
+        return {}
 
 
-@login_required
-@gantt_writable_required
-@api_view(['POST'])
-def api_delete_actual_hobbs(request, hobbs_id=None):
-    result = {
-        'success': False,
-    }
+class HobbsView(RetrieveDestroyAPIView):
+    serializer_class = HobbsSerializer
+    lookup_url_kwarg = 'hobbs_id'
+    retrieve_error_message = 'Hobbs not found'
+    delete_error_message = 'Error occurred while deleting hobbs'
+    permission_classes = (IsAuthenticated, GanttWritePermission)
 
-    try:
-        Hobbs.objects.filter(pk=hobbs_id).filter(type=Hobbs.TYPE_ACTUAL).delete()
-    except:     # pragma: no cover
-        return Response(result, status=400)
-
-    result['success'] = True
-    return Response(result)
+    def get_queryset(self):
+        if self.request.method == 'DELETE':
+            return Hobbs.objects.filter(type=Hobbs.TYPE_ACTUAL)
+        else:
+            return Hobbs.objects.all()
 
 
 @login_required
