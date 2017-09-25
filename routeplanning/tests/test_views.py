@@ -38,11 +38,11 @@ class RoutePlanningViewsTestCase(TestCase):
 
         return Revision.objects.first()
 
-    @patch('common.decorators.can_read_gantt', return_value=False)
+    @patch('routeplanning.permissions.can_read_gantt', return_value=False)
     def test_view_index_no_permission_fail(self, mock):
         self.no_role_user_attempt_test(reverse('routeplanning:index'))
 
-    @patch('common.decorators.can_read_gantt', return_value=True)
+    @patch('routeplanning.permissions.can_read_gantt', return_value=True)
     def test_view_index_authorized_success(self, mock):
         view_url = reverse('routeplanning:index')
         self.authorized_attempt_test(view_url, 'gantt.html')
@@ -53,7 +53,7 @@ class RoutePlanningViewsTestCase(TestCase):
         self.authorized_attempt_test(view_url + '?mode=5&end=1496008800', 'gantt.html')
         self.authorized_attempt_test(view_url + '?mode=6&end=1496008800', 'gantt.html')
 
-    @patch('common.decorators.can_read_gantt', return_value=True)
+    @patch('routeplanning.permissions.can_read_gantt', return_value=True)
     def test_view_index_context_when_session_saved_states(self, mock):
         session = self.client.session
         session['start_tmstmp'] = 1503071850
@@ -65,7 +65,7 @@ class RoutePlanningViewsTestCase(TestCase):
         self.assertEqual(response.context['start_tmstmp'], 1503071850)
         self.assertEqual(response.context['mode'], '2')
 
-    @patch('common.decorators.can_read_gantt', return_value=True)
+    @patch('routeplanning.permissions.can_read_gantt', return_value=True)
     def test_view_index_context_when_session_saved_states_and_url_params_exist(self, mock):
         session = self.client.session
         session['start_tmstmp'] = 1503071850
@@ -77,7 +77,7 @@ class RoutePlanningViewsTestCase(TestCase):
         self.assertEqual(response.context['start_tmstmp'], 1503071851)
         self.assertEqual(response.context['mode'], '3')
 
-    @patch('common.decorators.can_read_gantt', return_value=True)
+    @patch('routeplanning.permissions.can_read_gantt', return_value=True)
     def test_view_index_context_when_session_saved_states_and_end_tmstmp_exist(self, mock):
         session = self.client.session
         session['start_tmstmp'] = 1503071850
@@ -87,12 +87,12 @@ class RoutePlanningViewsTestCase(TestCase):
         response = self.client.get(view_url + '?end=1503071900')
         self.assertEqual(response.context['start_tmstmp'], 1503071900 - 14 * 24 * 3600)
 
-    @patch('common.decorators.can_read_gantt', return_value=False)
+    @patch('routeplanning.permissions.can_read_gantt', return_value=False)
     def test_view_current_published_gantt_no_permission_fail(self, mock):
         view_url = reverse('routeplanning:view_current_published_gantt')
         self.no_role_user_attempt_test(view_url)
 
-    @patch('common.decorators.can_read_gantt', return_value=True)
+    @patch('routeplanning.permissions.can_read_gantt', return_value=True)
     def test_view_current_published_gantt_authorized_success(self, mock):
         view_url = reverse('routeplanning:view_current_published_gantt')
         self.authorized_attempt_test(view_url, 'gantt.html')
@@ -103,7 +103,7 @@ class RoutePlanningViewsTestCase(TestCase):
         self.authorized_attempt_test(view_url + '?mode=5&end=1496008800', 'gantt.html')
         self.authorized_attempt_test(view_url + '?mode=6&end=1496008800', 'gantt.html')
 
-    @patch('common.decorators.can_read_gantt', return_value=True)
+    @patch('routeplanning.permissions.can_read_gantt', return_value=True)
     def test_view_current_published_gantt_context_when_session_saved_states(self, mock):
         session = self.client.session
         session['start_tmstmp'] = 1503071850
@@ -115,7 +115,7 @@ class RoutePlanningViewsTestCase(TestCase):
         self.assertEqual(response.context['start_tmstmp'], 1503071850)
         self.assertEqual(response.context['mode'], '2')
 
-    @patch('common.decorators.can_read_gantt', return_value=True)
+    @patch('routeplanning.permissions.can_read_gantt', return_value=True)
     def test_view_current_published_gantt_context_when_session_saved_states_and_url_params_exist(self, mock):
         session = self.client.session
         session['start_tmstmp'] = 1503071850
@@ -127,7 +127,7 @@ class RoutePlanningViewsTestCase(TestCase):
         self.assertEqual(response.context['start_tmstmp'], 1503071851)
         self.assertEqual(response.context['mode'], '3')
 
-    @patch('common.decorators.can_read_gantt', return_value=True)
+    @patch('routeplanning.permissions.can_read_gantt', return_value=True)
     def test_view_current_published_gantt_context_when_session_saved_states_and_end_tmstmp_exist(self, mock):
         session = self.client.session
         session['start_tmstmp'] = 1503071850
@@ -137,18 +137,18 @@ class RoutePlanningViewsTestCase(TestCase):
         response = self.client.get(view_url + '?end=1503071900')
         self.assertEqual(response.context['start_tmstmp'], 1503071900 - 14 * 24 * 3600)
 
-    @patch('common.decorators.can_write_gantt', return_value=False)
+    @patch('routeplanning.permissions.can_write_gantt', return_value=False)
     def test_view_add_tail_no_permission_fail(self, mock):
         view_url = reverse('routeplanning:add_tail')
         self.no_role_user_attempt_test(view_url)
 
-    @patch('common.decorators.can_write_gantt', return_value=True)
+    @patch('routeplanning.permissions.can_write_gantt', return_value=True)
     def test_view_add_tail_authorized_success(self, mock):
         view_url = reverse('routeplanning:add_tail')
         self.authorized_attempt_test(view_url, 'tail.html')
 
-    @patch('common.decorators.can_read_gantt', return_value=True)
-    @patch('common.decorators.can_write_gantt', return_value=True)
+    @patch('routeplanning.permissions.can_read_gantt', return_value=True)
+    @patch('routeplanning.permissions.can_write_gantt', return_value=True)
     def test_view_add_tail_save(self, mock_can_write_gantt, mock_can_read_gantt):
         view_url = reverse('routeplanning:add_tail')
         response = self.client.post(view_url, {
@@ -158,19 +158,19 @@ class RoutePlanningViewsTestCase(TestCase):
         self.assertRedirects(response, reverse('routeplanning:index'))
         self.assertNotEqual(Tail.objects.filter(number='N990XX').count(), 0)
 
-    @patch('common.decorators.can_read_gantt', return_value=True)
-    @patch('common.decorators.can_write_gantt', return_value=True)
+    @patch('routeplanning.permissions.can_read_gantt', return_value=True)
+    @patch('routeplanning.permissions.can_write_gantt', return_value=True)
     def test_view_add_tail_save_and_add_another(self, mock_can_write_gantt, mock_can_read_gantt):
         view_url = reverse('routeplanning:add_tail')
         response = self.client.post(view_url, {
             'number': 'N991XX',
             'action_after_save': 'save-and-add-another',
         })
-        self.assertTemplateUsed(response, 'tail.html')
         self.assertNotEqual(Tail.objects.filter(number='N991XX').count(), 0)
+        self.assertRedirects(response, reverse('routeplanning:add_tail'))
 
-    @patch('common.decorators.can_read_gantt', return_value=True)
-    @patch('common.decorators.can_write_gantt', return_value=True)
+    @patch('routeplanning.permissions.can_read_gantt', return_value=True)
+    @patch('routeplanning.permissions.can_write_gantt', return_value=True)
     def test_view_add_tail_save_and_continue(self, mock_can_write_gantt, mock_can_read_gantt):
         view_url = reverse('routeplanning:add_tail')
         response = self.client.post(view_url, {
@@ -182,7 +182,7 @@ class RoutePlanningViewsTestCase(TestCase):
             'tail_id': tail.id,
         }))
 
-    @patch('common.decorators.can_read_gantt', return_value=False)
+    @patch('routeplanning.permissions.can_read_gantt', return_value=False)
     def test_view_edit_tail_no_permission_fail(self, mock_can_read_gantt):
         tail = Tail.objects.get(number='N455BC')
         view_url = reverse('routeplanning:edit_tail', kwargs={
@@ -190,16 +190,16 @@ class RoutePlanningViewsTestCase(TestCase):
         })
         self.no_role_user_attempt_test(view_url)
 
-    @patch('common.decorators.can_read_gantt', return_value=True)
-    def test_view_edit_tail_no_permission_fail(self, mock_can_read_gantt):
+    @patch('routeplanning.permissions.can_write_gantt', return_value=True)
+    def test_view_edit_tail_authorized_success(self, mock_can_read_gantt):
         tail = Tail.objects.get(number='N455BC')
         view_url = reverse('routeplanning:edit_tail', kwargs={
             'tail_id': tail.id,
         })
         self.authorized_attempt_test(view_url, 'tail.html')
 
-    @patch('common.decorators.can_read_gantt', return_value=True)
-    @patch('routeplanning.views.page_views.can_write_gantt', return_value=False)
+    @patch('routeplanning.permissions.can_read_gantt', return_value=True)
+    @patch('routeplanning.permissions.can_write_gantt', return_value=False)
     def test_view_edit_tail_save_no_permission_fail(self, mock_can_write_gantt, mock_can_read_gantt):
         tail = Tail.objects.get(number='N455BC')
         view_url = reverse('routeplanning:edit_tail', kwargs={
@@ -211,8 +211,8 @@ class RoutePlanningViewsTestCase(TestCase):
         })
         self.assertEqual(response.status_code, 403)
 
-    @patch('common.decorators.can_read_gantt', return_value=True)
-    @patch('routeplanning.views.page_views.can_write_gantt', return_value=True)
+    @patch('routeplanning.permissions.can_read_gantt', return_value=True)
+    @patch('routeplanning.permissions.can_write_gantt', return_value=True)
     def test_view_edit_tail_save(self, mock_can_write_gantt, mock_can_read_gantt):
         tail = Tail.objects.get(number='N455BC')
         view_url = reverse('routeplanning:edit_tail', kwargs={
@@ -224,10 +224,9 @@ class RoutePlanningViewsTestCase(TestCase):
         })
         self.assertRedirects(response, reverse('routeplanning:index'))
 
-    @patch('common.decorators.can_read_gantt', return_value=True)
-    @patch('common.decorators.can_write_gantt', return_value=True)
-    @patch('routeplanning.views.page_views.can_write_gantt', return_value=True)
-    def test_view_edit_tail_save_and_add_another(self, mock_view_can_write_gantt, mock_can_write_gantt, mock_can_read_gantt):
+    @patch('routeplanning.permissions.can_read_gantt', return_value=True)
+    @patch('routeplanning.permissions.can_write_gantt', return_value=True)
+    def test_view_edit_tail_save_and_add_another(self, mock_can_write_gantt, mock_can_read_gantt):
         tail = Tail.objects.get(number='N455BC')
         view_url = reverse('routeplanning:edit_tail', kwargs={
             'tail_id': tail.id,
@@ -238,10 +237,9 @@ class RoutePlanningViewsTestCase(TestCase):
         })
         self.assertRedirects(response, reverse('routeplanning:add_tail'))
 
-    @patch('common.decorators.can_read_gantt', return_value=True)
-    @patch('common.decorators.can_write_gantt', return_value=True)
-    @patch('routeplanning.views.page_views.can_write_gantt', return_value=True)
-    def test_view_edit_tail_save_and_continue(self, mock_view_can_write_gantt, mock_can_write_gantt, mock_can_read_gantt):
+    @patch('routeplanning.permissions.can_read_gantt', return_value=True)
+    @patch('routeplanning.permissions.can_write_gantt', return_value=True)
+    def test_view_edit_tail_save_and_continue(self, mock_can_write_gantt, mock_can_read_gantt):
         tail = Tail.objects.get(number='N455BC')
         view_url = reverse('routeplanning:edit_tail', kwargs={
             'tail_id': tail.id,
@@ -250,7 +248,7 @@ class RoutePlanningViewsTestCase(TestCase):
             'number': 'N455BC',
             'action_after_save': 'save-and-continue',
         })
-        self.assertTemplateUsed(response, 'tail.html')
+        self.assertRedirects(response, view_url)
 
     @patch('routeplanning.permissions.can_write_gantt', return_value=False)
     def test_view_delete_tail_no_permission_fail(self, mock_can_write_gantt):
@@ -307,7 +305,7 @@ class RoutePlanningViewsTestCase(TestCase):
         })
         self.no_role_user_attempt_test(view_url)
 
-    @patch('common.decorators.can_write_gantt', return_value=True)
+    @patch('routeplanning.permissions.can_write_gantt', return_value=True)
     def test_view_coming_due_authorized_success(self, mock_can_write_gantt):
         tail = Tail.objects.first()
         view_url = reverse('routeplanning:coming_due', kwargs={
@@ -316,18 +314,18 @@ class RoutePlanningViewsTestCase(TestCase):
         })
         self.authorized_attempt_test(view_url, 'comingdue.html')
 
-    @patch('common.decorators.can_write_gantt', return_value=False)
+    @patch('routeplanning.permissions.can_write_gantt', return_value=False)
     def test_view_add_line_no_permission_fail(self, mock_can_write_gantt):
         view_url = reverse('routeplanning:add_line')
         self.no_role_user_attempt_test(view_url)
 
-    @patch('common.decorators.can_write_gantt', return_value=True)
+    @patch('routeplanning.permissions.can_write_gantt', return_value=True)
     def test_view_add_line_authorized_success(self, mock_can_write_gantt):
         view_url = reverse('routeplanning:add_line')
         self.authorized_attempt_test(view_url, 'line.html')
 
-    @patch('common.decorators.can_read_gantt', return_value=True)
-    @patch('common.decorators.can_write_gantt', return_value=True)
+    @patch('routeplanning.permissions.can_read_gantt', return_value=True)
+    @patch('routeplanning.permissions.can_write_gantt', return_value=True)
     def test_view_add_line_save(self, mock_can_write_gantt, mock_can_read_gantt):
         view_url = reverse('routeplanning:add_line')
         response = self.client.post(view_url, {
@@ -339,8 +337,8 @@ class RoutePlanningViewsTestCase(TestCase):
         self.assertRedirects(response, reverse('routeplanning:index'))
         self.assertNotEqual(Line.objects.filter(name='XXX/YYY').count(), 0)
 
-    @patch('common.decorators.can_read_gantt', return_value=True)
-    @patch('common.decorators.can_write_gantt', return_value=True)
+    @patch('routeplanning.permissions.can_read_gantt', return_value=True)
+    @patch('routeplanning.permissions.can_write_gantt', return_value=True)
     def test_view_add_line_save(self, mock_can_write_gantt, mock_can_read_gantt):
         view_url = reverse('routeplanning:add_line')
         response = self.client.post(view_url, {
@@ -352,8 +350,8 @@ class RoutePlanningViewsTestCase(TestCase):
         self.assertTemplateUsed(response, 'line.html')
         self.assertNotEqual(Line.objects.filter(name='XXX/ZZZ').count(), 0)
 
-    @patch('common.decorators.can_read_gantt', return_value=True)
-    @patch('common.decorators.can_write_gantt', return_value=True)
+    @patch('routeplanning.permissions.can_read_gantt', return_value=True)
+    @patch('routeplanning.permissions.can_write_gantt', return_value=True)
     def test_view_add_line_save(self, mock_can_write_gantt, mock_can_read_gantt):
         view_url = reverse('routeplanning:add_line')
         response = self.client.post(view_url, {
@@ -367,7 +365,7 @@ class RoutePlanningViewsTestCase(TestCase):
             'line_id': line.id,
         }))
 
-    @patch('common.decorators.can_read_gantt', return_value=False)
+    @patch('routeplanning.permissions.can_write_gantt', return_value=False)
     def test_view_edit_line_no_permission_fail(self, mock_can_read_gantt):
         line = Line.objects.get(name='LAX/MCE')
         view_url = reverse('routeplanning:edit_line', kwargs={
@@ -375,7 +373,7 @@ class RoutePlanningViewsTestCase(TestCase):
         })
         self.no_role_user_attempt_test(view_url)
 
-    @patch('common.decorators.can_read_gantt', return_value=True)
+    @patch('routeplanning.permissions.can_write_gantt', return_value=True)
     def test_view_edit_line_authorized_success(self, mock_can_read_gantt):
         line = Line.objects.get(name='LAX/MCE')
         view_url = reverse('routeplanning:edit_line', kwargs={
@@ -383,8 +381,8 @@ class RoutePlanningViewsTestCase(TestCase):
         })
         self.authorized_attempt_test(view_url, 'line.html')
 
-    @patch('common.decorators.can_read_gantt', return_value=True)
-    @patch('routeplanning.views.page_views.can_write_gantt', return_value=False)
+    @patch('routeplanning.permissions.can_read_gantt', return_value=True)
+    @patch('routeplanning.permissions.can_write_gantt', return_value=False)
     def test_view_edit_line_save_no_permission_fail(self, mock_view_can_write_gantt, mock_can_read_gantt):
         line = Line.objects.get(name='LAX/MCE')
         view_url = reverse('routeplanning:edit_line', kwargs={
@@ -398,8 +396,8 @@ class RoutePlanningViewsTestCase(TestCase):
         })
         self.assertEqual(response.status_code, 403)
 
-    @patch('common.decorators.can_read_gantt', return_value=True)
-    @patch('routeplanning.views.page_views.can_write_gantt', return_value=True)
+    @patch('routeplanning.permissions.can_read_gantt', return_value=True)
+    @patch('routeplanning.permissions.can_write_gantt', return_value=True)
     def test_view_edit_line_save(self, mock_view_can_write_gantt, mock_can_read_gantt):
         line = Line.objects.get(name='LAX/MCE')
         view_url = reverse('routeplanning:edit_line', kwargs={
@@ -413,10 +411,9 @@ class RoutePlanningViewsTestCase(TestCase):
         })
         self.assertRedirects(response, reverse('routeplanning:index'))
 
-    @patch('common.decorators.can_read_gantt', return_value=True)
-    @patch('common.decorators.can_write_gantt', return_value=True)
-    @patch('routeplanning.views.page_views.can_write_gantt', return_value=True)
-    def test_view_edit_line_save_and_add_another(self, mock_view_can_write_gantt, mock_can_write_gantt, mock_can_read_gantt):
+    @patch('routeplanning.permissions.can_read_gantt', return_value=True)
+    @patch('routeplanning.permissions.can_write_gantt', return_value=True)
+    def test_view_edit_line_save_and_add_another(self, mock_can_write_gantt, mock_can_read_gantt):
         line = Line.objects.get(name='LAX/MCE')
         view_url = reverse('routeplanning:edit_line', kwargs={
             'line_id': line.id,
@@ -429,8 +426,8 @@ class RoutePlanningViewsTestCase(TestCase):
         })
         self.assertRedirects(response, reverse('routeplanning:add_line'))
 
-    @patch('common.decorators.can_read_gantt', return_value=True)
-    @patch('routeplanning.views.page_views.can_write_gantt', return_value=True)
+    @patch('routeplanning.permissions.can_read_gantt', return_value=True)
+    @patch('routeplanning.permissions.can_write_gantt', return_value=True)
     def test_view_edit_line_save_and_continue(self, mock_view_can_write_gantt, mock_can_read_gantt):
         line = Line.objects.get(name='LAX/MCE')
         view_url = reverse('routeplanning:edit_line', kwargs={
@@ -442,7 +439,7 @@ class RoutePlanningViewsTestCase(TestCase):
             'part2': '702',
             'action_after_save': 'save-and-continue',
         })
-        self.assertTemplateUsed(response, 'line.html')
+        self.assertRedirects(response, view_url)
 
     @patch('routeplanning.permissions.can_write_gantt', return_value=False)
     def test_view_delete_line_no_permission_fail(self, mock_can_write_gantt):

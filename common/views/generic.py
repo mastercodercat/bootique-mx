@@ -1,3 +1,7 @@
+from django.core.exceptions import PermissionDenied
+from django.views.generic import base
+from django.views.generic import edit
+
 from rest_framework import views
 from rest_framework import generics
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
@@ -9,7 +13,26 @@ from common.helpers import *
 from common.exceptions import APIException
 from common.paginations import DataTablePagination
 
-from routeplanning.models import Revision
+
+class PermissionMixin(object):
+    def check_permissions(self):
+        if self.permission_classes:
+            for permission_class in self.permission_classes:
+                permission = permission_class()
+                if not permission.has_permission(self.request, self):
+                    raise PermissionDenied
+
+
+class GetPermissionMixin(object):
+    def get(self, *args, **kwargs):
+        self.check_permissions()
+        return super(GetPermissionMixin, self).get(*args, **kwargs)
+
+
+class PostPermissionMixin(object):
+    def post(self, *args, **kwargs):
+        self.check_permissions()
+        return super(PostPermissionMixin, self).post(*args, **kwargs)
 
 
 class APICallMixin(object):
@@ -35,20 +58,6 @@ class APICallMixin(object):
             return Response({
                 'error': error_message
             }, status=500)
-
-
-class GanttRevisionMixin(object):
-    def get_revision(self, revision_id, create_draft=False):
-        if revision_id and int(revision_id) > 0:
-            try:
-                revision = Revision.objects.get(pk=revision_id)
-                if create_draft and revision:
-                    revision.check_draft_created()
-                return revision
-            except Revision.DoesNotExist:
-                raise APIException('Revision not found', status=400)
-        else:
-            return None
 
 
 class APIView(APICallMixin, views.APIView):
@@ -132,3 +141,25 @@ class RetrieveDestroyAPIView(APICallMixin, generics.RetrieveDestroyAPIView):
 
     def delete(self, *args, **kwargs):
         return self.call_super_method('delete', self.delete_error_message, *args, **kwargs)
+
+
+class TemplateView(PermissionMixin, GetPermissionMixin, base.TemplateView):
+    pass
+
+
+class FormView(PermissionMixin, GetPermissionMixin, PostPermissionMixin, edit.FormView):
+    def get(self, *args, **kwargs):
+        self.check_permissions()
+        return super(FormView, self).get(*args, **kwargs)
+
+    def post(self, *args, **kwargs):
+        self.check_permissions()
+        return super(FormView, self).post(*args, **kwargs)
+
+
+class CreateView(PermissionMixin, GetPermissionMixin, PostPermissionMixin, edit.CreateView):
+    pass
+
+
+class UpdateView(PermissionMixin, GetPermissionMixin, PostPermissionMixin, edit.UpdateView):
+    pass

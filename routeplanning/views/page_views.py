@@ -4,264 +4,310 @@ import dateutil.parser
 import random
 import os
 import csv
+
+from django.conf import settings
+from django.contrib.auth.decorators import login_required
 from django.core import serializers
 from django.core.exceptions import ObjectDoesNotExist
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required
+from django.db.models import Q, ProtectedError, Max
 from django.http import HttpResponse, HttpResponseForbidden
 from django.middleware import csrf
-from django.db.models import Q, ProtectedError, Max
-from django.conf import settings
+from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
-from rest_framework.decorators import api_view, permission_classes, authentication_classes
-from rest_framework.response import Response
 
-from routeplanning.models import *
-from routeplanning.forms import *
+from rest_framework.permissions import IsAuthenticated
+
 from common.helpers import *
 from common.decorators import *
+from common.views.generic import TemplateView
+from common.views.generic import FormView
+from common.views.generic import CreateView
+from common.views.generic import UpdateView
+from routeplanning.models import *
+from routeplanning.forms import *
+from routeplanning.permissions import GanttReadPermission
+from routeplanning.permissions import GanttWritePermission
 
 
-def gantt_page_context(request, read_only):
-    if request.GET.get('mode'):
-        mode = request.GET.get('mode')
-    elif 'mode' in request.session:
-        mode = request.session['mode']
-    else:
-        mode = '4'
+class GanttPageView(TemplateView):
+    permission_classes = (IsAuthenticated, GanttReadPermission)
 
-    start_tmstmp = int(request.GET.get('start')) if request.GET.get('start') else 0
-    end_tmstmp = int(request.GET.get('end')) if request.GET.get('end') else 0
-    if not(start_tmstmp or end_tmstmp):
-        start_tmstmp = request.session['start_tmstmp'] \
-            if 'start_tmstmp' in request.session \
-            else None
+    def get_context_data(self, **kwargs):
+        context = super(GanttPageView, self).get_context_data(**kwargs)
 
-    tails = Tail.objects.all()
-    lines = Line.objects.order_by('name').all()
+        request = self.request
+        read_only = self.is_read_only()
 
-    days_options = { '1': 1, '2': 1, '3': 1, '4': 1, '5': 3, '6': 7, }          # Date mark count
-    hours_options = { '1': 3, '2': 6, '3': 12, '4': 24, '5': 24, '6': 6, }      # Hours mark count
-    units_per_hour_options = { '1': 4, '2': 2, '3': 1, '4': 1, '5': 1, '6': 0.25, }
-
-    days = days_options[mode]
-
-    hours = hours_options[mode]
-    units_per_hour = units_per_hour_options[mode]
-
-    if not start_tmstmp:
-        if end_tmstmp:
-            start_tmstmp = int(end_tmstmp) - 14 * 24 * 3600
+        if request.GET.get('mode'):
+            mode = request.GET.get('mode')
+        elif 'mode' in request.session:
+            mode = request.session['mode']
         else:
-            start_time = datetime_now_utc()
-            start_time = start_time.replace(hour=0, minute=0, second=0, microsecond=0)
-            start_tmstmp = totimestamp(start_time)
+            mode = '4'
 
-    big_unit_colspan = units_per_hour * hours if units_per_hour > 1 else hours
-    big_unit_count = 14 * (24 / hours) if days == 1 else 14
-    table_length_in_secs = 14 * 24 * 3600
+        start_tmstmp = int(request.GET.get('start')) if request.GET.get('start') else 0
+        end_tmstmp = int(request.GET.get('end')) if request.GET.get('end') else 0
+        if not(start_tmstmp or end_tmstmp):
+            start_tmstmp = request.session['start_tmstmp'] \
+                if 'start_tmstmp' in request.session \
+                else None
 
-    return {
-        'tails': tails,
-        'lines': lines,
-        'big_units': big_unit_count,
-        'small_units': big_unit_colspan * big_unit_count,
-        'days': days,
-        'hours': hours,
-        'big_unit_colspan': big_unit_colspan,
-        'units_per_hour': units_per_hour,
-        'mode': mode,
-        'start_tmstmp': start_tmstmp,
-        'end_tmstmp': end_tmstmp,
-        'start_param_exists': 'true' if request.GET.get('start') or 'start_tmstmp' in request.session else 'false',
-        'end_param_exists': 'true' if request.GET.get('end') else 'false',
-        'prev_start_tmstmp': int(start_tmstmp) - table_length_in_secs,
-        'next_start_tmstmp': int(start_tmstmp) + table_length_in_secs,
-        'csrf_token': csrf.get_token(request),
-        'window_at_end': request.GET.get('window_at_end') or 0,
-        'revisions': Revision.objects.order_by('-published_datetime'),
-        'read_only': read_only,
-    }
+        tails = Tail.objects.all()
+        lines = Line.objects.order_by('name').all()
 
+        days_options = { '1': 1, '2': 1, '3': 1, '4': 1, '5': 3, '6': 7, }          # Date mark count
+        hours_options = { '1': 3, '2': 6, '3': 12, '4': 24, '5': 24, '6': 6, }      # Hours mark count
+        units_per_hour_options = { '1': 4, '2': 2, '3': 1, '4': 1, '5': 1, '6': 0.25, }
 
-def update_session(request, context_data):
-    request.session['mode'] = context_data['mode']
-    request.session['start_tmstmp'] = context_data['start_tmstmp']
+        days = days_options[mode]
 
+        hours = hours_options[mode]
+        units_per_hour = units_per_hour_options[mode]
 
-@login_required
-@gantt_readable_required
-def index(request):
-    context = gantt_page_context(request, not can_write_gantt(request.user))
-    context['page'] = 'routeplanning:index'
-    update_session(request, context)
-    return render(request, 'gantt.html', context)
+        if not start_tmstmp:
+            if end_tmstmp:
+                start_tmstmp = int(end_tmstmp) - 14 * 24 * 3600
+            else:
+                start_time = datetime_now_utc()
+                start_time = start_time.replace(hour=0, minute=0, second=0, microsecond=0)
+                start_tmstmp = totimestamp(start_time)
 
+        big_unit_colspan = units_per_hour * hours if units_per_hour > 1 else hours
+        big_unit_count = 14 * (24 / hours) if days == 1 else 14
+        table_length_in_secs = 14 * 24 * 3600
 
-@login_required
-@gantt_readable_required
-def view_current_published_gantt(request):
-    context = gantt_page_context(request, True)
-    context['page'] = 'routeplanning:view_current_published_gantt'
-    update_session(request, context)
-    return render(request, 'gantt.html', context)
+        context.update({
+            'tails': tails,
+            'lines': lines,
+            'big_units': big_unit_count,
+            'small_units': big_unit_colspan * big_unit_count,
+            'days': days,
+            'hours': hours,
+            'big_unit_colspan': big_unit_colspan,
+            'units_per_hour': units_per_hour,
+            'mode': mode,
+            'start_tmstmp': start_tmstmp,
+            'end_tmstmp': end_tmstmp,
+            'start_param_exists': 'true' if request.GET.get('start') or 'start_tmstmp' in request.session else 'false',
+            'end_param_exists': 'true' if request.GET.get('end') else 'false',
+            'prev_start_tmstmp': int(start_tmstmp) - table_length_in_secs,
+            'next_start_tmstmp': int(start_tmstmp) + table_length_in_secs,
+            'csrf_token': csrf.get_token(request),
+            'window_at_end': request.GET.get('window_at_end') or 0,
+            'revisions': Revision.objects.order_by('-published_datetime'),
+            'read_only': read_only,
+        })
+        self.context_data = context
 
+        return context
 
-@login_required
-@gantt_writable_required
-def add_tail(request):
-    form = TailForm(request.POST or None)
-    action_after_save = request.POST.get('action_after_save')
+    def update_session(self):
+        self.request.session['mode'] = self.context_data['mode']
+        self.request.session['start_tmstmp'] = self.context_data['start_tmstmp']
 
-    if request.method == 'POST':
-        if form.is_valid():
-            tail = form.save()
+    def is_read_only(self):
+        return False
 
-            if action_after_save == 'save-and-continue':
-                return redirect('routeplanning:edit_tail', tail_id=tail.id)
-            elif action_after_save == 'save':
-                return redirect('routeplanning:index')
-            elif action_after_save == 'save-and-add-another':
-                form = TailForm()
-
-    tails = Tail.objects.all()
-    context = {
-        'form': form,
-        'title': 'Add Tail',
-        'tails': tails,
-        'csrf_token': csrf.get_token(request),
-    }
-    return render(request, 'tail.html', context)
+    def get(self, *args, **kwargs):
+        response = super(GanttPageView, self).get(*args, **kwargs)
+        self.update_session()
+        return response
 
 
-@login_required
-@gantt_readable_required
-def edit_tail(request, tail_id=None):
-    tail = get_object_or_404(Tail, pk=tail_id)
+class IndexView(GanttPageView):
+    template_name = 'gantt.html'
 
-    form = TailForm(request.POST or None, instance=tail)
-    action_after_save = request.POST.get('action_after_save')
+    def get_context_data(self, **kwargs):
+        context = super(IndexView, self).get_context_data(**kwargs)
+        context['page'] = 'routeplanning:index'
+        return context
 
-    if request.method == 'POST':
-        if not can_write_gantt(request.user):
-            return HttpResponseForbidden()
-        if form.is_valid():
-            tail = form.save()
-
-            if action_after_save == 'save-and-add-another':
-                return redirect('routeplanning:add_tail')
-            elif action_after_save == 'save':
-                return redirect('routeplanning:index')
-            elif action_after_save == 'save-and-add-another':
-                form = LineForm()
-
-    tails = Tail.objects.all()
-    context = {
-        'form': form,
-        'title': 'Edit Tail ' + tail.number,
-        'tails': tails,
-        'csrf_token': csrf.get_token(request),
-    }
-    return render(request, 'tail.html', context)
+    def is_read_only(self):
+        return not can_write_gantt(self.request.user)
 
 
-@login_required
-@gantt_writable_required
-def coming_due(request, tail_id=None, revision_id=None):
-    tail = Tail.objects.get(pk=tail_id)
+class CurrentPublishedGanttView(GanttPageView):
+    template_name = 'gantt.html'
 
-    context = {
-        'tail': tail,
-        'tails': [],
-        'revision_id': revision_id if revision_id else 0,
-        'csrf_token': csrf.get_token(request),
-    }
-    return render(request, 'comingdue.html', context)
+    def get_context_data(self, **kwargs):
+        context = super(CurrentPublishedGanttView, self).get_context_data(**kwargs)
+        context['page'] = 'routeplanning:view_current_published_gantt'
+        return context
+
+    def is_read_only(self):
+        return True
 
 
-@login_required
-@gantt_writable_required
-def add_line(request):
-    form = LineForm(request.POST or None)
-    action_after_save = request.POST.get('action_after_save')
+class AddTailView(CreateView):
+    template_name = 'tail.html'
+    form_class = TailForm
+    model = Tail
+    permission_classes = (IsAuthenticated, GanttWritePermission)
 
-    if request.method == 'POST':
-        if form.is_valid():
-            line = Line(name=form.cleaned_data['name'])    
+    def get_context_data(self, **kwargs):
+        context = super(AddTailView, self).get_context_data(**kwargs)
+        tails = Tail.objects.all()
+        context.update({
+            'title': 'Add Tail',
+            'tails': tails,
+        })
+        return context
+
+    def get_success_url(self):
+        action_after_save = self.request.POST.get('action_after_save')
+        if action_after_save == 'save-and-continue':
+            return reverse('routeplanning:edit_tail', kwargs={
+                'tail_id': self.object.id
+            })
+        elif action_after_save == 'save':
+            return reverse('routeplanning:index')
+        else:
+            return reverse('routeplanning:add_tail')
+
+
+class EditTailView(UpdateView):
+    template_name = 'tail.html'
+    form_class = TailForm
+    model = Tail
+    permission_classes = (IsAuthenticated, GanttWritePermission)
+    pk_url_kwarg = 'tail_id'
+
+    def get_context_data(self, **kwargs):
+        context = super(EditTailView, self).get_context_data(**kwargs)
+        tails = Tail.objects.all()
+        tail = self.object
+        context.update({
+            'title': 'Edit Tail ' + tail.number,
+            'tails': tails,
+        })
+        return context
+
+    def get_success_url(self):
+        action_after_save = self.request.POST.get('action_after_save')
+        if action_after_save == 'save-and-continue':
+            return reverse('routeplanning:edit_tail', kwargs={
+                'tail_id': self.object.id
+            })
+        elif action_after_save == 'save':
+            return reverse('routeplanning:index')
+        else:
+            return reverse('routeplanning:add_tail')
+
+
+class ComingDueView(TemplateView):
+    template_name = 'comingdue.html'
+    permission_classes = (IsAuthenticated, GanttWritePermission)
+
+    def get_context_data(self, tail_id=None, revision_id=None, **kwargs):
+        tail = Tail.objects.get(pk=tail_id)
+        context = {
+            'tail': tail,
+            'tails': [],
+            'revision_id': revision_id if revision_id else 0,
+        }
+        return context
+
+
+class AddLineView(FormView):
+    template_name = 'line.html'
+    form_class = LineForm
+    permission_classes = (IsAuthenticated, GanttWritePermission)
+
+    def get_context_data(self, **kwargs):
+        context = super(AddLineView, self).get_context_data(**kwargs)
+        lines = Line.objects.all()
+        context.update({
+            'title': 'Add Line',
+            'lines': lines,
+        })
+        return context
+
+    def get_success_url(self):
+        action_after_save = self.request.POST.get('action_after_save')
+        if action_after_save == 'save-and-continue':
+            return reverse('routeplanning:edit_line', kwargs={
+                'line_id': self.object.id
+            })
+        elif action_after_save == 'save':
+            return reverse('routeplanning:index')
+        else:
+            return reverse('routeplanning:add_line')
+
+    def form_valid(self, form):
+        line = Line(name=form.cleaned_data['name'])
+        line.save()
+        self.object = line
+        for i in range(1, 12):
+            entered_line_part_number = form.cleaned_data['part' + str(i)]
+            if entered_line_part_number:
+                line_part = LinePart(number=entered_line_part_number, line=line)
+                line_part.save()
+            else:
+                break
+        return super(AddLineView, self).form_valid(form)
+
+
+class EditLineView(FormView):
+    template_name = 'line.html'
+    form_class = LineForm
+    permission_classes = (IsAuthenticated, GanttWritePermission)
+
+    def get_context_data(self, **kwargs):
+        context = super(EditLineView, self).get_context_data(**kwargs)
+        lines = Line.objects.all()
+        line = self.object
+        context.update({
+            'title': 'Edit Line ' + line.name,
+            'lines': lines,
+        })
+        return context
+
+    def get_success_url(self):
+        action_after_save = self.request.POST.get('action_after_save')
+        if action_after_save == 'save-and-continue':
+            return reverse('routeplanning:edit_line', kwargs={
+                'line_id': self.object.id
+            })
+        elif action_after_save == 'save':
+            return reverse('routeplanning:index')
+        else:
+            return reverse('routeplanning:add_line')
+
+    def get_initial(self):
+        initial_data = super(EditLineView, self).get_initial()
+        line = self.object
+        initial_data.update({
+            'name': line.name,
+        })
+        for i, line_part in enumerate(line.linepart_set.all()):
+            initial_data['part' + str(i + 1)] = line_part.number
+        return initial_data
+
+    def form_valid(self, form):
+        line = self.object
+        if line.name != form.cleaned_data['name']:
+            line.name = form.cleaned_data['name']
             line.save()
 
-            for i in range(1, 12):
-                entered_line_part_number = form.cleaned_data['part' + str(i)]
-                if entered_line_part_number:
-                    line_part = LinePart(number=entered_line_part_number, line=line)    
-                    line_part.save()
-                else:
-                    break
+        line.linepart_set.all().delete()
+        for i in range(1, 12):
+            entered_line_part_number = form.cleaned_data['part' + str(i)]
+            if entered_line_part_number:
+                line_part = LinePart(number=entered_line_part_number, line=line)
+                line_part.save()
+            else:
+                break
+        return super(EditLineView, self).form_valid(form)
 
-            if action_after_save == 'save-and-continue':
-                return redirect('routeplanning:edit_line', line_id=line.id)
-            elif action_after_save == 'save-and-add-another':
-                form = LineForm()
-            elif action_after_save == 'save':
-                return redirect('routeplanning:index')
+    def get(self, *args, **kwargs):
+        line_id = kwargs.get('line_id')
+        self.object = get_object_or_404(Line, pk=line_id)
+        return super(EditLineView, self).get(*args, **kwargs)
 
-    lines = Line.objects.all()
-    context = {
-        'form': form,
-        'title': 'Add Line',
-        'lines': lines,
-        'csrf_token': csrf.get_token(request),
-    }
-    return render(request, 'line.html', context)
-
-
-@login_required
-@gantt_readable_required
-def edit_line(request, line_id=None):
-    line = get_object_or_404(Line, pk=line_id)
-
-    initialData = {
-        'name': line.name,
-    }
-    for i, line_part in enumerate(line.linepart_set.all()):
-        initialData['part' + str(i)] = line_part.number
-
-    form = LineForm(request.POST or initialData)
-    action_after_save = request.POST.get('action_after_save')
-
-    if request.method == 'POST':
-        if not can_write_gantt(request.user):
-            return HttpResponseForbidden()
-        if form.is_valid():
-            if line.name != form.cleaned_data['name']:
-                line.name = form.cleaned_data['name']
-                line.save()
-
-            line.linepart_set.all().delete()
-
-            for i in range(1, 12):
-                entered_line_part_number = form.cleaned_data['part' + str(i)]
-                if entered_line_part_number:
-                    line_part = LinePart(number=entered_line_part_number, line=line)    
-                    line_part.save()
-                else:
-                    break
-
-            if action_after_save == 'save-and-add-another':
-                return redirect('routeplanning:add_line')
-            elif action_after_save == 'save':
-                return redirect('routeplanning:index')
-            elif action_after_save == 'save-and-add-another':
-                form = LineForm()
-
-    lines = Line.objects.all()
-    context = {
-        'form': form,
-        'title': 'Edit Line ' + line.name,
-        'lines': lines,
-        'csrf_token': csrf.get_token(request),
-    }
-    return render(request, 'line.html', context)
+    def post(self, *args, **kwargs):
+        line_id = kwargs.get('line_id')
+        self.object = get_object_or_404(Line, pk=line_id)
+        return super(EditLineView, self).post(*args, **kwargs)
 
 
 @login_required

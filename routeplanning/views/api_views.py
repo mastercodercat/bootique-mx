@@ -5,29 +5,18 @@ import random
 import os
 import csv
 
-from django.core import serializers
-from django.core.exceptions import ObjectDoesNotExist
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required
-from django.http import HttpResponse, HttpResponseForbidden
-from django.middleware import csrf
 from django.db.models import Q, ProtectedError, Max
 from django.conf import settings
-from django.urls import reverse
 
-from rest_framework.decorators import api_view, permission_classes, authentication_classes
 from common.exceptions import APIException
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from common.helpers import *
-from common.decorators import *
 from common.views.generic import APIView
-from common.views.generic import GanttRevisionMixin
 from common.views.generic import RetrieveDestroyAPIView
 from common.views.generic import DataTablePaginatedListView
 from routeplanning.models import *
-from routeplanning.forms import *
 from routeplanning.permissions import GanttReadPermission
 from routeplanning.permissions import GanttWritePermission
 from routeplanning.serializers import DataTableFlightSerializer
@@ -81,6 +70,20 @@ class FlightListView(DataTablePaginatedListView):
 
     def get_total_count(self):
         return Flight.objects.count()
+
+
+class GanttRevisionMixin(object):
+    def get_revision(self, revision_id, create_draft=False):
+        if revision_id and int(revision_id) > 0:
+            try:
+                revision = Revision.objects.get(pk=revision_id)
+                if create_draft and revision:
+                    revision.check_draft_created()
+                return revision
+            except Revision.DoesNotExist:
+                raise APIException('Revision not found', status=400)
+        else:
+            return None
 
 
 class LoadDataView(GanttRevisionMixin, APIView):

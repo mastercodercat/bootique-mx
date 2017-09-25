@@ -5,20 +5,21 @@ from routeplanning.views import page_views
 
 
 urlpatterns = [
-    url(r'^tail/add/*$', page_views.add_tail, name='add_tail'),
-    url(r'^tail/(?P<tail_id>[0-9]+)/*$', page_views.edit_tail, name='edit_tail'),
-    url(r'^tail/(?P<tail_id>[0-9]+)/revision/(?P<revision_id>[0-9]+)/comingdue/*$', page_views.coming_due, name='coming_due'),
+    url(r'^tail/add/*$', page_views.AddTailView.as_view(), name='add_tail'),
+    url(r'^tail/(?P<tail_id>[0-9]+)/*$', page_views.EditTailView.as_view(), name='edit_tail'),
+    url(r'^tail/(?P<tail_id>[0-9]+)/revision/(?P<revision_id>[0-9]+)/comingdue/*$',
+        page_views.ComingDueView.as_view(), name='coming_due'),
 
-    url(r'^line/add/*$', page_views.add_line, name='add_line'),
-    url(r'^line/(?P<line_id>[0-9]+)/*$', page_views.edit_line, name='edit_line'),
+    url(r'^line/add/*$', page_views.AddLineView.as_view(), name='add_line'),
+    url(r'^line/(?P<line_id>[0-9]+)/*$', page_views.EditLineView.as_view(), name='edit_line'),
     
     url(r'^flights/*$', page_views.flights, name='flights'),
     url(r'^flights/add/*$', page_views.add_flight, name='add_flight'),
     url(r'^flights/(?P<flight_id>[0-9]+)/*$', page_views.edit_flight, name='edit_flight'),
     url(r'^flights/delete/*$', page_views.delete_flights, name='delete_flights'),
 
-    url(r'^$', page_views.index, name='index'),
-    url(r'^view-gantt/*$', page_views.view_current_published_gantt, name='view_current_published_gantt'),
+    url(r'^$', page_views.IndexView.as_view(), name='index'),
+    url(r'^view-gantt/*$', page_views.CurrentPublishedGanttView.as_view(), name='view_current_published_gantt'),
 
     url(r'^api/loaddata/*$', api_views.LoadDataView.as_view(), name='api_load_data'),
     url(r'^api/line/(?P<line_id>[0-9]+)/delete/*$', api_views.DeleteLineView.as_view(), name='delete_line'),
