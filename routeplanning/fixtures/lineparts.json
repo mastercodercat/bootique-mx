@@ -1,728 +1,728 @@
-[  
-    {  
+[
+    {
         "model":"routeplanning.linepart",
         "pk":1,
-        "fields":{  
+        "fields":{
             "number":"322",
             "line":1
         }
     },
-    {  
+    {
         "model":"routeplanning.linepart",
         "pk":2,
-        "fields":{  
+        "fields":{
             "number":"323",
             "line":1
         }
     },
-    {  
+    {
         "model":"routeplanning.linepart",
         "pk":3,
-        "fields":{  
+        "fields":{
             "number":"324",
             "line":1
         }
     },
-    {  
+    {
         "model":"routeplanning.linepart",
         "pk":4,
-        "fields":{  
+        "fields":{
             "number":"325",
             "line":1
         }
     },
-    {  
+    {
         "model":"routeplanning.linepart",
         "pk":5,
-        "fields":{  
+        "fields":{
             "number":"326",
             "line":1
         }
     },
-    {  
+    {
         "model":"routeplanning.linepart",
         "pk":6,
-        "fields":{  
+        "fields":{
             "number":"327",
             "line":1
         }
     },
-    {  
+    {
         "model":"routeplanning.linepart",
         "pk":7,
-        "fields":{  
+        "fields":{
             "number":"328",
             "line":1
         }
     },
-    {  
+    {
         "model":"routeplanning.linepart",
         "pk":8,
-        "fields":{  
+        "fields":{
             "number":"329",
             "line":1
         }
     },
-    {  
+    {
         "model":"routeplanning.linepart",
         "pk":9,
-        "fields":{  
+        "fields":{
             "number":"330",
             "line":1
         }
     },
-    {  
+    {
         "model":"routeplanning.linepart",
         "pk":10,
-        "fields":{  
+        "fields":{
             "number":"331",
             "line":1
         }
     },
-    {  
+    {
         "model":"routeplanning.linepart",
         "pk":11,
-        "fields":{  
+        "fields":{
             "number":"821",
             "line":2
         }
     },
-    {  
+    {
         "model":"routeplanning.linepart",
         "pk":12,
-        "fields":{  
+        "fields":{
             "number":"822",
             "line":2
         }
     },
-    {  
+    {
         "model":"routeplanning.linepart",
         "pk":13,
-        "fields":{  
+        "fields":{
             "number":"823",
             "line":2
         }
     },
-    {  
+    {
         "model":"routeplanning.linepart",
         "pk":14,
-        "fields":{  
+        "fields":{
             "number":"824",
             "line":2
         }
     },
-    {  
+    {
         "model":"routeplanning.linepart",
         "pk":15,
-        "fields":{  
+        "fields":{
             "number":"825",
             "line":2
         }
     },
-    {  
+    {
         "model":"routeplanning.linepart",
         "pk":16,
-        "fields":{  
+        "fields":{
             "number":"826",
             "line":2
         }
     },
-    {  
+    {
         "model":"routeplanning.linepart",
         "pk":17,
-        "fields":{  
+        "fields":{
             "number":"481",
             "line":3
         }
     },
-    {  
+    {
         "model":"routeplanning.linepart",
         "pk":18,
-        "fields":{  
+        "fields":{
             "number":"482",
             "line":3
         }
     },
-    {  
+    {
         "model":"routeplanning.linepart",
         "pk":19,
-        "fields":{  
+        "fields":{
             "number":"493",
             "line":3
         }
     },
-    {  
+    {
         "model":"routeplanning.linepart",
         "pk":20,
-        "fields":{  
+        "fields":{
             "number":"494",
             "line":3
         }
     },
-    {  
+    {
         "model":"routeplanning.linepart",
         "pk":21,
-        "fields":{  
+        "fields":{
             "number":"485",
             "line":3
         }
     },
-    {  
+    {
         "model":"routeplanning.linepart",
         "pk":22,
-        "fields":{  
+        "fields":{
             "number":"486",
             "line":3
         }
     },
-    {  
+    {
         "model":"routeplanning.linepart",
         "pk":23,
-        "fields":{  
+        "fields":{
             "number":"701A",
             "line":4
         }
     },
-    {  
+    {
         "model":"routeplanning.linepart",
         "pk":24,
-        "fields":{  
+        "fields":{
             "number":"701B",
             "line":4
         }
     },
-    {  
+    {
         "model":"routeplanning.linepart",
         "pk":25,
-        "fields":{  
+        "fields":{
             "number":"702A",
             "line":4
         }
     },
-    {  
+    {
         "model":"routeplanning.linepart",
         "pk":26,
-        "fields":{  
+        "fields":{
             "number":"702B",
             "line":4
         }
     },
-    {  
+    {
         "model":"routeplanning.linepart",
         "pk":27,
-        "fields":{  
+        "fields":{
             "number":"702C",
             "line":4
         }
     },
-    {  
+    {
         "model":"routeplanning.linepart",
         "pk":28,
-        "fields":{  
+        "fields":{
             "number":"703A",
             "line":4
         }
     },
-    {  
+    {
         "model":"routeplanning.linepart",
         "pk":29,
-        "fields":{  
+        "fields":{
             "number":"703B",
             "line":4
         }
     },
-    {  
+    {
         "model":"routeplanning.linepart",
         "pk":30,
-        "fields":{  
+        "fields":{
             "number":"703C",
             "line":4
         }
     },
-    {  
+    {
         "model":"routeplanning.linepart",
         "pk":31,
-        "fields":{  
+        "fields":{
             "number":"713",
             "line":4
         }
     },
-    {  
+    {
         "model":"routeplanning.linepart",
         "pk":32,
-        "fields":{  
+        "fields":{
             "number":"714",
             "line":4
         }
     },
-    {  
+    {
         "model":"routeplanning.linepart",
         "pk":33,
-        "fields":{  
+        "fields":{
             "number":"704A",
             "line":4
         }
     },
-    {  
+    {
         "model":"routeplanning.linepart",
         "pk":34,
-        "fields":{  
+        "fields":{
             "number":"351",
             "line":5
         }
     },
-    {  
+    {
         "model":"routeplanning.linepart",
         "pk":35,
-        "fields":{  
+        "fields":{
             "number":"352",
             "line":5
         }
     },
-    {  
+    {
         "model":"routeplanning.linepart",
         "pk":36,
-        "fields":{  
+        "fields":{
             "number":"354",
             "line":5
         }
     },
-    {  
+    {
         "model":"routeplanning.linepart",
         "pk":37,
-        "fields":{  
+        "fields":{
             "number":"355",
             "line":5
         }
     },
-    {  
+    {
         "model":"routeplanning.linepart",
         "pk":38,
-        "fields":{  
+        "fields":{
             "number":"356",
             "line":5
         }
     },
-    {  
+    {
         "model":"routeplanning.linepart",
         "pk":39,
-        "fields":{  
+        "fields":{
             "number":"611",
             "line":6
         }
     },
-    {  
+    {
         "model":"routeplanning.linepart",
         "pk":40,
-        "fields":{  
+        "fields":{
             "number":"654",
             "line":6
         }
     },
-    {  
+    {
         "model":"routeplanning.linepart",
         "pk":41,
-        "fields":{  
+        "fields":{
             "number":"554",
             "line":6
         }
     },
-    {  
+    {
         "model":"routeplanning.linepart",
         "pk":42,
-        "fields":{  
+        "fields":{
             "number":"553",
             "line":6
         }
     },
-    {  
+    {
         "model":"routeplanning.linepart",
         "pk":43,
-        "fields":{  
+        "fields":{
             "number":"653",
             "line":6
         }
     },
-    {  
+    {
         "model":"routeplanning.linepart",
         "pk":44,
-        "fields":{  
+        "fields":{
             "number":"616",
             "line":6
         }
     },
-    {  
+    {
         "model":"routeplanning.linepart",
         "pk":45,
-        "fields":{  
+        "fields":{
             "number":"561",
             "line":7
         }
     },
-    {  
+    {
         "model":"routeplanning.linepart",
         "pk":46,
-        "fields":{  
+        "fields":{
             "number":"562",
             "line":7
         }
     },
-    {  
+    {
         "model":"routeplanning.linepart",
         "pk":47,
-        "fields":{  
+        "fields":{
             "number":"563",
             "line":7
         }
     },
-    {  
+    {
         "model":"routeplanning.linepart",
         "pk":48,
-        "fields":{  
+        "fields":{
             "number":"564",
             "line":7
         }
     },
-    {  
+    {
         "model":"routeplanning.linepart",
         "pk":49,
-        "fields":{  
+        "fields":{
             "number":"565",
             "line":7
         }
     },
-    {  
+    {
         "model":"routeplanning.linepart",
         "pk":50,
-        "fields":{  
+        "fields":{
             "number":"614",
             "line":7
         }
     },
-    {  
+    {
         "model":"routeplanning.linepart",
         "pk":51,
-        "fields":{  
+        "fields":{
             "number":"613",
             "line":7
         }
     },
-    {  
+    {
         "model":"routeplanning.linepart",
         "pk":52,
-        "fields":{  
+        "fields":{
             "number":"566",
             "line":7
         }
     },
-    {  
+    {
         "model":"routeplanning.linepart",
         "pk":53,
-        "fields":{  
+        "fields":{
             "number":"567",
             "line":7
         }
     },
-    {  
+    {
         "model":"routeplanning.linepart",
         "pk":54,
-        "fields":{  
+        "fields":{
             "number":"568",
             "line":7
         }
     },
-    {  
+    {
         "model":"routeplanning.linepart",
         "pk":55,
-        "fields":{  
+        "fields":{
             "number":"451",
             "line":8
         }
     },
-    {  
+    {
         "model":"routeplanning.linepart",
         "pk":56,
-        "fields":{  
+        "fields":{
             "number":"454",
             "line":8
         }
     },
-    {  
+    {
         "model":"routeplanning.linepart",
         "pk":57,
-        "fields":{  
+        "fields":{
             "number":"455",
             "line":8
         }
     },
-    {  
+    {
         "model":"routeplanning.linepart",
         "pk":58,
-        "fields":{  
+        "fields":{
             "number":"456",
             "line":8
         }
     },
-    {  
+    {
         "model":"routeplanning.linepart",
         "pk":59,
-        "fields":{  
+        "fields":{
             "number":"741",
             "line":9
         }
     },
-    {  
+    {
         "model":"routeplanning.linepart",
         "pk":60,
-        "fields":{  
+        "fields":{
             "number":"775",
             "line":9
         }
     },
-    {  
+    {
         "model":"routeplanning.linepart",
         "pk":61,
-        "fields":{  
+        "fields":{
             "number":"776",
             "line":9
         }
     },
-    {  
+    {
         "model":"routeplanning.linepart",
         "pk":62,
-        "fields":{  
+        "fields":{
             "number":"747",
             "line":9
         }
     },
-    {  
+    {
         "model":"routeplanning.linepart",
         "pk":63,
-        "fields":{  
+        "fields":{
             "number":"748",
             "line":9
         }
     },
-    {  
+    {
         "model":"routeplanning.linepart",
         "pk":64,
-        "fields":{  
+        "fields":{
             "number":"749",
             "line":9
         }
     },
-    {  
+    {
         "model":"routeplanning.linepart",
         "pk":65,
-        "fields":{  
+        "fields":{
             "number":"612",
             "line":10
         }
     },
-    {  
+    {
         "model":"routeplanning.linepart",
         "pk":66,
-        "fields":{  
+        "fields":{
             "number":"641",
             "line":10
         }
     },
-    {  
+    {
         "model":"routeplanning.linepart",
         "pk":67,
-        "fields":{  
+        "fields":{
             "number":"812",
             "line":10
         }
     },
-    {  
+    {
         "model":"routeplanning.linepart",
         "pk":68,
-        "fields":{  
+        "fields":{
             "number":"813",
             "line":10
         }
     },
-    {  
+    {
         "model":"routeplanning.linepart",
         "pk":69,
-        "fields":{  
+        "fields":{
             "number":"814",
             "line":10
         }
     },
-    {  
+    {
         "model":"routeplanning.linepart",
         "pk":70,
-        "fields":{  
+        "fields":{
             "number":"815",
             "line":10
         }
     },
-    {  
+    {
         "model":"routeplanning.linepart",
         "pk":71,
-        "fields":{  
+        "fields":{
             "number":"816",
             "line":10
         }
     },
-    {  
+    {
         "model":"routeplanning.linepart",
         "pk":72,
-        "fields":{  
+        "fields":{
             "number":"817",
             "line":10
         }
     },
-    {  
+    {
         "model":"routeplanning.linepart",
         "pk":73,
-        "fields":{  
+        "fields":{
             "number":"642",
             "line":10
         }
     },
-    {  
+    {
         "model":"routeplanning.linepart",
         "pk":74,
-        "fields":{  
+        "fields":{
             "number":"615",
             "line":10
         }
     },
-    {  
+    {
         "model":"routeplanning.linepart",
         "pk":75,
-        "fields":{  
+        "fields":{
             "number":"771",
             "line":11
         }
     },
-    {  
+    {
         "model":"routeplanning.linepart",
         "pk":76,
-        "fields":{  
+        "fields":{
             "number":"772",
             "line":11
         }
     },
-    {  
+    {
         "model":"routeplanning.linepart",
         "pk":77,
-        "fields":{  
+        "fields":{
             "number":"773",
             "line":11
         }
     },
-    {  
+    {
         "model":"routeplanning.linepart",
         "pk":78,
-        "fields":{  
+        "fields":{
             "number":"774",
             "line":11
         }
     },
-    {  
+    {
         "model":"routeplanning.linepart",
         "pk":79,
-        "fields":{  
+        "fields":{
             "number":"777",
             "line":11
         }
     },
-    {  
+    {
         "model":"routeplanning.linepart",
         "pk":80,
-        "fields":{  
+        "fields":{
             "number":"778",
             "line":11
         }
     },
-    {  
+    {
         "model":"routeplanning.linepart",
         "pk":81,
-        "fields":{  
+        "fields":{
             "number":"422",
             "line":12
         }
     },
-    {  
+    {
         "model":"routeplanning.linepart",
         "pk":82,
-        "fields":{  
+        "fields":{
             "number":"433",
             "line":12
         }
     },
-    {  
+    {
         "model":"routeplanning.linepart",
         "pk":83,
-        "fields":{  
+        "fields":{
             "number":"434",
             "line":12
         }
     },
-    {  
+    {
         "model":"routeplanning.linepart",
         "pk":84,
-        "fields":{  
+        "fields":{
             "number":"425",
             "line":12
         }
     },
-    {  
+    {
         "model":"routeplanning.linepart",
         "pk":85,
-        "fields":{  
+        "fields":{
             "number":"426",
             "line":12
         }
     },
-    {  
+    {
         "model":"routeplanning.linepart",
         "pk":86,
-        "fields":{  
+        "fields":{
             "number":"437",
             "line":12
         }
     },
-    {  
+    {
         "model":"routeplanning.linepart",
         "pk":87,
-        "fields":{  
+        "fields":{
             "number":"438",
             "line":12
         }
     },
-    {  
+    {
         "model":"routeplanning.linepart",
         "pk":88,
-        "fields":{  
+        "fields":{
             "number":"429",
             "line":12
         }
     },
-    {  
+    {
         "model":"routeplanning.linepart",
         "pk":119,
-        "fields":{  
+        "fields":{
             "number":"991",
             "line":12
         }
     },
-    {  
+    {
         "model":"routeplanning.linepart",
         "pk":120,
-        "fields":{  
+        "fields":{
             "number":"992",
             "line":12
         }
     },
-    {  
+    {
         "model":"routeplanning.linepart",
         "pk":121,
-        "fields":{  
+        "fields":{
             "number":"993",
             "line":12
         }

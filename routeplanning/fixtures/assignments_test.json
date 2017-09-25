@@ -2,7 +2,7 @@
     {
         "model": "routeplanning.assignment",
         "pk": 450,
-        "fields": 
+        "fields":
         {
             "flight_number": "322",
             "start_time": "2017-05-24T13:00:00Z",
@@ -15,7 +15,7 @@
     {
         "model": "routeplanning.assignment",
         "pk": 451,
-        "fields": 
+        "fields":
         {
             "flight_number": "0",
             "start_time": "2017-05-24T15:05:00Z",
@@ -28,7 +28,7 @@
     {
         "model": "routeplanning.assignment",
         "pk": 453,
-        "fields": 
+        "fields":
         {
             "flight_number": "0",
             "start_time": "2017-05-24T17:55:00Z",
@@ -41,7 +41,7 @@
     {
         "model": "routeplanning.assignment",
         "pk": 454,
-        "fields": 
+        "fields":
         {
             "flight_number": "326",
             "start_time": "2017-05-24T19:00:00Z",
@@ -54,7 +54,7 @@
     {
         "model": "routeplanning.assignment",
         "pk": 457,
-        "fields": 
+        "fields":
         {
             "flight_number": "327",
             "start_time": "2017-05-24T21:30:00Z",
@@ -67,7 +67,7 @@
     {
         "model": "routeplanning.assignment",
         "pk": 459,
-        "fields": 
+        "fields":
         {
             "flight_number": "329",
             "start_time": "2017-05-25T00:20:00Z",
@@ -80,7 +80,7 @@
     {
         "model": "routeplanning.assignment",
         "pk": 455,
-        "fields": 
+        "fields":
         {
             "flight_number": "322",
             "start_time": "2017-05-25T13:00:00Z",
@@ -93,7 +93,7 @@
     {
         "model": "routeplanning.assignment",
         "pk": 456,
-        "fields": 
+        "fields":
         {
             "flight_number": "323",
             "start_time": "2017-05-25T15:05:00Z",

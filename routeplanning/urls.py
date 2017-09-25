@@ -12,7 +12,7 @@ urlpatterns = [
 
     url(r'^line/add/*$', page_views.AddLineView.as_view(), name='add_line'),
     url(r'^line/(?P<line_id>[0-9]+)/*$', page_views.EditLineView.as_view(), name='edit_line'),
-    
+
     url(r'^flights/*$', page_views.FlightListView.as_view(), name='flights'),
     url(r'^flights/add/*$', page_views.AddFlightView.as_view(), name='add_flight'),
     url(r'^flights/(?P<flight_id>[0-9]+)/*$', page_views.EditFlightView.as_view(), name='edit_flight'),

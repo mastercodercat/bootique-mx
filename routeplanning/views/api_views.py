@@ -88,7 +88,7 @@ class GanttRevisionMixin(object):
 
 class LoadDataView(GanttRevisionMixin, APIView):
     permission_classes = (IsAuthenticated, GanttReadPermission)
-    
+
     def _get(self, *args, **kwargs):
         request = self.request
         start_time = datetime.fromtimestamp(int(request.query_params.get('startdate')), tz=utc)

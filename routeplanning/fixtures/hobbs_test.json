@@ -2,7 +2,7 @@
     {
         "model": "routeplanning.hobbs",
         "pk": 1,
-        "fields": 
+        "fields":
         {
             "hobbs_time": "2017-05-24T00:00:00Z",
             "type": 2,
@@ -13,7 +13,7 @@
     {
         "model": "routeplanning.hobbs",
         "pk": 2,
-        "fields": 
+        "fields":
         {
             "hobbs_time": "2017-05-25T00:00:00Z",
             "type": 2,
@@ -24,7 +24,7 @@
     {
         "model": "routeplanning.hobbs",
         "pk": 3,
-        "fields": 
+        "fields":
         {
             "hobbs_time": "2017-05-24T14:00:00Z",
             "type": 1,
@@ -35,7 +35,7 @@
     {
         "model": "routeplanning.hobbs",
         "pk": 4,
-        "fields": 
+        "fields":
         {
             "hobbs_time": "2017-05-24T19:00:00Z",
             "type": 1,
@@ -46,7 +46,7 @@
     {
         "model": "routeplanning.hobbs",
         "pk": 5,
-        "fields": 
+        "fields":
         {
             "hobbs_time": "2017-05-25T10:00:00Z",
             "type": 1,

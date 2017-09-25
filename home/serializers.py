@@ -32,7 +32,7 @@ class InspectionComponentSerializer(serializers.ModelSerializer):
     class Meta:
         model = InspectionComponent
         fields = ('id', 'pn', 'sn', 'name', 'sub_items')
-    
+
     def get_sub_items(self, obj):
         query_set = obj.inspectioncomponentsubitem_set.order_by('type')
         return InspectionComponentSubItemSerializer(query_set, many=True).data
