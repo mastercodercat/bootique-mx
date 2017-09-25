@@ -9,6 +9,7 @@ class TailForm(ModelForm):
         model = Tail
         fields = '__all__'
 
+
 class LineForm(forms.Form):
     name = forms.CharField(label='Name', required=True)
     part1 = forms.CharField(label='Part of Line 1', required=True)
@@ -27,7 +28,15 @@ class LineForm(forms.Form):
     class Meta:
         fields = ('name',)
 
+
 class FlightForm(ModelForm):
     class Meta:
         model = Flight
         fields = '__all__'
+
+
+class DeleteMultipleFlightsForm(forms.Form):
+    flight_ids = forms.CharField(label='Flight IDs', required=True)
+
+    class Meta:
+        fields = ('flight_ids',)

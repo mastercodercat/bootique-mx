@@ -13,10 +13,10 @@ urlpatterns = [
     url(r'^line/add/*$', page_views.AddLineView.as_view(), name='add_line'),
     url(r'^line/(?P<line_id>[0-9]+)/*$', page_views.EditLineView.as_view(), name='edit_line'),
     
-    url(r'^flights/*$', page_views.flights, name='flights'),
-    url(r'^flights/add/*$', page_views.add_flight, name='add_flight'),
-    url(r'^flights/(?P<flight_id>[0-9]+)/*$', page_views.edit_flight, name='edit_flight'),
-    url(r'^flights/delete/*$', page_views.delete_flights, name='delete_flights'),
+    url(r'^flights/*$', page_views.FlightListView.as_view(), name='flights'),
+    url(r'^flights/add/*$', page_views.AddFlightView.as_view(), name='add_flight'),
+    url(r'^flights/(?P<flight_id>[0-9]+)/*$', page_views.EditFlightView.as_view(), name='edit_flight'),
+    url(r'^flights/delete/*$', page_views.DeleteFlightView.as_view(), name='delete_flights'),
 
     url(r'^$', page_views.IndexView.as_view(), name='index'),
     url(r'^view-gantt/*$', page_views.CurrentPublishedGanttView.as_view(), name='view_current_published_gantt'),

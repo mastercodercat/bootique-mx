@@ -2,7 +2,7 @@
     {
         "model": "routeplanning.flight",
         "pk": 13069,
-        "fields": 
+        "fields":
         {
             "number": "322",
             "origin": "MCE",
@@ -15,7 +15,7 @@
     {
         "model": "routeplanning.flight",
         "pk": 13070,
-        "fields": 
+        "fields":
         {
             "number": "326",
             "origin": "MCE",
@@ -28,7 +28,7 @@
     {
         "model": "routeplanning.flight",
         "pk": 13072,
-        "fields": 
+        "fields":
         {
             "number": "322",
             "origin": "MCE",
@@ -41,7 +41,7 @@
     {
         "model": "routeplanning.flight",
         "pk": 13132,
-        "fields": 
+        "fields":
         {
             "number": "328",
             "origin": "MCE",
@@ -54,7 +54,7 @@
     {
         "model": "routeplanning.flight",
         "pk": 13185,
-        "fields": 
+        "fields":
         {
             "number": "0",
             "origin": "OAK",
@@ -67,7 +67,7 @@
     {
         "model": "routeplanning.flight",
         "pk": 13186,
-        "fields": 
+        "fields":
         {
             "number": "329",
             "origin": "OAK",
@@ -80,7 +80,7 @@
     {
         "model": "routeplanning.flight",
         "pk": 13262,
-        "fields": 
+        "fields":
         {
             "number": "0",
             "origin": "LAX",
@@ -93,7 +93,7 @@
     {
         "model": "routeplanning.flight",
         "pk": 13263,
-        "fields": 
+        "fields":
         {
             "number": "327",
             "origin": "LAX",
@@ -106,7 +106,7 @@
     {
         "model": "routeplanning.flight",
         "pk": 13265,
-        "fields": 
+        "fields":
         {
             "number": "323",
             "origin": "LAX",
@@ -119,13 +119,26 @@
     {
         "model": "routeplanning.flight",
         "pk": 14001,
-        "fields": 
+        "fields":
         {
             "number": "381",
             "origin": "LAX",
             "destination": "OAK",
             "scheduled_out_datetime": "2017-05-24T14:50:00Z",
             "scheduled_in_datetime": "2017-05-24T15:50:00Z",
+            "type": 1
+        }
+    },
+    {
+        "model": "routeplanning.flight",
+        "pk": 14002,
+        "fields":
+        {
+            "number": "381",
+            "origin": "OAK",
+            "destination": "LAX",
+            "scheduled_out_datetime": "2017-05-24T16:50:00Z",
+            "scheduled_in_datetime": "2017-05-24T17:50:00Z",
             "type": 1
         }
     }

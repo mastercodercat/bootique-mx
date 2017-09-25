@@ -6,7 +6,6 @@ import os
 import csv
 
 from django.conf import settings
-from django.contrib.auth.decorators import login_required
 from django.core import serializers
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q, ProtectedError, Max
@@ -18,7 +17,6 @@ from django.urls import reverse
 from rest_framework.permissions import IsAuthenticated
 
 from common.helpers import *
-from common.decorators import *
 from common.views.generic import TemplateView
 from common.views.generic import FormView
 from common.views.generic import CreateView
@@ -310,60 +308,73 @@ class EditLineView(FormView):
         return super(EditLineView, self).post(*args, **kwargs)
 
 
-@login_required
-@gantt_readable_required
-def flights(request):
-    flights = []
+class FlightListView(TemplateView):
+    template_name = 'flights.html'
+    permission_classes = (IsAuthenticated, GanttReadPermission)
 
-    context = {
-        'flights': flights,
-        'csrf_token': csrf.get_token(request),
-    }
-    return render(request, 'flights.html', context)
+    def get_context_data(self, **kwargs):
+        context = super(FlightListView, self).get_context_data(**kwargs)
+        context['flights'] = []
+        return context
 
 
-@login_required
-@gantt_writable_required
-def add_flight(request):
-    form = FlightForm(request.POST or None)
-    if request.method == 'POST':
-        if form.is_valid():
-            flight = form.save()
-            return redirect('routeplanning:edit_flight', flight_id=flight.id)
+class AddFlightView(CreateView):
+    template_name = 'flight.html'
+    form_class = FlightForm
+    model = Flight
+    permission_classes = (IsAuthenticated, GanttWritePermission)
 
-    context = {
-        'form': form,
-        'title': 'Add Flight',
-    }
-    return render(request, 'flight.html', context)
+    def get_context_data(self, **kwargs):
+        context = super(AddFlightView, self).get_context_data(**kwargs)
+        context.update({
+            'title': 'Add Flight',
+        })
+        return context
 
-
-@login_required
-@gantt_writable_required
-def edit_flight(request, flight_id=None):
-    flight = get_object_or_404(Flight, pk=flight_id)
-    form = FlightForm(request.POST or None, instance=flight)
-    if request.method == 'POST':
-        if form.is_valid():
-            updated_flight = form.save()
-            updated_flight.update_assignment_datetimes()
-
-    context = {
-        'form': form,
-        'title': 'Edit Flight',
-    }
-    return render(request, 'flight.html', context)
+    def get_success_url(self):
+        return reverse('routeplanning:edit_flight', kwargs={
+            'flight_id': self.object.id
+        })
 
 
-@login_required
-@gantt_writable_required
-def delete_flights(request):
-    if request.method == 'POST':
-        ids_string = request.POST.get('flight_ids')
+class EditFlightView(UpdateView):
+    template_name = 'flight.html'
+    form_class = FlightForm
+    model = Flight
+    permission_classes = (IsAuthenticated, GanttWritePermission)
+    pk_url_kwarg = 'flight_id'
+
+    def get_context_data(self, **kwargs):
+        context = super(EditFlightView, self).get_context_data(**kwargs)
+        context.update({
+            'title': 'Edit Flight',
+        })
+        return context
+
+    def get_success_url(self):
+        return reverse('routeplanning:edit_flight', kwargs={
+            'flight_id': self.object.id
+        })
+
+    def form_valid(self, form):
+        response = super(EditFlightView, self).form_valid(form)
+        self.object.update_assignment_datetimes()
+        return response
+
+
+class DeleteFlightView(FormView):
+    form_class = DeleteMultipleFlightsForm
+    permission_classes = (IsAuthenticated, GanttWritePermission)
+
+    def get_success_url(self):
+        return reverse('routeplanning:flights')
+
+    def form_valid(self, form):
+        ids_string = form.cleaned_data['flight_ids']
         ids = ids_string.split(',')
         for id in ids:
             try:
                 Flight.objects.filter(pk=id).delete()
             except ProtectedError:
                 pass
-    return redirect('routeplanning:flights')
+        return super(DeleteFlightView, self).form_valid(form)

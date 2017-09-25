@@ -489,27 +489,27 @@ class RoutePlanningViewsTestCase(TestCase):
         data = json.loads(response.content)
         self.assertEqual(response.status_code, 405)
 
-    @patch('common.decorators.can_read_gantt', return_value=False)
+    @patch('routeplanning.permissions.can_read_gantt', return_value=False)
     def test_view_flights_no_permission_fail(self, mock_can_read_gantt):
         view_url = reverse('routeplanning:flights')
         self.no_role_user_attempt_test(view_url)
 
-    @patch('common.decorators.can_read_gantt', return_value=True)
+    @patch('routeplanning.permissions.can_read_gantt', return_value=True)
     def test_view_flights_authorized_success(self, mock_can_read_gantt):
         view_url = reverse('routeplanning:flights')
         self.authorized_attempt_test(view_url, 'flights.html')
 
-    @patch('common.decorators.can_write_gantt', return_value=False)
+    @patch('routeplanning.permissions.can_write_gantt', return_value=False)
     def test_view_add_flight_no_permission_fail(self, mock_can_write_gantt):
         view_url = reverse('routeplanning:add_flight')
         self.no_role_user_attempt_test(view_url)
 
-    @patch('common.decorators.can_write_gantt', return_value=True)
+    @patch('routeplanning.permissions.can_write_gantt', return_value=True)
     def test_view_add_flight_authorized_success(self, mock_can_write_gantt):
         view_url = reverse('routeplanning:add_flight')
         self.authorized_attempt_test(view_url, 'flight.html')
 
-    @patch('common.decorators.can_write_gantt', return_value=True)
+    @patch('routeplanning.permissions.can_write_gantt', return_value=True)
     def test_view_add_flight_save(self, mock_can_write_gantt):
         view_url = reverse('routeplanning:add_flight')
         response = self.client.post(view_url, {
@@ -526,21 +526,21 @@ class RoutePlanningViewsTestCase(TestCase):
         }))
         self.assertNotEqual(Flight.objects.filter(number='801').count(), 0)
 
-    @patch('common.decorators.can_write_gantt', return_value=False)
+    @patch('routeplanning.permissions.can_write_gantt', return_value=False)
     def test_view_edit_flight_no_permission_fail(self, mock_can_write_gantt):
         view_url = reverse('routeplanning:edit_flight', kwargs={
             'flight_id': 13069,
         })
         self.no_role_user_attempt_test(view_url)
 
-    @patch('common.decorators.can_write_gantt', return_value=True)
+    @patch('routeplanning.permissions.can_write_gantt', return_value=True)
     def test_view_edit_flight_authorized_success(self, mock_can_write_gantt):
         view_url = reverse('routeplanning:edit_flight', kwargs={
             'flight_id': 13069,
         })
         self.authorized_attempt_test(view_url, 'flight.html')
 
-    @patch('common.decorators.can_write_gantt', return_value=True)
+    @patch('routeplanning.permissions.can_write_gantt', return_value=True)
     def test_view_edit_flight_save(self, mock_can_write_gantt):
         view_url = reverse('routeplanning:edit_flight', kwargs={
             'flight_id': 13069,
@@ -553,16 +553,18 @@ class RoutePlanningViewsTestCase(TestCase):
             'scheduled_in_datetime': '2017-05-15 12:00:00',
             'type': 1,
         })
-        self.assertTemplateUsed(response, 'flight.html')
         self.assertNotEqual(Flight.objects.filter(number='801').count(), 0)
+        self.assertRedirects(response, view_url)
 
-    @patch('common.decorators.can_read_gantt', return_value=True)
-    @patch('common.decorators.can_write_gantt', return_value=True)
-    def test_view_delete_flight(self, mock_can_write_gantt, mock_can_read_gantt):
+    @patch('routeplanning.permissions.can_read_gantt', return_value=True)
+    @patch('routeplanning.permissions.can_write_gantt', return_value=True)
+    def test_view_delete_flights(self, mock_can_write_gantt, mock_can_read_gantt):
         view_url = reverse('routeplanning:delete_flights')
+        flight_ids = ['14001', '14002']
         response = self.client.post(view_url, {
-            'flight_ids': '13069, 13070'
+            'flight_ids': ', '.join(flight_ids)
         })
+        self.assertEqual(Flight.objects.filter(pk__in=flight_ids).count(), 0)
         self.assertRedirects(response, reverse('routeplanning:flights'))
 
     @patch('routeplanning.permissions.can_read_gantt', return_value=False)
