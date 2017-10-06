@@ -30,7 +30,7 @@ class IndexRedirectViewTestCase(TestCase):
     #     self.assertRedirects(response, reverse('home:overview'))
 
     @patch('common.views.page_views.can_read_gantt', return_value=True)
-    @patch('common.decorators.can_read_gantt', return_value=True)
+    @patch('routeplanning.permissions.can_read_gantt', return_value=True)
     def test_redirect_dispatcher_user_to_gantt_dashboard(
         self, mock_decr_can_read_gantt, mock_can_read_gantt
     ):

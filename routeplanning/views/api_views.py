@@ -19,8 +19,7 @@ from common.views.generic import DataTablePaginatedListView
 from routeplanning.models import *
 from routeplanning.permissions import GanttReadPermission
 from routeplanning.permissions import GanttWritePermission
-from routeplanning.serializers import DataTableFlightSerializer
-from routeplanning.serializers import HobbsSerializer
+from routeplanning.serializers import *
 
 
 class DeleteTailView(RetrieveDestroyAPIView):
@@ -90,15 +89,16 @@ class LoadDataView(GanttRevisionMixin, APIView):
     permission_classes = (IsAuthenticated, GanttReadPermission)
 
     def _get(self, *args, **kwargs):
-        request = self.request
-        start_time = datetime.fromtimestamp(int(request.query_params.get('startdate')), tz=utc)
-        end_time = datetime.fromtimestamp(int(request.query_params.get('enddate')), tz=utc)
-        assignments_only = request.query_params.get('assignments_only')
-        revision_id = request.query_params.get('revision')
+        serializer = LoadDataSerializer(data=self.request.query_params)
+        serializer.is_valid(raise_exception=True)
+        start_time = serializer.validated_data.get('startdate')
+        end_time = serializer.validated_data.get('enddate')
+        assignments_only = serializer.validated_data.get('assignments_only')
+        revision_id = serializer.validated_data.get('revision')
 
         revision = self.get_revision(revision_id)
 
-        if not can_write_gantt(request.user):
+        if not can_write_gantt(self.request.user):
             if not revision:    # Current draft gantt
                 raise APIException('Not allowed to get draft route plan', status=403)
             else:
@@ -135,7 +135,7 @@ class LoadDataView(GanttRevisionMixin, APIView):
         # Data for template flights on Lines
 
         template_data = []
-        if assignments_only != 'true':
+        if not assignments_only:
             lines = Line.objects.all()
             for line in lines:
                 flights = line.flights.filter(
@@ -220,13 +220,12 @@ class AssignFlightView(GanttRevisionMixin, APIView):
 
     def _post(self, *args, **kwargs):
         request = self.request
+        serializer = AssignFlightSerializer(data=self.request.data)
+        serializer.is_valid(raise_exception=True)
+        flight_data = serializer.validated_data.get('flight_data')
+        revision_id = serializer.validated_data.get('revision')
 
-        try:
-            flight_data = json.loads(request.data.get('flight_data'))
-        except:
-            raise APIException('Invalid parameters', status=400)
-
-        revision = self.get_revision(request.data.get('revision'), create_draft=True)
+        revision = self.get_revision(revision_id, create_draft=True)
 
         result = {
             'assigned_flights': {},
@@ -332,19 +331,19 @@ class AssignStatusView(GanttRevisionMixin, APIView):
     permission_classes = (IsAuthenticated, GanttWritePermission)
 
     def _post(self, *args, **kwargs):
-        request = self.request
+        serializer = AssignStatusSerializer(data=self.request.data)
+        serializer.is_valid(raise_exception=True)
+        tail_number = serializer.validated_data.get('tail')
+        start_time = serializer.validated_data.get('start_time')
+        end_time = serializer.validated_data.get('end_time')
+        status = serializer.validated_data.get('status')
+        origin = serializer.validated_data.get('origin')
+        destination = serializer.validated_data.get('destination')
 
-        try:
-            tail_number = request.data.get('tail')
-            start_time = dateutil.parser.parse(request.data.get('start_time'))
-            end_time = dateutil.parser.parse(request.data.get('end_time'))
-            status = int(request.data.get('status'))
-            origin = request.data.get('origin') or ''     # used for unscheduled flight assignments
-            destination = request.data.get('destination') or ''   # used for unscheduled flight assignments
-        except:
-            raise APIException('Invalid parameters', status=400)
-
-        revision = self.get_revision(request.data.get('revision'), create_draft=True)
+        revision = self.get_revision(
+            serializer.validated_data.get('revision'),
+            create_draft=True
+        )
 
         result = {
             'physical_conflicts': [],
@@ -436,14 +435,11 @@ class RemoveAssignmentView(GanttRevisionMixin, APIView):
     permission_classes = (IsAuthenticated, GanttWritePermission)
 
     def _post(self, *args, **kwargs):
-        request = self.request
+        serializer = AssignmentModifySerializer(data=self.request.data)
+        serializer.is_valid(raise_exception=True)
+        assignment_ids = serializer.validated_data.get('assignment_data')
+        revision_id = serializer.validated_data.get('revision')
 
-        try:
-            assignment_ids = json.loads(request.data.get('assignment_data'))
-        except:
-            raise APIException('Invalid parameters', status=400)
-
-        revision_id = request.data.get('revision')
         revision = self.get_revision(revision_id, create_draft=True)
 
         result = {
@@ -467,14 +463,11 @@ class MoveAssignmentView(GanttRevisionMixin, APIView):
     permission_classes = (IsAuthenticated, GanttWritePermission)
 
     def _post(self, *args, **kwargs):
-        request = self.request
+        serializer = AssignmentModifySerializer(data=self.request.data)
+        serializer.is_valid(raise_exception=True)
+        assignment_data = serializer.validated_data.get('assignment_data')
+        revision_id = serializer.validated_data.get('revision')
 
-        try:
-            assignment_data = json.loads(request.data.get('assignment_data'))
-        except:
-            raise APIException('Invalid parameters', status=400)
-
-        revision_id = request.data.get('revision')
         revision = self.get_revision(revision_id, create_draft=True)
 
         result = {

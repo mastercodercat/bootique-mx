@@ -1,10 +1,24 @@
+from datetime import datetime
+
 from django.urls import reverse
 
 from rest_framework import serializers
 
 from common.helpers import totimestamp
+from common.helpers import utc
 from routeplanning.models import Flight
 from routeplanning.models import Hobbs
+
+
+class TimestampField(serializers.Field):
+    def to_internal_value(self, value):
+        try:
+            return datetime.fromtimestamp(int(value), tz=utc)
+        except:
+            raise serializers.ValidationError
+
+    def to_representation(self, value):
+        return totimestamp(value)
 
 
 class DataTableFlightSerializer(serializers.ModelSerializer):
@@ -48,3 +62,30 @@ class HobbsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Hobbs
         fields = ('pk', 'hobbs_time', 'type', 'hobbs', 'tail')
+
+
+class LoadDataSerializer(serializers.Serializer):
+    startdate = TimestampField()
+    enddate = TimestampField()
+    assignments_only = serializers.BooleanField(required=False, default=False)
+    revision = serializers.IntegerField(allow_null=True)
+
+
+class AssignFlightSerializer(serializers.Serializer):
+    flight_data = serializers.JSONField()
+    revision = serializers.IntegerField(allow_null=True)
+
+
+class AssignStatusSerializer(serializers.Serializer):
+    tail = serializers.CharField()
+    start_time = serializers.DateTimeField()
+    end_time = serializers.DateTimeField()
+    status = serializers.IntegerField()
+    origin = serializers.CharField(required=False, default='')
+    destination = serializers.CharField(required=False, default='')
+    revision = serializers.IntegerField(allow_null=True)
+
+
+class AssignmentModifySerializer(serializers.Serializer):
+    assignment_data = serializers.JSONField()
+    revision = serializers.IntegerField(allow_null=True)

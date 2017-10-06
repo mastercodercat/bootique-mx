@@ -193,3 +193,10 @@ if os.path.exists(locset):
     with open(locset) as f:
         code = compile(f.read(), "local_settings.py", 'exec')
         exec (code)
+
+# Test settings
+
+import sys
+
+if sys.argv[1] == 'test':
+    DATABASES['default'] = {'ENGINE': 'django.db.backends.sqlite3'}

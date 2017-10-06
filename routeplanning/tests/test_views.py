@@ -693,7 +693,7 @@ class RoutePlanningViewsTestCase(TestCase):
         })
         data = json.loads(response.content)
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(data['error'], 'Invalid parameters')
+        self.assertEqual(data['flight_data'], [u'Value must be valid JSON.'])
 
     @patch('routeplanning.permissions.can_write_gantt', return_value=True)
     def test_api_assign_flight_fail_no_revision(self, mock_can_write_gantt):
@@ -811,7 +811,7 @@ class RoutePlanningViewsTestCase(TestCase):
         })
         data = json.loads(response.content)
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(data['error'], 'Invalid parameters')
+        self.assertIn('status', data)
 
     @patch('routeplanning.permissions.can_write_gantt', return_value=True)
     def test_api_assign_status_fail_no_revision(self, mock_can_write_gantt):
@@ -908,7 +908,7 @@ class RoutePlanningViewsTestCase(TestCase):
         })
         data = json.loads(response.content)
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(data['error'], 'Invalid parameters')
+        self.assertIn('assignment_data', data)
 
     @patch('routeplanning.permissions.can_write_gantt', return_value=True)
     def test_api_remove_assignment_fail_no_revision(self, mock_can_write_gantt):
@@ -942,7 +942,7 @@ class RoutePlanningViewsTestCase(TestCase):
         })
         data = json.loads(response.content)
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(data['error'], 'Invalid parameters')
+        self.assertIn('assignment_data', data)
 
     @patch('routeplanning.permissions.can_write_gantt', return_value=True)
     def test_api_move_assignment_fail_no_revision(self, mock_can_write_gantt):
