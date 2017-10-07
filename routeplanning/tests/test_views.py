@@ -5,9 +5,10 @@ from datetime import datetime
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 
-from routeplanning.models import *
-from home.models import *
 from common.helpers import *
+from home.models import *
+from routeplanning.constants import *
+from routeplanning.models import *
 
 
 class RoutePlanningViewsTestCase(TestCase):
@@ -1033,7 +1034,7 @@ class RoutePlanningViewsTestCase(TestCase):
         })
         data = json.loads(response.content)
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(data['error'], 'Invalid parameters')
+        self.assertIn('diff_seconds', data)
 
     @patch('routeplanning.permissions.can_write_gantt', return_value=True)
     def test_api_resize_assignment_fail_no_revision(self, mock_can_write_gantt):
@@ -1112,21 +1113,21 @@ class RoutePlanningViewsTestCase(TestCase):
         api_url = reverse('routeplanning:api_save_hobbs')
         response = self.client.post(api_url, {
             'tail_id': 14,
-            'type': Hobbs.TYPE_ACTUAL,
+            'type': HOBBS_TYPE_ACTUAL,
             'hobbs': 10,
             'datetime': 'invalid_date_string',
             'flight_id': 13072,
         })
         data = json.loads(response.content)
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(data['error'], 'Invalid parameters')
+        self.assertIn('datetime', data)
 
     @patch('routeplanning.permissions.can_write_gantt', return_value=True)
     def test_api_save_hobbs_successes_and_failures(self, mock_can_write_gantt):
         api_url = reverse('routeplanning:api_save_hobbs')
         response = self.client.post(api_url, {
             'tail_id': 14,
-            'type': Hobbs.TYPE_ACTUAL,
+            'type': HOBBS_TYPE_ACTUAL,
             'hobbs': 10,
             'datetime': '2017-05-24T13:00:00Z',
             'flight_id': 13072,
@@ -1139,7 +1140,7 @@ class RoutePlanningViewsTestCase(TestCase):
         response = self.client.post(api_url, {
             'tail_id': 14,
             'id': hobbs.id,
-            'type': Hobbs.TYPE_NEXT_DUE,
+            'type': HOBBS_TYPE_NEXT_DUE,
             'hobbs': 10,
             'datetime': '2017-05-24T13:00:00Z',
             'flight_id': 13072,
@@ -1150,7 +1151,7 @@ class RoutePlanningViewsTestCase(TestCase):
 
         response = self.client.post(api_url, {
             'tail_id': 14,
-            'type': Hobbs.TYPE_ACTUAL,
+            'type': HOBBS_TYPE_ACTUAL,
             'hobbs': hobbs.id,
             'hobbs': 8,
             'datetime': '2017-05-25T05:00:00Z',
@@ -1163,7 +1164,7 @@ class RoutePlanningViewsTestCase(TestCase):
     def test_api_get_hobbs(self, mock_can_write_gantt, mock_can_read_gantt):
         r = self.client.post(reverse('routeplanning:api_save_hobbs'), {
             'tail_id': 14,
-            'type': Hobbs.TYPE_ACTUAL,
+            'type': HOBBS_TYPE_ACTUAL,
             'hobbs': 10,
             'datetime': '2017-05-24T13:00:00Z',
             'flight_id': 13072,
@@ -1182,10 +1183,9 @@ class RoutePlanningViewsTestCase(TestCase):
     def test_api_delete_actual_hobbs(self, mock_can_write_gantt):
         r = self.client.post(reverse('routeplanning:api_save_hobbs'), {
             'tail_id': 14,
-            'type': Hobbs.TYPE_ACTUAL,
+            'type': HOBBS_TYPE_ACTUAL,
             'hobbs': 10,
             'datetime': '2017-05-24T13:00:00Z',
-            'flight_id': 13072,
         })
         hobbs = Hobbs.objects.first()
 
@@ -1205,7 +1205,7 @@ class RoutePlanningViewsTestCase(TestCase):
         })
         data = json.loads(response.content)
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(data['error'], 'Invalid parameters')
+        self.assertIn('start', data)
 
     @patch('routeplanning.permissions.can_read_gantt', return_value=True)
     def test_api_coming_due_list_fail_no_revision(self, mock_can_read_gantt):
@@ -1225,7 +1225,7 @@ class RoutePlanningViewsTestCase(TestCase):
         api_url = reverse('routeplanning:api_coming_due_list')
         r = self.client.post(reverse('routeplanning:api_save_hobbs'), {
             'tail_id': 14,
-            'type': Hobbs.TYPE_ACTUAL,
+            'type': HOBBS_TYPE_ACTUAL,
             'hobbs': 10,
             'datetime': '2017-05-24T13:00:00Z',
             'flight_id': 13072,

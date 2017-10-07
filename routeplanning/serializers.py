@@ -6,6 +6,7 @@ from rest_framework import serializers
 
 from common.helpers import totimestamp
 from common.helpers import utc
+from routeplanning.constants import *
 from routeplanning.models import Flight
 from routeplanning.models import Hobbs
 
@@ -68,12 +69,12 @@ class LoadDataSerializer(serializers.Serializer):
     startdate = TimestampField()
     enddate = TimestampField()
     assignments_only = serializers.BooleanField(required=False, default=False)
-    revision = serializers.IntegerField(allow_null=True)
+    revision = serializers.IntegerField(required=False)
 
 
 class AssignFlightSerializer(serializers.Serializer):
     flight_data = serializers.JSONField()
-    revision = serializers.IntegerField(allow_null=True)
+    revision = serializers.IntegerField(required=False)
 
 
 class AssignStatusSerializer(serializers.Serializer):
@@ -83,9 +84,35 @@ class AssignStatusSerializer(serializers.Serializer):
     status = serializers.IntegerField()
     origin = serializers.CharField(required=False, default='')
     destination = serializers.CharField(required=False, default='')
-    revision = serializers.IntegerField(allow_null=True)
+    revision = serializers.IntegerField(required=False)
 
 
-class AssignmentModifySerializer(serializers.Serializer):
+class MoveOrRemoveAssignmentSerializer(serializers.Serializer):
     assignment_data = serializers.JSONField()
-    revision = serializers.IntegerField(allow_null=True)
+    revision = serializers.IntegerField(required=False)
+
+
+class ResizeAssignmentSerializer(serializers.Serializer):
+    assignment_id = serializers.IntegerField()
+    position = serializers.ChoiceField(choices=ASSIGNMENT_RESIZE_POSITION_CHOICES)
+    diff_seconds = serializers.FloatField()
+    revision = serializers.IntegerField(required=False)
+
+
+class SaveHobbsSerializer(serializers.Serializer):
+    tail_id = serializers.IntegerField()
+    id = serializers.IntegerField(required=False)
+    type = serializers.ChoiceField(choices=HOBBS_TYPE_CHOICES)
+    hobbs = serializers.FloatField()
+    datetime = serializers.DateTimeField()
+
+
+class ComingDueListSerializer(serializers.Serializer):
+    tail_id = serializers.IntegerField()
+    start = serializers.DateTimeField()
+    days = serializers.IntegerField()
+    revision = serializers.IntegerField(required=False)
+
+
+class RevisionIDSerializer(serializers.Serializer):
+    revision = serializers.IntegerField(required=False)

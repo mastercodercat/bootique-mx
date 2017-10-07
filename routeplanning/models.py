@@ -5,6 +5,7 @@ from django.db.models import Q, Sum
 from django.db.models.query import QuerySet
 
 from common.helpers import *
+from routeplanning.constants import *
 
 
 class Tail(models.Model):
@@ -16,7 +17,7 @@ class Tail(models.Model):
     def get_last_assignment(self, revision, date):
         assignment = Assignment.objects.filter(tail=self) \
             .filter(revision=revision) \
-            .exclude(status=Assignment.STATUS_MAINTENANCE) \
+            .exclude(status=ASSIGNMENT_STATUS_MAINTENANCE) \
             .filter(end_time__lte=date) \
             .order_by('-end_time') \
             .select_related('flight') \
@@ -47,18 +48,10 @@ class LinePart(models.Model):
 
 
 class Flight(models.Model):
-    TYPE_SCHEDULED = 1
-    TYPE_UNSCHEDULED = 2
-
-    TYPE_CHOICES = (
-        (TYPE_SCHEDULED, 'Scheduled Flight'),
-        (TYPE_UNSCHEDULED, 'Unscheduled Flight'),
-    )
-
     number = models.CharField(db_index=True, max_length=10, default=0, null=False, blank=False)
     origin = models.CharField(max_length=10, blank=False)
     destination = models.CharField(max_length=10, blank=False)
-    type = models.IntegerField(default=TYPE_SCHEDULED, choices=TYPE_CHOICES)
+    type = models.IntegerField(default=FLIGHT_TYPE_SCHEDULED, choices=FLIGHT_TYPE_CHOICES)
     scheduled_out_datetime = models.DateTimeField(null=True, blank=False)
     scheduled_in_datetime = models.DateTimeField(null=True, blank=False)
     scheduled_off_datetime = models.DateTimeField(null=True, blank=True)
@@ -73,7 +66,7 @@ class Flight(models.Model):
     actual_on_datetime = models.DateTimeField(null=True, blank=True)
 
     def __unicode__(self):      # pragma: no cover
-        if self.type == Flight.TYPE_SCHEDULED:
+        if self.type == FLIGHT_TYPE_SCHEDULED:
             return str(self.number) + '. ' + self.origin + '-' + self.destination
         else:
             return 'Unscheduled Flight: ' + self.origin + '-' + self.destination
@@ -164,20 +157,10 @@ class Revision(models.Model):
 
 
 class Assignment(models.Model):
-    STATUS_FLIGHT = 1
-    STATUS_MAINTENANCE = 2
-    STATUS_UNSCHEDULED_FLIGHT = 3
-
-    STATUS_CHOICES = (
-        (STATUS_FLIGHT, 'Flight'),
-        (STATUS_MAINTENANCE, 'Maintenance'),
-        (STATUS_UNSCHEDULED_FLIGHT, 'Unscheduled Flight'),
-    )
-
     flight_number = models.CharField(max_length=10, default='', null=False, blank=False)
     start_time = models.DateTimeField(null=False, blank=False)
     end_time = models.DateTimeField(null=False, blank=False)
-    status = models.IntegerField(default=STATUS_FLIGHT, choices=STATUS_CHOICES)
+    status = models.IntegerField(default=ASSIGNMENT_STATUS_FLIGHT, choices=ASSIGNMENT_STATUS_CHOICES)
     is_draft = models.BooleanField(default=False)
 
     flight = models.ForeignKey(Flight, null=True, blank=False, on_delete=models.PROTECT)
@@ -185,11 +168,11 @@ class Assignment(models.Model):
     revision = models.ForeignKey(Revision, null=True, blank=False, on_delete=models.PROTECT)
 
     def __unicode__(self):      # pragma: no cover
-        if self.status == Assignment.STATUS_FLIGHT:
+        if self.status == ASSIGNMENT_STATUS_FLIGHT:
             return 'Flight ' + str(self.flight_number) + ' Assignment'
-        elif self.status == Assignment.STATUS_MAINTENANCE:
+        elif self.status == ASSIGNMENT_STATUS_MAINTENANCE:
             return 'Maintenance'
-        elif self.status == Assignment.STATUS_UNSCHEDULED_FLIGHT:
+        elif self.status == ASSIGNMENT_STATUS_UNSCHEDULED_FLIGHT:
             return 'Unscheduled Flight'
         else:
             return 'Other'
@@ -233,7 +216,7 @@ class Assignment(models.Model):
                 Q(end_time__lte=start_time)
             ) \
             .filter(revision=revision) \
-            .exclude(status=Assignment.STATUS_MAINTENANCE) \
+            .exclude(status=ASSIGNMENT_STATUS_MAINTENANCE) \
             .order_by('-start_time') \
             .select_related('flight')
         if exclude_check_assignment:
@@ -250,7 +233,7 @@ class Assignment(models.Model):
                 Q(tail=tail) &
                 Q(start_time__gte=end_time)
             ) \
-            .exclude(status=Assignment.STATUS_MAINTENANCE) \
+            .exclude(status=ASSIGNMENT_STATUS_MAINTENANCE) \
             .order_by('start_time') \
             .select_related('flight')
         if exclude_check_assignment:
@@ -289,16 +272,8 @@ class Assignment(models.Model):
 
 
 class Hobbs(models.Model):
-    TYPE_ACTUAL = 1
-    TYPE_NEXT_DUE = 2
-
-    TYPE_CHOICES = (
-        (TYPE_ACTUAL, 'Actual'),
-        (TYPE_NEXT_DUE, 'Next Due'),
-    )
-
     hobbs_time = models.DateTimeField(null=False, blank=False)
-    type = models.IntegerField(default=TYPE_ACTUAL, choices=TYPE_CHOICES)
+    type = models.IntegerField(default=HOBBS_TYPE_ACTUAL, choices=HOBBS_TYPE_CHOICES)
     hobbs = models.FloatField(default=0.0, blank=False)
 
     tail = models.ForeignKey(Tail, null=True, blank=False, on_delete=models.PROTECT)
@@ -318,7 +293,7 @@ class Hobbs(models.Model):
     def get_last_actual_hobbs(cls, tail, datetime):
         return cls.objects.filter(hobbs_time__lte=datetime) \
             .filter(tail=tail) \
-            .filter(type=Hobbs.TYPE_ACTUAL) \
+            .filter(type=HOBBS_TYPE_ACTUAL) \
             .order_by('-hobbs_time') \
             .first()
 
@@ -353,7 +328,7 @@ class Hobbs(models.Model):
     def get_next_due(cls, tail, datetime):
         return cls.objects.filter(hobbs_time__lt=datetime) \
             .filter(tail=tail) \
-            .filter(type=Hobbs.TYPE_NEXT_DUE) \
+            .filter(type=HOBBS_TYPE_NEXT_DUE) \
             .order_by('-hobbs_time') \
             .first()
 
@@ -361,7 +336,7 @@ class Hobbs(models.Model):
     def get_next_due_value(cls, tail, datetime):
         next_due_hobbs = cls.objects.filter(hobbs_time__lt=datetime) \
             .filter(tail=tail) \
-            .filter(type=Hobbs.TYPE_NEXT_DUE) \
+            .filter(type=HOBBS_TYPE_NEXT_DUE) \
             .order_by('-hobbs_time') \
             .first()
         return next_due_hobbs.hobbs if next_due_hobbs else 0

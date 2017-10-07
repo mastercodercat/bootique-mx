@@ -219,7 +219,6 @@ class AssignFlightView(GanttRevisionMixin, APIView):
     permission_classes = (IsAuthenticated, GanttWritePermission)
 
     def _post(self, *args, **kwargs):
-        request = self.request
         serializer = AssignFlightSerializer(data=self.request.data)
         serializer.is_valid(raise_exception=True)
         flight_data = serializer.validated_data.get('flight_data')
@@ -260,7 +259,7 @@ class AssignFlightView(GanttRevisionMixin, APIView):
                         } if duplicated_assignment.flight else None,
                     },
                     'editing_assignment': {
-                        'status': Assignment.STATUS_FLIGHT,
+                        'status': ASSIGNMENT_STATUS_FLIGHT,
                         'flight': {
                             'id': flight.id,
                             'number': flight.number,
@@ -309,7 +308,7 @@ class AssignFlightView(GanttRevisionMixin, APIView):
                 flight_number=flight.number,
                 start_time=start_time,
                 end_time=end_time,
-                status=Assignment.STATUS_FLIGHT,
+                status=ASSIGNMENT_STATUS_FLIGHT,
                 flight=flight,
                 tail=tail
             )
@@ -385,7 +384,7 @@ class AssignStatusView(GanttRevisionMixin, APIView):
             result['time_conflicts'] = time_conflicts
             raise APIException('Duplicated assignment', response=result, status=400)
 
-        if status == Assignment.STATUS_UNSCHEDULED_FLIGHT:
+        if status == ASSIGNMENT_STATUS_UNSCHEDULED_FLIGHT:
             conflict = Assignment.physical_conflict_check(revision, tail, origin, destination, start_time, end_time)
             if conflict:
                 physical_conflicts.append({
@@ -412,13 +411,13 @@ class AssignStatusView(GanttRevisionMixin, APIView):
             flight=None,
             tail=tail
         )
-        if status == Assignment.STATUS_UNSCHEDULED_FLIGHT:
+        if status == ASSIGNMENT_STATUS_UNSCHEDULED_FLIGHT:
             flight = Flight(
                 origin=origin,
                 destination=destination,
                 scheduled_out_datetime=start_time,
                 scheduled_in_datetime=end_time,
-                type=Flight.TYPE_UNSCHEDULED
+                type=FLIGHT_TYPE_UNSCHEDULED
             )
             flight.save()
 
@@ -435,7 +434,7 @@ class RemoveAssignmentView(GanttRevisionMixin, APIView):
     permission_classes = (IsAuthenticated, GanttWritePermission)
 
     def _post(self, *args, **kwargs):
-        serializer = AssignmentModifySerializer(data=self.request.data)
+        serializer = MoveOrRemoveAssignmentSerializer(data=self.request.data)
         serializer.is_valid(raise_exception=True)
         assignment_ids = serializer.validated_data.get('assignment_data')
         revision_id = serializer.validated_data.get('revision')
@@ -450,7 +449,7 @@ class RemoveAssignmentView(GanttRevisionMixin, APIView):
             try:
                 assignment = Assignment.objects.get(pk=assignment_id)
                 assignment.delete()
-                if assignment.status == Assignment.STATUS_UNSCHEDULED_FLIGHT:
+                if assignment.status == ASSIGNMENT_STATUS_UNSCHEDULED_FLIGHT:
                     assignment.flight.delete()
                 result['removed_assignments'].append(assignment_id)
             except Assignment.DoesNotExist:
@@ -463,7 +462,7 @@ class MoveAssignmentView(GanttRevisionMixin, APIView):
     permission_classes = (IsAuthenticated, GanttWritePermission)
 
     def _post(self, *args, **kwargs):
-        serializer = AssignmentModifySerializer(data=self.request.data)
+        serializer = MoveOrRemoveAssignmentSerializer(data=self.request.data)
         serializer.is_valid(raise_exception=True)
         assignment_data = serializer.validated_data.get('assignment_data')
         revision_id = serializer.validated_data.get('revision')
@@ -556,7 +555,7 @@ class MoveAssignmentView(GanttRevisionMixin, APIView):
                 assignment.tail = tail
                 try:
                     if start_time_str:
-                        if assignment.status == Assignment.STATUS_UNSCHEDULED_FLIGHT:
+                        if assignment.status == ASSIGNMENT_STATUS_UNSCHEDULED_FLIGHT:
                             assignment.flight.scheduled_out_datetime = start_time
                             assignment.flight.scheduled_in_datetime = end_time
                             assignment.flight.save()
@@ -585,16 +584,13 @@ class ResizeAssignmentView(GanttRevisionMixin, APIView):
     permission_classes = (IsAuthenticated, GanttWritePermission)
 
     def _post(self, *args, **kwargs):
-        request = self.request
+        serializer = ResizeAssignmentSerializer(data=self.request.data)
+        serializer.is_valid(raise_exception=True)
+        assignment_id = serializer.validated_data.get('assignment_id')
+        pos = serializer.validated_data.get('position')  # start or end
+        diff_seconds = round(serializer.validated_data.get('diff_seconds') / 300.0) * 300.0     # changed time in seconds
+        revision_id = serializer.validated_data.get('revision')
 
-        try:
-            assignment_id = request.data.get('assignment_id')
-            pos = request.data.get('position')  # start or end
-            diff_seconds = round(float(request.data.get('diff_seconds')) / 300.0) * 300.0     # changed time in seconds
-        except:
-            raise APIException('Invalid parameters', status=400)
-
-        revision_id = request.data.get('revision')
         revision = self.get_revision(revision_id, create_draft=True)
 
         result = {
@@ -650,7 +646,7 @@ class ResizeAssignmentView(GanttRevisionMixin, APIView):
         assignment.apply_revision(revision)
         assignment.save()
 
-        if assignment.status == Assignment.STATUS_UNSCHEDULED_FLIGHT:
+        if assignment.status == ASSIGNMENT_STATUS_UNSCHEDULED_FLIGHT:
             assignment.flight.scheduled_out_datetime = start_time
             assignment.flight.scheduled_in_datetime = end_time
             assignment.flight.save()
@@ -762,7 +758,7 @@ class HobbsView(RetrieveDestroyAPIView):
 
     def get_queryset(self):
         if self.request.method == 'DELETE':
-            return Hobbs.objects.filter(type=Hobbs.TYPE_ACTUAL)
+            return Hobbs.objects.filter(type=HOBBS_TYPE_ACTUAL)
         else:
             return Hobbs.objects.all()
 
@@ -771,29 +767,25 @@ class SaveHobbsView(GanttRevisionMixin, APIView):
     permission_classes = (IsAuthenticated, GanttWritePermission)
 
     def _post(self, *args, **kwargs):
-        request = self.request
+        serializer = SaveHobbsSerializer(data=self.request.data)
+        serializer.is_valid(raise_exception=True)
+        tail_id = serializer.validated_data.get('tail_id')
+        hobbs_id = serializer.validated_data.get('id', None)
+        hobbs_type = serializer.validated_data.get('type')
+        hobbs_value = serializer.validated_data.get('hobbs')
+        hobbs_datetime = serializer.validated_data.get('datetime')
 
-        try:
-            tail_id = request.data.get('tail_id')
-            hobbs_id = request.data.get('id')
-            hobbs_type = int(request.data.get('type'))
-            hobbs_value = request.data.get('hobbs')
-            hobbs_datetime = dateutil.parser.parse(request.data.get('datetime'))
+        if hobbs_id:
+            hobbs = Hobbs.objects.get(pk=hobbs_id)
+        elif hobbs_type == HOBBS_TYPE_ACTUAL:
+            hobbs = Hobbs.objects.filter(hobbs_time=hobbs_datetime).filter(type=HOBBS_TYPE_ACTUAL).first()
+        else:
+            hobbs = None
 
-            if hobbs_id:
-                hobbs = Hobbs.objects.get(pk=hobbs_id)
-            elif hobbs_type == Hobbs.TYPE_ACTUAL:
-                hobbs = Hobbs.objects.filter(hobbs_time=hobbs_datetime).filter(type=Hobbs.TYPE_ACTUAL).first()
-            else:
-                hobbs = None
+        if hobbs and hobbs.hobbs_time != hobbs_datetime:
+            hobbs = None    # Create new hobbs item regardless of actual/next due hobbs if date/time is changed
 
-            if hobbs and hobbs.hobbs_time != hobbs_datetime:
-                hobbs = None    # Create new hobbs item regardless of actual/next due hobbs if date/time is changed
-
-            if hobbs and hobbs.type != hobbs_type:
-                raise Exception('Invalid parameters')
-        except Exception as e:
-            # print(str(e))
+        if hobbs and hobbs.type != hobbs_type:
             raise APIException('Invalid parameters', status=400)
 
         try:
@@ -818,16 +810,13 @@ class ComingDueListView(GanttRevisionMixin, APIView):
     permission_classes = (IsAuthenticated, GanttReadPermission)
 
     def _post(self, *args, **kwargs):
-        request = self.request
+        serializer = ComingDueListSerializer(data=self.request.data)
+        serializer.is_valid(raise_exception=True)
+        tail_id = serializer.validated_data.get('tail_id')
+        start_time = serializer.validated_data.get('start')
+        days = serializer.validated_data.get('days')
+        revision_id = serializer.validated_data.get('revision')
 
-        try:
-            tail_id = request.data.get('tail_id')
-            start_time = dateutil.parser.parse(request.data.get('start'))
-            days = int(request.data.get('days'))
-        except:
-            raise APIException('Invalid parameters', status=400)
-
-        revision_id = request.data.get('revision')
         revision = self.get_revision(revision_id)
 
         try:
@@ -873,10 +862,10 @@ class ComingDueListView(GanttRevisionMixin, APIView):
             for object in stream:
                 if object['type'] == 'hobbs':
                     hobbs = object['object']
-                    if hobbs.type == Hobbs.TYPE_ACTUAL:
+                    if hobbs.type == HOBBS_TYPE_ACTUAL:
                         projected_hobbs_value = hobbs.hobbs
                         last_actual_hobbs = hobbs
-                    elif hobbs.type == Hobbs.TYPE_NEXT_DUE:
+                    elif hobbs.type == HOBBS_TYPE_NEXT_DUE:
                         projected_next_due_hobbs_value = hobbs.hobbs
                         projected_next_due_hobbs_id = hobbs.id
                 elif object['type'] == 'assignment':
@@ -914,9 +903,10 @@ class PublishRevisionView(GanttRevisionMixin, APIView):
     permission_classes = (IsAuthenticated, GanttWritePermission)
 
     def _post(self, *args, **kwargs):
-        request = self.request
+        serializer = RevisionIDSerializer(data=self.request.data)
+        serializer.is_valid(raise_exception=True)
+        revision_id = serializer.validated_data.get('revision')
 
-        revision_id = request.data.get('revision')
         revision = self.get_revision(revision_id)
 
         try:
@@ -959,9 +949,10 @@ class ClearRevisionView(GanttRevisionMixin, APIView):
     permission_classes = (IsAuthenticated, GanttWritePermission)
 
     def _post(self, *args, **kwargs):
-        request = self.request
+        serializer = RevisionIDSerializer(data=self.request.data)
+        serializer.is_valid(raise_exception=True)
+        revision_id = serializer.validated_data.get('revision')
 
-        revision_id = request.data.get('revision')
         revision = self.get_revision(revision_id)
 
         try:
@@ -985,9 +976,10 @@ class DeleteRevisionView(GanttRevisionMixin, APIView):
     permission_classes = (IsAuthenticated, GanttWritePermission)
 
     def _post(self, *args, **kwargs):
-        request = self.request
+        serializer = RevisionIDSerializer(data=self.request.data)
+        serializer.is_valid(raise_exception=True)
+        revision_id = serializer.validated_data.get('revision')
 
-        revision_id = request.data.get('revision')
         revision = self.get_revision(revision_id)
 
         try:
