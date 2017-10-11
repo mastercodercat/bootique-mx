@@ -43,8 +43,8 @@ class GanttPageView(TemplateView):
         else:
             mode = '4'
 
-        start_tmstmp = int(request.GET.get('start')) if request.GET.get('start') else 0
-        end_tmstmp = int(request.GET.get('end')) if request.GET.get('end') else 0
+        start_tmstmp = int(request.GET.get('start', 0))
+        end_tmstmp = int(request.GET.get('end', 0))
         if not(start_tmstmp or end_tmstmp):
             start_tmstmp = request.session['start_tmstmp'] \
                 if 'start_tmstmp' in request.session \

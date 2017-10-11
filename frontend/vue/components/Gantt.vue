@@ -866,17 +866,13 @@ export default {
 
             if (startDateValue) {
                 var startDate = new Date(startDateValue);
-                var _date = new Date(startDate.getTime());
-                startDate.setUTCHours(0);
-                startDate.setUTCDate(_date.getDate());
+                startDate.setMinutes(startDate.getMinutes() - startDate.getTimezoneOffset());
                 url += `&start=${parseInt(startDate.getTime() / 1000)}`;
             }
 
             if (endDateValue) {
                 var endDate = new Date(endDateValue);
-                var _date = new Date(endDate.getTime());
-                endDate.setUTCHours(0);
-                endDate.setUTCDate(_date.getDate());
+                endDate.setMinutes(endDate.getMinutes() - endDate.getTimezoneOffset());
                 url += `&end=${parseInt(endDate.getTime() / 1000)}`;
             }
 
