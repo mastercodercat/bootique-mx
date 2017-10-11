@@ -105,7 +105,10 @@ class LoadDataView(GanttRevisionMixin, APIView):
                 latest_published_datetime_row = Revision.objects.all().aggregate(Max('published_datetime'))
                 latest_published_datetime = latest_published_datetime_row['published_datetime__max']
                 if revision.published_datetime != latest_published_datetime:
-                    raise APIException('Not allowed to get route plans other than current published version', status=403)
+                    raise APIException(
+                        'Not allowed to get route plans other than current published version',
+                        status=403
+                    )
 
         # Date for tails and its last assignment on current revision
 
@@ -243,7 +246,9 @@ class AssignFlightView(GanttRevisionMixin, APIView):
             tail = Tail.objects.get(number=tail_number)
             flight = Flight.objects.get(pk=flight_id)
 
-            duplicated_assignment = Assignment.duplication_check(revision, tail, flight.scheduled_out_datetime, flight.scheduled_in_datetime)
+            duplicated_assignment = Assignment.duplication_check(
+                revision, tail, flight.scheduled_out_datetime, flight.scheduled_in_datetime
+            )
             if duplicated_assignment:
                 time_conflicts.append({
                     'assignment': {
@@ -532,7 +537,11 @@ class MoveAssignmentView(GanttRevisionMixin, APIView):
 
                 try:
                     if assignment.flight:
-                        conflict = Assignment.physical_conflict_check(revision, tail, assignment.flight.origin, assignment.flight.destination, start_time, end_time, assignment)
+                        conflict = Assignment.physical_conflict_check(
+                            revision, tail,
+                            assignment.flight.origin, assignment.flight.destination,
+                            start_time, end_time, assignment
+                        )
                         if conflict:
                             physical_conflicts.append({
                                 'flight': {
@@ -588,7 +597,7 @@ class ResizeAssignmentView(GanttRevisionMixin, APIView):
         serializer.is_valid(raise_exception=True)
         assignment_id = serializer.validated_data.get('assignment_id')
         pos = serializer.validated_data.get('position')  # start or end
-        diff_seconds = round(serializer.validated_data.get('diff_seconds') / 300.0) * 300.0     # changed time in seconds
+        diff_seconds = round(serializer.validated_data.get('diff_seconds') / 300.0) * 300.0  # changed time in seconds
         revision_id = serializer.validated_data.get('revision')
 
         revision = self.get_revision(revision_id, create_draft=True)
@@ -614,7 +623,9 @@ class ResizeAssignmentView(GanttRevisionMixin, APIView):
         if start_time >= end_time:
             raise APIException('Start time cannot be later than end time', status=400)
 
-        duplicated_assignment = Assignment.duplication_check(revision, assignment.tail, start_time, end_time, assignment)
+        duplicated_assignment = Assignment.duplication_check(
+            revision, assignment.tail, start_time, end_time, assignment
+        )
         if duplicated_assignment:
             time_conflicts.append({
                 'assignment': {
@@ -662,7 +673,11 @@ class UploadCSVView(GanttRevisionMixin, APIView):
     def _post(self, *args, **kwargs):
         request = self.request
 
-        filepath = settings.STATIC_ROOT + '/uploads/' + str(totimestamp(datetime_now_utc())) + '_' + str(random.randint(100000, 999999)) + '.csv'
+        filepath = '{}/uploads/{}_{}.csv'.format(
+            settings.STATIC_ROOT,
+            str(totimestamp(datetime_now_utc())),
+            str(random.randint(100000, 999999))
+        )
         try:
             file = request.FILES['csvfile']
             destination = open(filepath, 'wb+')
@@ -693,8 +708,8 @@ class UploadCSVView(GanttRevisionMixin, APIView):
                         .filter(number=flight_number, scheduled_out_datetime__lte=scheduled_out_datetime) \
                         .aggregate(closest_past_date=Max('scheduled_out_datetime'))['closest_past_date']
                     if closest_past_date and closest_past_date.year == scheduled_out_datetime.year \
-                        and closest_past_date.month == scheduled_out_datetime.month \
-                        and closest_past_date.day == scheduled_out_datetime.day:
+                            and closest_past_date.month == scheduled_out_datetime.month \
+                            and closest_past_date.day == scheduled_out_datetime.day:
                         flight_to_update = Flight.objects.select_related('assignment').get(
                             number=flight_number,
                             scheduled_out_datetime=closest_past_date
@@ -705,8 +720,8 @@ class UploadCSVView(GanttRevisionMixin, APIView):
                             .filter(number=flight_number, scheduled_out_datetime__gt=scheduled_out_datetime) \
                             .aggregate(closest_next_date=Max('scheduled_out_datetime'))['closest_next_date']
                         if closest_next_date and closest_next_date.year == scheduled_out_datetime.year \
-                            and closest_next_date.month == scheduled_out_datetime.month \
-                            and closest_next_date.day == scheduled_out_datetime.day:
+                                and closest_next_date.month == scheduled_out_datetime.month \
+                                and closest_next_date.day == scheduled_out_datetime.day:
                             flight_to_update = Flight.objects.select_related('assignment').get(
                                 number=flight_number,
                                 scheduled_out_datetime=closest_next_date
@@ -719,7 +734,9 @@ class UploadCSVView(GanttRevisionMixin, APIView):
 
                         assignment = flight_to_update.get_assignment()
                         if assignment:
-                            dup_assignments = Assignment.get_duplicated_assignments(assignment.tail, scheduled_out_datetime, scheduled_in_datetime, assignment)
+                            dup_assignments = Assignment.get_duplicated_assignments(
+                                assignment.tail, scheduled_out_datetime, scheduled_in_datetime, assignment
+                            )
                             if dup_assignments.count() > 0:
                                 assignment.delete()
                                 dup_assignments.delete()
@@ -728,7 +745,7 @@ class UploadCSVView(GanttRevisionMixin, APIView):
                                 assignment.end_time = scheduled_in_datetime
                                 assignment.save()
                     else:
-                        flight=Flight(
+                        flight = Flight(
                             number=flight_number,
                             origin=origin,
                             destination=destination,
@@ -914,7 +931,10 @@ class PublishRevisionView(GanttRevisionMixin, APIView):
             new_revision.save()
 
             if not revision or revision.has_draft:
-                Assignment.get_revision_assignments(revision).filter(is_draft=True).update(revision=new_revision, is_draft=False)
+                Assignment.get_revision_assignments(revision).filter(is_draft=True).update(
+                    revision=new_revision,
+                    is_draft=False
+                )
             else:
                 revision_assignments = Assignment.get_revision_assignments(revision).filter(is_draft=False)
                 for assignment in revision_assignments:

@@ -24,7 +24,7 @@ class TimestampField(serializers.Field):
 
 class DataTableFlightSerializer(serializers.ModelSerializer):
     def to_representation(self, flight):
-        flight_edit_link = reverse('routeplanning:edit_flight', kwargs={ 'flight_id': flight.id })
+        flight_edit_link = reverse('routeplanning:edit_flight', kwargs={'flight_id': flight.id})
         buttons = '<span style="white-space: nowrap;">'
         buttons += '<a href="' + flight_edit_link + '" class="btn btn-primary btn-xs"><i class="fa fa-fw fa-edit"></i></a> '
         buttons += '<a href="javascript:void();" class="btn-delete-flight btn btn-danger btn-xs"><i class="fa fa-fw fa-trash"></i></a>'

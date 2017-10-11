@@ -266,7 +266,8 @@ class AssignmentTestCase(TestCase):
     def test_get_duplicated_assignments(self):
         tail = Tail.objects.get(pk=14)
 
-        dup_assignments = Assignment.get_duplicated_assignments(None, tail, '2017-05-24T13:30:00Z', '2017-05-24T18:00:00Z')
+        dup_assignments = Assignment.get_duplicated_assignments(
+            None, tail, '2017-05-24T13:30:00Z', '2017-05-24T18:00:00Z')
         da_ids = [assignment.id for assignment in dup_assignments]
         self.assertEqual(
             set(da_ids),

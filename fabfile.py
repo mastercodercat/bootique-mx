@@ -6,6 +6,7 @@ from fabric_settings import *
 
 env.hosts = []
 
+
 @task
 def staging():
     env.hosts = ['%s@%s' % (STAGING_SERVER_SSH_USER, STAGING_SERVER)]

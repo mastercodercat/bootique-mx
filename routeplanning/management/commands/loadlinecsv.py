@@ -1,9 +1,13 @@
 from __future__ import print_function
-import csv, datetime, sys
+import csv
+import datetime
+import sys
+
 from django.core.management.base import BaseCommand, CommandError
 
 from routeplanning.models import Line, LinePart
 from common.helpers import utc
+
 
 class Command(BaseCommand):
     help = 'Load lines and line parts from fixtures/lines.csv and fixtures/lineparts.csv'
@@ -16,7 +20,7 @@ class Command(BaseCommand):
             csvreader = csv.reader(csvfile, delimiter=',')
             for row in csvreader:
                 try:
-                    line=Line(pk=int(row[0]), name=row[1])
+                    line = Line(pk=int(row[0]), name=row[1])
                     line.save()
                 except Exception as e:
                     errors += 1
@@ -40,7 +44,7 @@ class Command(BaseCommand):
                     line_id = int(row[2])
                     if not current_line or current_line.id != line_id:
                         current_line = Line.objects.get(pk=line_id)
-                    line_part=LinePart(pk=int(row[0]), number=row[1], line=current_line)
+                    line_part = LinePart(pk=int(row[0]), number=row[1], line=current_line)
                     line_part.save()
                 except Exception as e:
                     errors += 1

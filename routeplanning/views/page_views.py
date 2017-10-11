@@ -53,9 +53,9 @@ class GanttPageView(TemplateView):
         tails = Tail.objects.all()
         lines = Line.objects.order_by('name').all()
 
-        days_options = { '1': 1, '2': 1, '3': 1, '4': 1, '5': 3, '6': 7, }          # Date mark count
-        hours_options = { '1': 3, '2': 6, '3': 12, '4': 24, '5': 24, '6': 6, }      # Hours mark count
-        units_per_hour_options = { '1': 4, '2': 2, '3': 1, '4': 1, '5': 1, '6': 0.25, }
+        days_options = {'1': 1, '2': 1, '3': 1, '4': 1, '5': 3, '6': 7}          # Date mark count
+        hours_options = {'1': 3, '2': 6, '3': 12, '4': 24, '5': 24, '6': 6}      # Hours mark count
+        units_per_hour_options = {'1': 4, '2': 2, '3': 1, '4': 1, '5': 1, '6': 0.25}
 
         days = days_options[mode]
 

@@ -135,7 +135,8 @@ class Revision(models.Model):
     def create_draft(cls):
         latest_revision = Revision.get_latest_revision()
         if latest_revision:
-            assignments = Assignment.get_revision_assignments(latest_revision).filter(start_time__lte=datetime_now_utc())
+            assignments = Assignment.get_revision_assignments(latest_revision).filter(
+                start_time__lte=datetime_now_utc())
             for assignment in assignments:
                 assignment.pk = None
                 assignment.is_draft = True
@@ -210,7 +211,8 @@ class Assignment(models.Model):
         return query.first()
 
     @classmethod
-    def physical_conflict_check(cls, revision, tail, origin, destination, start_time, end_time, exclude_check_assignment=None):
+    def physical_conflict_check(
+            cls, revision, tail, origin, destination, start_time, end_time, exclude_check_assignment=None):
         query = cls.objects.filter(
                 Q(tail=tail) &
                 Q(end_time__lte=start_time)

@@ -1,9 +1,13 @@
 from __future__ import print_function
-import csv, datetime, sys
+import csv
+import datetime
+import sys
+
 from django.core.management.base import BaseCommand, CommandError
 
 from routeplanning.models import Flight
 from common.helpers import utc, str_to_datetime
+
 
 class Command(BaseCommand):
     help = 'Load flights from fixtures/flights.csv'
@@ -15,7 +19,7 @@ class Command(BaseCommand):
             csvreader = csv.reader(csvfile, delimiter=',', quotechar='"')
             for row in csvreader:
                 try:
-                    flight=Flight(
+                    flight = Flight(
                         number=int(row[1][3:]),
                         origin=row[2],
                         destination=row[3],

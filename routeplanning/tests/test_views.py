@@ -616,7 +616,7 @@ class RoutePlanningViewsTestCase(TestCase):
             'startdate': 1494799200,
             'enddate': 1496008800,
             'revision': 0,
-        });
+        })
         data = json.loads(response.content)
         self.assertEqual(response.status_code, 403)
         self.assertEqual(data['error'], 'Not allowed to get draft route plan')
@@ -635,7 +635,7 @@ class RoutePlanningViewsTestCase(TestCase):
             'startdate': 1494799200,
             'enddate': 1496008800,
             'revision': revision1.id,
-        });
+        })
         data = json.loads(response.content)
         self.assertEqual(response.status_code, 403)
         self.assertEqual(data['error'], 'Not allowed to get route plans other than current published version')
@@ -648,7 +648,7 @@ class RoutePlanningViewsTestCase(TestCase):
             'startdate': 1494799200,
             'enddate': 1496008800,
             'revision': 999,
-        });
+        })
         data = json.loads(response.content)
         self.assertEqual(response.status_code, 400)
         self.assertEqual(data['error'], 'Revision not found')
@@ -661,7 +661,7 @@ class RoutePlanningViewsTestCase(TestCase):
             'startdate': 1495648800,
             'enddate': 1496008800,
             'revision': 0,
-        });
+        })
         data = json.loads(response.content)
         self.assertEqual(response.status_code, 200)
         self.assertNotEqual(len(data['assignments']), 0)
@@ -681,7 +681,7 @@ class RoutePlanningViewsTestCase(TestCase):
             'startdate': 1495648800,
             'enddate': 1496008800,
             'revision': revision1.id,
-        });
+        })
         data = json.loads(response.content)
         self.assertEqual(response.status_code, 200)
 
