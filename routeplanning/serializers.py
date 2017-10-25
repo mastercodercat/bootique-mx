@@ -73,7 +73,7 @@ class LoadDataSerializer(serializers.Serializer):
 
 
 class AssignFlightSerializer(serializers.Serializer):
-    flight_data = serializers.JSONField()
+    flight_data = serializers.JSONField(binary=True)
     revision = serializers.IntegerField(required=False)
 
 
@@ -88,7 +88,7 @@ class AssignStatusSerializer(serializers.Serializer):
 
 
 class MoveOrRemoveAssignmentSerializer(serializers.Serializer):
-    assignment_data = serializers.JSONField()
+    assignment_data = serializers.JSONField(binary=True)
     revision = serializers.IntegerField(required=False)
 
 
